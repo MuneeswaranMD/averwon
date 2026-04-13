@@ -1,0 +1,86 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap');
+
+@theme {
+  --color-primary: #003366;
+  --color-secondary: #003366;
+  --color-accent: #00C2FF;
+  --color-light: #EAF4FF;
+  --color-dark: #0A192F;
+  --color-grayText: #666666;
+  
+  --font-poppins: "Poppins", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  
+  --background-image-hero-gradient: linear-gradient(to right, #003366, #004080, #003366);
+}
+
+:root {
+  font-family: var(--font-inter);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-grayText overflow-x-hidden;
+}
+
+.glass {
+  @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl;
+}
+
+.section-padding {
+  @apply py-20 px-6 lg:px-24;
+}
+
+.btn-primary {
+  @apply bg-white text-primary px-8 py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg;
+}
+
+.btn-outline {
+  @apply border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white hover:text-primary transition-all duration-300;
+}
+
+.card-hover {
+  @apply hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl cursor-pointer;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-light;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary rounded-full;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
