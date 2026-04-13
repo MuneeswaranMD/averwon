@@ -165,7 +165,7 @@ const HeroSection = () => {
         </div>
 
         {/* ═══ RIGHT — 3D card scene ═══ */}
-        <div style={{
+        <div className="hero-scene-container" style={{
           position:'relative', height:560,
           opacity: isLoaded?1:0,
           transform: isLoaded?'translateX(0)':'translateX(60px)',
@@ -250,7 +250,7 @@ const HeroSection = () => {
           {chips.map((chip, i) => {
             const Icon = chip.icon;
             return (
-              <div key={i} style={{
+              <div key={i} className="floating-chip" style={{
                 position:'absolute', top:'50%', left:'50%',
                 transform:`translate(calc(-50% + ${chip.x}% * 2.5px * 10), calc(-50% + ${chip.y}% * 2.5px * 10)) translate(${chip.x < 0 ? '-190px' : '190px'}, ${chip.y < 0 ? '-140px' : '140px'}) translate(${mousePos.x*(4+i*2)}px,${mousePos.y*(4+i*2)}px)`,
                 animation:`float-chip 5s ease-in-out infinite`,
@@ -329,6 +329,14 @@ const HeroSection = () => {
           .hero-main-grid {
             grid-template-columns: 1fr !important;
             gap: 40px !important;
+            padding: 40px 20px !important;
+          }
+          .hero-scene-container {
+            height: 400px !important;
+            margin-top: 20px;
+          }
+          .floating-chip {
+            display: none !important;
           }
         }
       `}</style>

@@ -84,3 +84,22 @@ body {
 .delay-1000 {
   animation-delay: 1s;
 }
+
+/* Mobile Responsiveness Utilities */
+@media (max-width: 1024px) {
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .section-padding {
+    @apply py-12 px-6;
+  }
+}
