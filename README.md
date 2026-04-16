@@ -54,4 +54,3 @@ src/
 - **Blog Section**: Knowledge sharing and industry trends.
 
 ---
-Designed and developed with ❤️ by Antigravity.
