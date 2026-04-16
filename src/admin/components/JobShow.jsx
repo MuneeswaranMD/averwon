@@ -1,5 +1,4 @@
 import React from 'react';
-
 const C = {
   bg: '#F5F7FA',
   white: '#FFFFFF',

@@ -403,23 +403,23 @@ const start = async () => {
     resources: [
       { resource: Employee, options: { 
         parent: { name: 'HR Management', icon: 'Users' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Intern, options: { 
         parent: { name: 'HR Management', icon: 'Users' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Attendance, options: { 
         parent: { name: 'HR Management', icon: 'Clock' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: LeaveRequest, options: { 
         parent: { name: 'HR Management', icon: 'Calendar' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Payroll, options: { 
         parent: { name: 'HR Management', icon: 'DollarSign' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
 
       { 
@@ -429,8 +429,9 @@ const start = async () => {
           properties: { description: { type: 'textarea' } },
           actions: {
             show: {
-              component: Components.JobShow, // Keeping specific one for Jobs as it has extra stuff
-              showInDrawer: false
+              component: 'JobShow', 
+              showInDrawer: false,
+              actionType: 'record'
             }
           }
         } 
@@ -438,24 +439,24 @@ const start = async () => {
       { resource: JobApplication, options: { 
         parent: { name: 'Recruitment', icon: 'Inbox' }, 
         properties: { adminNotes: { type: 'textarea' } },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       
       { resource: Project, options: { 
         parent: { name: 'Operations', icon: 'Briefcase' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Task, options: { 
         parent: { name: 'Operations', icon: 'CheckSquare' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Meeting, options: { 
         parent: { name: 'Operations', icon: 'Video' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Activity, options: { 
         parent: { name: 'Operations', icon: 'Activity' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
 
       { 
@@ -469,43 +470,43 @@ const start = async () => {
             ticketId: { isVisible: { edit: false, filter: true, list: true, show: true } }
           },
           listProperties: ['ticketId', 'title', 'category', 'priority', 'status', 'assignedTeam'],
-          actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+          actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
         } 
       },
       { resource: LiveChat, options: { 
         parent: { name: 'Support', icon: 'MessageSquare' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
 
       { resource: Revenue, options: { 
         parent: { name: 'Finance', icon: 'TrendingUp' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Invoice, options: { 
         parent: { name: 'Finance', icon: 'FileText' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Bill, options: { 
         parent: { name: 'Finance', icon: 'FileMinus' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
 
       { resource: Lead, options: { 
         parent: { name: 'Sales', icon: 'UserPlus' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Deal, options: { 
         parent: { name: 'Sales', icon: 'Target' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
 
       { resource: Setting, options: { 
         parent: { name: 'System', icon: 'Settings' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
       { resource: Manager, options: { 
         parent: { name: 'System', icon: 'Shield' },
-        actions: { show: { component: Components.GlobalShow, showInDrawer: false } }
+        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
       } },
     ],
     componentLoader,
@@ -552,6 +553,53 @@ const start = async () => {
             Support: 'Support',
             Sales: 'Sales',
             System: 'System',
+            'Technical Issue': 'Technical Issue',
+            'HR Support': 'HR Support',
+            'Finance Issue': 'Finance Issue',
+            'Attendance Problem': 'Attendance Problem',
+            'Payroll Issue': 'Payroll Issue',
+            'Project Access': 'Project Access',
+            'Leave Request': 'Leave Request',
+            'Login Problem': 'Login Problem',
+            'Software Bug': 'Software Bug',
+            'Hardware Request': 'Hardware Request',
+            'General Query': 'General Query',
+            'Employee Ticket': 'Employee Ticket',
+            'Client Ticket': 'Client Ticket',
+            'Internal Team Ticket': 'Internal Team Ticket',
+            'Vendor Ticket': 'Vendor Ticket',
+            Open: 'Open',
+            'In Progress': 'In Progress',
+            Pending: 'Pending',
+            Resolved: 'Resolved',
+            Closed: 'Closed',
+            Reopened: 'Reopened',
+            Low: 'Low',
+            Medium: 'Medium',
+            High: 'High',
+            Urgent: 'Urgent',
+          },
+          properties: {
+            title: 'Title',
+            _id: 'ID',
+            ticketId: 'Ticket ID',
+            category: 'Category',
+            priority: 'Priority',
+            department: 'Department',
+            assignedTeam: 'Assigned Team',
+            ticketType: 'Ticket Type',
+            description: 'Description',
+            attachmentUrl: 'Attachment URL',
+            userName: 'User Name',
+            userEmail: 'User Email',
+            userRole: 'User Role',
+            contactNumber: 'Contact Number',
+            status: 'Status',
+            dueDate: 'Due Date',
+            adminNotes: 'Admin Notes',
+            resolutionNotes: 'Resolution Notes',
+            createdAt: 'Created At',
+            updatedAt: 'Updated At',
           },
         },
       },
