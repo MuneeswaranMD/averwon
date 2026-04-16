@@ -1,0 +1,526 @@
+/* ============================================================
+   Zoho-Style Theme Override for AdminJS
+   Clean, Professional, Minimal
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* ── Global Font & Background ─────────────────────────────── */
+*, *::before, *::after {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #F5F7FA !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+/* ── Sidebar Navigation ───────────────────────────────────── */
+nav,
+[class*="sidebar"],
+[class*="Sidebar"],
+[class*="Navigation"],
+[class*="navigation"] {
+  background-color: #1E293B !important;
+  border-right: 1px solid #334155 !important;
+}
+
+[class*="Logo"],
+[class*="logo"] {
+  padding: 20px 16px !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+[class*="NavLink"],
+[class*="navLink"],
+[class*="SidebarLink"] {
+  color: #94A3B8 !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  margin: 1px 8px !important;
+  transition: all 0.15s !important;
+}
+
+[class*="NavLink"]:hover,
+[class*="SidebarLink"]:hover {
+  color: #FFFFFF !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[class*="NavLink"][class*="active"],
+[class*="NavLink"][aria-current],
+[class*="SidebarLink"][class*="selected"] {
+  color: #FFFFFF !important;
+  background-color: #2563EB !important;
+}
+
+[class*="NavSection"],
+[class*="navSection"],
+[class*="SectionHeader"],
+[class*="sectionLabel"] {
+  color: #64748B !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 16px 16px 6px !important;
+}
+
+/* ── Top Navigation Bar ───────────────────────────────────── */
+header,
+[class*="TopBar"],
+[class*="topbar"],
+[class*="Navbar"],
+[class*="navbar"],
+[class*="Header"]:not([class*="TableHeader"]):not([class*="tableHeader"]) {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  box-shadow: none !important;
+}
+
+/* ── Page Content Area ────────────────────────────────────── */
+main,
+[class*="Content"],
+[class*="content"],
+[class*="PageContent"],
+section > div {
+  background-color: #F5F7FA !important;
+}
+
+/* ── Breadcrumb ───────────────────────────────────────────── */
+[class*="Breadcrumb"],
+[class*="breadcrumb"] {
+  font-size: 13px !important;
+  color: #6B7280 !important;
+}
+
+[class*="Breadcrumb"] a,
+[class*="breadcrumb"] a {
+  color: #6B7280 !important;
+}
+
+[class*="Breadcrumb"] a:last-child,
+[class*="breadcrumb"] a:last-child {
+  color: #111827 !important;
+  font-weight: 500 !important;
+}
+
+/* ── Page Title ───────────────────────────────────────────── */
+h1, [class*="PageTitle"] {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  letter-spacing: -0.01em !important;
+}
+
+h2 { font-size: 18px !important; font-weight: 600 !important; color: #111827 !important; }
+h3 { font-size: 16px !important; font-weight: 500 !important; color: #374151 !important; }
+
+/* ── All Links ────────────────────────────────────────────── */
+a {
+  color: #2563EB !important;
+  text-decoration: none !important;
+}
+
+a:hover {
+  color: #1D4ED8 !important;
+  text-decoration: underline !important;
+}
+
+/* ── Card / Box Containers ────────────────────────────────── */
+[class*="Card"],
+[class*="card"],
+[class*="Box"][class*="bordered"],
+[class*="TableCaption"],
+section[class*="record"],
+div[class*="Dashboard"],
+[data-testid*="record"] {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ── Table Container ──────────────────────────────────────── */
+[class*="TableCaption"],
+[class*="tableCaption"],
+[class*="Table"]:not([class*="Cell"]):not([class*="Row"]):not([class*="Head"]) {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ── Table Element ────────────────────────────────────────── */
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 14px !important;
+}
+
+/* ── Table Head ───────────────────────────────────────────── */
+thead, [class*="TableHead"] {
+  background-color: #F9FAFB !important;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+thead th,
+[class*="TableCell"][class*="header"],
+[class*="tableCell"][class*="header"] {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #6B7280 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  background-color: #F9FAFB !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  white-space: nowrap !important;
+}
+
+/* ── Table Row ────────────────────────────────────────────── */
+tbody tr,
+[class*="TableRow"] {
+  border-bottom: 1px solid #F3F4F6 !important;
+  transition: background-color 0.1s !important;
+}
+
+tbody tr:hover,
+[class*="TableRow"]:hover {
+  background-color: #F9FAFB !important;
+}
+
+tbody tr:last-child,
+[class*="TableRow"]:last-child {
+  border-bottom: none !important;
+}
+
+/* ── Table Cell ───────────────────────────────────────────── */
+tbody td,
+[class*="TableCell"]:not([class*="header"]) {
+  padding: 13px 16px !important;
+  color: #374151 !important;
+  font-size: 14px !important;
+  vertical-align: middle !important;
+}
+
+/* ── Checkboxes in Table ──────────────────────────────────── */
+[class*="TableCell"]:first-child {
+  padding: 12px 12px !important;
+  width: 44px !important;
+}
+
+/* ── Status Badges ────────────────────────────────────────── */
+[class*="Badge"],
+[class*="badge"] {
+  display: inline-block !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Active / Success states */
+[class*="Badge"][class*="success"],
+[class*="badge"][class*="success"] {
+  background-color: #F0FDF4 !important;
+  color: #16A34A !important;
+  border: 1px solid #BBF7D0 !important;
+}
+
+/* Pending / Warning */
+[class*="Badge"][class*="warning"],
+[class*="badge"][class*="warning"] {
+  background-color: #FFFBEB !important;
+  color: #D97706 !important;
+  border: 1px solid #FDE68A !important;
+}
+
+/* Error / Danger */
+[class*="Badge"][class*="danger"],
+[class*="badge"][class*="danger"],
+[class*="Badge"][class*="error"],
+[class*="badge"][class*="error"] {
+  background-color: #FEF2F2 !important;
+  color: #DC2626 !important;
+  border: 1px solid #FECACA !important;
+}
+
+/* Info / Primary */
+[class*="Badge"][class*="info"],
+[class*="badge"][class*="info"],
+[class*="Badge"][class*="primary"],
+[class*="badge"][class*="primary"] {
+  background-color: #EFF6FF !important;
+  color: #2563EB !important;
+  border: 1px solid #BFDBFE !important;
+}
+
+/* Default badge */
+[class*="Badge"][class*="default"],
+[class*="badge"][class*="default"] {
+  background-color: #F3F4F6 !important;
+  color: #6B7280 !important;
+  border: 1px solid #E5E7EB !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+button,
+[class*="Button"],
+[class*="button"] {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: opacity 0.15s, background-color 0.15s !important;
+}
+
+/* Primary button */
+[class*="Button"][class*="primary"],
+button[class*="primary"],
+[class*="ActionButton"][class*="new"],
+button[data-variant="contained"],
+.ae-submit {
+  background-color: #2563EB !important;
+  border-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+[class*="Button"][class*="primary"]:hover,
+button[class*="primary"]:hover {
+  background-color: #1D4ED8 !important;
+  border-color: #1D4ED8 !important;
+}
+
+/* Danger button */
+[class*="Button"][class*="danger"],
+button[class*="danger"] {
+  background-color: #FEF2F2 !important;
+  border-color: #FECACA !important;
+  color: #DC2626 !important;
+}
+
+/* Ghost / Outline button */
+[class*="Button"][class*="ghost"],
+[class*="Button"][class*="secondary"],
+button[class*="ghost"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  color: #374151 !important;
+}
+
+[class*="Button"][class*="ghost"]:hover {
+  background-color: #F9FAFB !important;
+}
+
+/* Filter button */
+[class*="FilterButton"],
+[class*="filter"] button {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  color: #374151 !important;
+}
+
+/* ── Input Fields ─────────────────────────────────────────── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea,
+[class*="Input"],
+[class*="input"],
+[class*="Select"],
+[class*="TextArea"] {
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  color: #1E293B !important;
+  background-color: #F8FAFC !important;
+  padding: 10px 14px !important;
+  outline: none !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
+  transition: all 0.2s ease !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+[class*="Input"]:focus {
+  border-color: #3B82F6 !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ── Bulletproof Space-Efficient Multi-Column Layout ──────────── */
+[class*="Box"]:has(> [class*="Property"]),
+[class*="Box"]:has(> [class*="property"]),
+form > [class*="Box"],
+[class*="ShowRecord"],
+[class*="showRecord"],
+[class*="ShowPage"] > [class*="Box"],
+[class*="showPage"] > [class*="Box"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 24px !important;
+  align-items: flex-start !important;
+}
+
+/* Force properties to take 50% width */
+[class*="PropertyType"],
+[class*="propertyType"],
+[class*="PropertyInShow"],
+[class*="propertyInShow"],
+[class*="ShowProperty"],
+[class*="showProperty"],
+[class*="Property"],
+[class*="property"],
+form > [class*="Box"] > [class*="Box"],
+[class*="ShowRecord"] > [class*="Box"],
+[class*="showRecord"] > [class*="Box"],
+[class*="ShowPage"] > [class*="Box"] > [class*="Box"],
+[class*="showPage"] > [class*="Box"] > [class*="Box"] {
+  flex: 1 1 calc(50% - 24px) !important;
+  min-width: 320px !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Let long-form fields stretch full width */
+[class*="Property"]:has(textarea),
+[class*="property"]:has(textarea),
+[class*="Property"]:has(.quill),
+[class*="Property"]:has(table),
+form > [class*="Box"] > [class*="Box"]:has(textarea),
+[class*="ShowRecord"] > [class*="Box"]:has(table) {
+  flex: 1 1 100% !important;
+  min-width: 100% !important;
+}
+
+/* Force AdminJS property value blocks to stack their internal label cleanly */
+[class*="Property"] > label,
+[class*="property"] > label {
+  display: block !important;
+  margin-bottom: 8px !important;
+}
+
+/* ── Show/Detail/Edit View Wrappers ───────────────────────── */
+[class*="ShowPage"],
+[class*="showPage"],
+[class*="RecordInEdit"],
+[class*="recordInEdit"],
+[class*="ShowRecord"],
+[class*="showRecord"],
+[class*="Record"]:not([class*="TableRow"]) {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03) !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* ── Sticky Action Bar (Save Buttons) ─────────────────────── */
+[class*="DrawerFooter"],
+form > [class*="Box"]:last-child:has(button) {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+  border-top: 1px solid #E5E7EB !important;
+  padding: 16px 24px !important;
+  margin: 24px -24px -24px -24px !important;
+  z-index: 50 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  grid-column: 1 / -1 !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+[class*="PropertyLabel"],
+[class*="propertyLabel"],
+label {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #6B7280 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  margin-bottom: 4px !important;
+}
+
+[class*="PropertyValue"],
+[class*="propertyValue"] {
+  font-size: 14px !important;
+  color: #111827 !important;
+  font-weight: 400 !important;
+}
+
+/* ── Pagination ───────────────────────────────────────────── */
+[class*="Pagination"],
+[class*="pagination"] {
+  display: flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+}
+
+[class*="Pagination"] button,
+[class*="pagination"] button {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  color: #374151 !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+}
+
+[class*="Pagination"] button:hover {
+  background: #F9FAFB !important;
+}
+
+[class*="Pagination"] button[disabled] {
+  opacity: 0.4 !important;
+}
+
+/* ── Checkbox ─────────────────────────────────────────────── */
+input[type="checkbox"] {
+  accent-color: #2563EB !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 4px !important;
+}
+
+/* ── Dropdown / Select menus ──────────────────────────────── */
+[class*="DropDown"],
+[class*="dropdown"],
+[class*="Overlay"],
+[class*="Menu"] {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F5F7FA; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ── Remove "Made with ♥ by AdminJS" footer ──────────────── */
+[class*="Footer"],
+[class*="footer"],
+a[href*="adminjs"] {
+  display: none !important;
+}
