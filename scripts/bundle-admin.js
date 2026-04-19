@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'production';
 import AdminJS from 'adminjs';
 import { adminOptions } from '../src/admin/config.js';
 
