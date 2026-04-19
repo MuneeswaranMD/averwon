@@ -88,6 +88,7 @@ const start = async () => {
   };
 
   const admin = new AdminJS(adminOptions);
+  await admin.initialize();
   
   const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     admin,

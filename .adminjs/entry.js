@@ -1,4 +1,5 @@
 AdminJS.UserComponents = {}
+AdminJS.env.NODE_ENV = "production"
 import Dashboard from '../src/admin/components/Dashboard'
 AdminJS.UserComponents.Dashboard = Dashboard
 import Sidebar from '../src/admin/components/Sidebar'
@@ -17,5 +18,5 @@ import SalesDashboard from '../src/admin/components/SalesDashboard'
 AdminJS.UserComponents.SalesDashboard = SalesDashboard
 import StatusTag from '../src/admin/components/StatusBadge'
 AdminJS.UserComponents.StatusTag = StatusTag
-import LongText from '../src/admin/components/LongText'
-AdminJS.UserComponents.LongText = LongText
+import ContentToggle from '../src/admin/components/LongText'
+AdminJS.UserComponents.ContentToggle = ContentToggle
