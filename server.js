@@ -89,18 +89,11 @@ const start = async () => {
 
   const admin = new AdminJS(adminOptions);
   
-  // Custom Auth Provider for AdminJS
-  const authProvider = {
-    authenticate,
-    componentLoader,
-    cookiePassword: 'super-secret-password-32-chars-long', 
-  };
-
   const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     admin,
     {
+      authenticate,
       cookiePassword: 'super-secret-password-32-chars-long', 
-      provider: authProvider,
     },
     null,
     {
