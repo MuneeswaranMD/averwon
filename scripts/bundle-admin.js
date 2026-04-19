@@ -18,16 +18,22 @@ const bundle = async () => {
       console.log('✅ Renamed bundle.js to components.bundle.js');
     }
 
-    // Copy design-system bundle for stability
-    try {
-      const dsBundlePath = path.resolve('node_modules/@adminjs/design-system/bundle.production.js');
-      if (fs.existsSync(dsBundlePath)) {
-        fs.copyFileSync(dsBundlePath, path.join(process.cwd(), '.adminjs', 'design-system.bundle.js'));
-        console.log('✅ Copied design-system.bundle.js');
+    // Copy core production bundles for stability
+    const copyAsset = (srcRelative, destName) => {
+      try {
+        const srcPath = path.resolve('node_modules', srcRelative);
+        if (fs.existsSync(srcPath)) {
+          fs.copyFileSync(srcPath, path.join(process.cwd(), '.adminjs', destName));
+          console.log(`✅ Copied ${destName}`);
+        }
+      } catch (err) {
+        console.warn(`⚠️ Could not copy ${destName}:`, err.message);
       }
-    } catch (dsErr) {
-      console.warn('⚠️ Could not copy design-system bundle:', dsErr.message);
-    }
+    };
+
+    copyAsset('adminjs/lib/frontend/assets/scripts/app-bundle.production.js', 'app.bundle.js');
+    copyAsset('adminjs/lib/frontend/assets/scripts/global-bundle.production.js', 'global.bundle.js');
+    copyAsset('@adminjs/design-system/bundle.production.js', 'design-system.bundle.js');
 
     console.log('✅ Bundling Complete! Assets are ready in .adminjs folder.');
     process.exit(0);
