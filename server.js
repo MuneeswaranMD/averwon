@@ -108,6 +108,9 @@ const start = async () => {
   // Mount AdminJS
   app.use(admin.options.rootPath, adminRouter);
 
+  // Serve pre-bundled AdminJS assets explicitly to resolve 404s and MIME type errors on Render
+  app.use('/admin/frontend/assets', express.static(path.join(__dirname, '.adminjs')));
+
   // --- API Routes for External Interactions ---
   app.use(express.json());
   const upload = multer({ dest: 'uploads/' });

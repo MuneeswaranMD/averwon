@@ -19,7 +19,9 @@
     "@emotion/styled": "11.14.1"
   },
   "dependencies": {
+    "@adminjs/design-system": "^4.1.1",
     "@adminjs/express": "^6.1.1",
+    "@adminjs/import-export": "^3.0.0",
     "@adminjs/mongoose": "^4.1.0",
     "@emailjs/browser": "^4.4.1",
     "@emotion/react": "11.14.0",
