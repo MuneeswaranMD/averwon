@@ -1116,6 +1116,12 @@ const start = async () => {
     res.status(500).send('Internal Server Error');
   });
 
+  // --- Bundling Setup ---
+  // In production, we should initialize AdminJS to bundle all components before the server starts
+  console.log('📦 AdminJS: Starting asset bundling...');
+  await admin.initialize();
+  console.log('✅ AdminJS: Assets bundled successfully');
+
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
     console.log(`🚀 AdminJS is running on port ${port}`);
