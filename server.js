@@ -1084,9 +1084,26 @@ const start = async () => {
   // Mount AdminJS router BEFORE generic body parsers
   app.use(admin.options.rootPath, adminRouter);
 
+  // Serve corporate site (Vite build) from dist
+  app.use(express.static(path.join(__dirname, 'dist')));
+  
   // Now apply generic body parsers for the rest of the application
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+
+  // Fallback for SPA (Single Page Application)
+  app.get('*', (req, res, next) => {
+    // Skip if it's an API or AdminJS route
+    if (req.url.startsWith('/admin') || req.url.startsWith('/api')) {
+      return next();
+    }
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next();
+    }
+  });
   
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
