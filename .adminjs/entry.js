@@ -9,3 +9,13 @@ import JobShow from '../src/admin/components/JobShow'
 AdminJS.UserComponents.JobShow = JobShow
 import GlobalShow from '../src/admin/components/GlobalShow'
 AdminJS.UserComponents.GlobalShow = GlobalShow
+import GlobalEdit from '../src/admin/components/GlobalEdit'
+AdminJS.UserComponents.GlobalEdit = GlobalEdit
+import FinanceDashboard from '../src/admin/components/FinanceDashboard'
+AdminJS.UserComponents.FinanceDashboard = FinanceDashboard
+import SalesDashboard from '../src/admin/components/SalesDashboard'
+AdminJS.UserComponents.SalesDashboard = SalesDashboard
+import StatusTag from '../src/admin/components/StatusBadge'
+AdminJS.UserComponents.StatusTag = StatusTag
+import LongText from '../src/admin/components/LongText'
+AdminJS.UserComponents.LongText = LongText

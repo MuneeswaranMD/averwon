@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
@@ -13,6 +13,19 @@ const C = {
 
 const Login = (props) => {
   const { action, message, branding } = props;
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleDemoLogin = (e) => {
+    const form = e.currentTarget.closest('form');
+    setEmail('admin@averqon.ai');
+    setPassword('admin123');
+    // Using a small timeout to allow state to reflect in the DOM if needed, 
+    // but also setting values directly for immediate submission reliability.
+    setTimeout(() => {
+      form.submit();
+    }, 50);
+  };
 
   return (
     <div style={{
@@ -78,7 +91,9 @@ const Login = (props) => {
             <input
               name="email"
               type="email"
-              placeholder="admin@averon.ai"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@averqon.ai"
               required
               style={{
                 width: '100%',
@@ -102,6 +117,8 @@ const Login = (props) => {
             <input
               name="password"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
               style={{
@@ -139,7 +156,53 @@ const Login = (props) => {
           >
             Login to Workspace
           </button>
+
+          <div style={{ marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                background: `${C.primary}10`,
+                border: `1px solid ${C.primary}30`,
+                color: C.primary,
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = `${C.primary}20`;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = `${C.primary}10`;
+              }}
+            >
+              🚀 One-Click Demo Login
+            </button>
+          </div>
         </form>
+
+        <div style={{ marginTop: '24px' }}>
+          <a
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              color: C.textMuted,
+              textDecoration: 'none',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => e.target.style.color = C.primary}
+            onMouseLeave={(e) => e.target.style.color = C.textMuted}
+          >
+            ← Back to Main Website
+          </a>
+        </div>
 
         <div style={{ marginTop: '32px', borderTop: `1px solid ${C.border}`, paddingTop: '20px' }}>
           <p style={{ fontSize: '12px', color: C.textMuted, margin: 0 }}>

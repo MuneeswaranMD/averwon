@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import dns from 'dns';
 import bcrypt from 'bcrypt';
 import session from 'express-session';
+import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 
@@ -179,21 +180,39 @@ const ActivitySchema = new mongoose.Schema({
 const Activity = mongoose.model('Activity', ActivitySchema);
 
 const RevenueSchema = new mongoose.Schema({
-  source: { type: String, required: true },
+  revenueId: { type: String, unique: true },
+  clientName: { type: String, required: true },
+  projectName: { type: String },
+  paymentMethod: { type: String, enum: ['Bank Transfer', 'Credit Card', 'PayPal', 'Cash', 'Stripe'], default: 'Bank Transfer' },
   amount: { type: Number, required: true },
-  date: { type: Date, default: Date.now },
+  receivedDate: { type: Date, default: Date.now },
+  status: { type: String, enum: ['Paid', 'Pending', 'Overdue', 'Partially Paid'], default: 'Paid' },
   growth: { type: Number, default: 0 }
+}, { timestamps: true });
+RevenueSchema.pre('save', async function(next) {
+  if (!this.revenueId) {
+    const c = await mongoose.models.Revenue.countDocuments();
+    this.revenueId = `REV-${new Date().getFullYear()}-${String(c + 1).padStart(4, '0')}`;
+  }
+  next();
 });
 const Revenue = mongoose.model('Revenue', RevenueSchema);
 
 const InvoiceSchema = new mongoose.Schema({
   invoiceId: { type: String, unique: true },
   clientName: { type: String, required: true },
-  amount: { type: Number, required: true },
+  projectName: { type: String },
+  invoiceAmount: { type: Number, required: true },
+  taxAmount: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
+  totalAmount: { type: Number },
   dueDate: { type: Date, required: true },
-  status: { type: String, enum: ['Paid', 'Pending', 'Overdue', 'Draft'], default: 'Draft' }
-});
+  paymentDate: { type: Date },
+  status: { type: String, enum: ['Paid', 'Pending', 'Overdue', 'Cancelled'], default: 'Pending' }
+}, { timestamps: true });
+
 InvoiceSchema.pre('save', async function(next) {
+  this.totalAmount = (this.invoiceAmount + (this.taxAmount || 0)) - (this.discountAmount || 0);
   if (!this.invoiceId) {
     const c = await mongoose.models.Invoice.countDocuments();
     this.invoiceId = `INV-${new Date().getFullYear()}-${String(c + 1).padStart(4, '0')}`;
@@ -203,29 +222,61 @@ InvoiceSchema.pre('save', async function(next) {
 const Invoice = mongoose.model('Invoice', InvoiceSchema);
 
 const BillSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  category: { type: String, enum: ['Salary', 'Software', 'Hardware', 'Marketing', 'Travel', 'Office Expense'], default: 'Office Expense' },
+  billId: { type: String, unique: true },
+  vendorName: { type: String, required: true },
+  category: { type: String, enum: ['Salary', 'Software', 'Office Expense', 'Hardware', 'Marketing', 'Travel', 'Internet', 'Maintenance'], default: 'Office Expense' },
   amount: { type: Number, required: true },
-  date: { type: Date, default: Date.now },
-  status: { type: String, enum: ['Pending', 'Paid', 'Approved'], default: 'Pending' }
+  dueDate: { type: Date, required: true },
+  paymentMethod: { type: String, enum: ['Bank Transfer', 'Credit Card', 'Cash', 'UPI'], default: 'Bank Transfer' },
+  status: { type: String, enum: ['Paid', 'Pending', 'Overdue', 'Rejected'], default: 'Pending' },
+  receiptUrl: { type: String }
+}, { timestamps: true });
+BillSchema.pre('save', async function(next) {
+  if (!this.billId) {
+    const c = await mongoose.models.Bill.countDocuments();
+    this.billId = `BIL-${new Date().getFullYear()}-${String(c + 1).padStart(4, '0')}`;
+  }
+  next();
 });
 const Bill = mongoose.model('Bill', BillSchema);
 
 const LeadSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  source: { type: String, required: true },
-  assignedSalesperson: { type: String },
-  notes: { type: String },
-  status: { type: String, enum: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Closed'], default: 'New' }
+  leadId: { type: String, unique: true },
+  leadName: { type: String, required: true },
+  companyName: { type: String },
+  phoneNumber: { type: String },
+  email: { type: String, required: true },
+  leadSource: { type: String, enum: ['Website', 'Referral', 'LinkedIn', 'Facebook', 'Instagram', 'WhatsApp', 'Direct Call'], default: 'Website' },
+  assignedTo: { type: String },
+  status: { type: String, enum: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Converted', 'Closed'], default: 'New' },
+  followupDate: { type: Date },
+  notes: { type: String }
+}, { timestamps: true });
+LeadSchema.pre('save', async function(next) {
+  if (!this.leadId) {
+    const c = await mongoose.models.Lead.countDocuments();
+    this.leadId = `LD-${new Date().getFullYear()}-${String(c + 1).padStart(4, '0')}`;
+  }
+  next();
 });
 const Lead = mongoose.model('Lead', LeadSchema);
 
 const DealSchema = new mongoose.Schema({
-  title: { type: String, required: true },
+  dealId: { type: String, unique: true },
+  dealName: { type: String, required: true },
   clientName: { type: String, required: true },
-  value: { type: Number, required: true },
-  stage: { type: String, enum: ['Open', 'Negotiation', 'Won', 'Lost'], default: 'Open' },
-  expectedClosingDate: { type: Date }
+  assignedSalesperson: { type: String },
+  dealValue: { type: Number, required: true },
+  expectedClosingDate: { type: Date },
+  status: { type: String, enum: ['Open', 'Negotiation', 'Proposal Sent', 'Won', 'Lost'], default: 'Open' },
+  probability: { type: Number, min: 0, max: 100, default: 50 }
+}, { timestamps: true });
+DealSchema.pre('save', async function(next) {
+  if (!this.dealId) {
+    const c = await mongoose.models.Deal.countDocuments();
+    this.dealId = `DL-${new Date().getFullYear()}-${String(c + 1).padStart(4, '0')}`;
+  }
+  next();
 });
 const Deal = mongoose.model('Deal', DealSchema);
 
@@ -277,6 +328,27 @@ const ManagerSchema = new mongoose.Schema({
 });
 const Manager = mongoose.model('Manager', ManagerSchema);
 
+const ClientSchema = new mongoose.Schema({
+  clientName: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
+  phone: { type: String },
+  company: { type: String },
+  address: { type: String },
+  status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' }
+}, { timestamps: true });
+const Client = mongoose.model('Client', ClientSchema);
+
+const VendorSchema = new mongoose.Schema({
+  vendorName: { type: String, required: true, unique: true },
+  category: { type: String },
+  contactPerson: { type: String },
+  email: { type: String },
+  phone: { type: String },
+  address: { type: String },
+  status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' }
+}, { timestamps: true });
+const Vendor = mongoose.model('Vendor', VendorSchema);
+
 // Component Loader
 const componentLoader = new ComponentLoader();
 const Components = {
@@ -285,10 +357,25 @@ const Components = {
   Login: componentLoader.override('Login', path.join(__dirname, './src/admin/components/Login.jsx')),
   JobShow: componentLoader.add('JobShow', path.join(__dirname, './src/admin/components/JobShow.jsx')),
   GlobalShow: componentLoader.add('GlobalShow', path.join(__dirname, './src/admin/components/GlobalShow.jsx')),
+  GlobalEdit: componentLoader.add('GlobalEdit', path.join(__dirname, './src/admin/components/GlobalEdit.jsx')),
+  FinanceDashboard: componentLoader.add('FinanceDashboard', path.join(__dirname, './src/admin/components/FinanceDashboard.jsx')),
+  SalesDashboard: componentLoader.add('SalesDashboard', path.join(__dirname, './src/admin/components/SalesDashboard.jsx')),
+  StatusTag: componentLoader.add('StatusTag', path.join(__dirname, './src/admin/components/StatusBadge.jsx')),
+  ContentToggle: componentLoader.add('ContentToggle', path.join(__dirname, './src/admin/components/LongText.jsx')),
 };
 
 const start = async () => {
   const app = express();
+
+  app.use((req, res, next) => {
+    console.log(`[DEBUG LOG] ${req.method} ${req.url}`);
+    // Relaxed CSP for development and AdminJS assets
+    res.setHeader("Content-Security-Policy", "default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;");
+    next();
+  });
+
+  // Silence browser internal noise
+  app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => res.status(200).json({}));
 
   // MongoDB Connection
   const uri = "mongodb+srv://muneeswaran:Munees270904@admin.9gzsnkj.mongodb.net/?appName=admin";
@@ -302,13 +389,24 @@ const start = async () => {
   }
 
   app.use(express.static(path.join(__dirname, 'public')));
-  app.use(express.json());
+  app.use(cookieParser());
+  
+  // NOTE: Global body parsers (json/urlencoded) are moved AFTER AdminJS router 
+  // to prevent conflicts with AdminJS's internal body parsing (formidable).
+
+  app.get('/health', (req, res) => {
+    res.json({ status: 'OK', time: new Date().toISOString() });
+  });
 
   async function seedDatabase() {
     try {
-      const adminExists = await Manager.findOne({ email: 'admin@averqon.ai' });
-      if (adminExists) {
-        console.log('✅ Real Database Active - Mocks Bypassed');
+      let adminUser = await Manager.findOne({ email: 'admin@averqon.ai' });
+      if (adminUser) {
+        console.log('✅ Admin user already exists. Updating password to admin123...');
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        adminUser.password = hashedPassword;
+        await adminUser.save();
+        console.log('✅ Admin password reset to admin123');
         return;
       }
 
@@ -375,6 +473,8 @@ const start = async () => {
           attendanceRate: presentToday ? ((presentToday / (totalEmp + interns)) * 100).toFixed(1) : 0,
           monthlyRevenue: revenueMonthly[0]?.total || 0,
           pendingPayments: pendingPayments[0]?.total || 0,
+          totalLeads: newLeads, // Already fetched as newLeads in Promise.all
+          totalDeals: await Deal.countDocuments(),
           departments: totalDepts.length,
           completedProjects,
           leaveRequests,
@@ -399,64 +499,111 @@ const start = async () => {
   });
 
 
+  const commonActions = {
+    show: { component: Components.GlobalShow, showInDrawer: false },
+    edit: { component: Components.GlobalEdit, showInDrawer: false }
+  };
+
   const adminOptions = {
+    pages: {
+      Finance_Insights: {
+        label: 'Finance Insights',
+        component: Components.FinanceDashboard,
+        icon: 'Activity'
+      },
+      Sales_Performance: {
+        label: 'Sales Performance',
+        component: Components.SalesDashboard,
+        icon: 'BarChart'
+      }
+    },
     resources: [
       { resource: Employee, options: { 
         parent: { name: 'HR Management', icon: 'Users' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: {
+          status: { components: { list: Components.StatusTag } },
+          employeeId: { label: 'Employee ID' },
+          joinDate: { label: 'Join Date' },
+          profileImage: { label: 'Profile Image' },
+          department: {
+            components: { list: Components.StatusBadge },
+            availableValues: [
+              { value: 'IT', label: 'IT' },
+              { value: 'HR', label: 'HR' },
+              { value: 'Design', label: 'Design' },
+              { value: 'Finance', label: 'Finance' },
+              { value: 'Marketing', label: 'Marketing' },
+              { value: 'Sales', label: 'Sales' },
+              { value: 'Operations', label: 'Operations' },
+            ],
+          },
+        },
+        listProperties: ['email', 'name', 'employeeId', 'department', 'designation', 'status'],
+        actions: { ...commonActions }
       } },
       { resource: Intern, options: { 
         parent: { name: 'HR Management', icon: 'Users' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { status: { components: { list: Components.StatusTag } } },
+        actions: { ...commonActions }
       } },
       { resource: Attendance, options: { 
         parent: { name: 'HR Management', icon: 'Clock' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { status: { components: { list: Components.StatusTag } } },
+        actions: { ...commonActions }
       } },
       { resource: LeaveRequest, options: { 
         parent: { name: 'HR Management', icon: 'Calendar' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { status: { components: { list: Components.StatusTag } } },
+        actions: { ...commonActions }
       } },
       { resource: Payroll, options: { 
         parent: { name: 'HR Management', icon: 'DollarSign' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions }
       } },
 
       { 
         resource: JobPosting, 
         options: { 
           parent: { name: 'Recruitment', icon: 'Layers' }, 
-          properties: { description: { type: 'textarea' } },
-          actions: {
-            show: {
-              component: 'JobShow', 
-              showInDrawer: false,
-              actionType: 'record'
-            }
-          }
+          properties: { 
+            description: { 
+              type: 'textarea',
+              components: { list: Components.ContentToggle }
+            } 
+          },
+          actions: { ...commonActions }
         } 
       },
       { resource: JobApplication, options: { 
         parent: { name: 'Recruitment', icon: 'Inbox' }, 
-        properties: { adminNotes: { type: 'textarea' } },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { 
+          status: { components: { list: Components.StatusTag } },
+          adminNotes: { type: 'textarea' } 
+        },
+        actions: { ...commonActions }
       } },
       
       { resource: Project, options: { 
         parent: { name: 'Operations', icon: 'Briefcase' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { status: { components: { list: Components.StatusTag } } },
+        actions: { ...commonActions }
       } },
       { resource: Task, options: { 
         parent: { name: 'Operations', icon: 'CheckSquare' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { 
+          status: { components: { list: Components.StatusTag } },
+          priority: { components: { list: Components.StatusTag } }
+        },
+        actions: { ...commonActions }
       } },
       { resource: Meeting, options: { 
         parent: { name: 'Operations', icon: 'Video' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        properties: { status: { components: { list: Components.StatusTag } } },
+        actions: { ...commonActions }
       } },
       { resource: Activity, options: { 
         parent: { name: 'Operations', icon: 'Activity' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions }
       } },
 
       { 
@@ -464,49 +611,116 @@ const start = async () => {
         options: { 
           parent: { name: 'Support', icon: 'LifeBuoy' },
           properties: {
-            description: { type: 'textarea' },
+            status: { components: { list: Components.StatusTag } },
+            priority: { components: { list: Components.StatusTag } },
+            description: { 
+              type: 'textarea',
+              components: { list: Components.ContentToggle }
+            },
             adminNotes: { type: 'textarea' },
             resolutionNotes: { type: 'textarea' },
             ticketId: { isVisible: { edit: false, filter: true, list: true, show: true } }
           },
           listProperties: ['ticketId', 'title', 'category', 'priority', 'status', 'assignedTeam'],
-          actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+          actions: { ...commonActions }
         } 
       },
       { resource: LiveChat, options: { 
         parent: { name: 'Support', icon: 'MessageSquare' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions }
       } },
 
       { resource: Revenue, options: { 
         parent: { name: 'Finance', icon: 'TrendingUp' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions },
+        listProperties: ['revenueId', 'clientName', 'projectName', 'amount', 'receivedDate', 'status'],
+        properties: {
+          receivedDate: { type: 'date' },
+          status: { 
+            components: { list: Components.StatusBadge },
+            availableValues: [
+              { value: 'Paid', label: 'Paid' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'Overdue', label: 'Overdue' },
+              { value: 'Partially Paid', label: 'Partially Paid' },
+            ],
+          },
+        }
       } },
       { resource: Invoice, options: { 
         parent: { name: 'Finance', icon: 'FileText' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions },
+        listProperties: ['invoiceId', 'clientName', 'totalAmount', 'dueDate', 'status'],
+        properties: {
+          dueDate: { type: 'date' },
+          paymentDate: { type: 'date' },
+          status: { 
+            components: { list: Components.StatusBadge },
+            availableValues: [
+              { value: 'Paid', label: 'Paid' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'Overdue', label: 'Overdue' },
+              { value: 'Cancelled', label: 'Cancelled' },
+            ],
+          },
+        }
       } },
       { resource: Bill, options: { 
         parent: { name: 'Finance', icon: 'FileMinus' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions },
+        listProperties: ['billId', 'vendorName', 'category', 'amount', 'dueDate', 'status'],
+        properties: {
+          dueDate: { type: 'date' },
+          status: { 
+            components: { list: Components.StatusBadge },
+            availableValues: [
+              { value: 'Paid', label: 'Paid' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'Overdue', label: 'Overdue' },
+              { value: 'Rejected', label: 'Rejected' },
+            ],
+          },
+        }
       } },
 
       { resource: Lead, options: { 
         parent: { name: 'Sales', icon: 'UserPlus' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions },
+        listProperties: ['leadId', 'leadName', 'companyName', 'leadSource', 'status', 'followupDate'],
+        properties: {
+          status: { components: { list: Components.StatusTag } },
+          followupDate: { type: 'date' },
+          notes: { 
+            type: 'textarea',
+            components: { list: Components.ContentToggle }
+          },
+        }
       } },
       { resource: Deal, options: { 
         parent: { name: 'Sales', icon: 'Target' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions },
+        listProperties: ['dealId', 'dealName', 'clientName', 'dealValue', 'status', 'probability'],
+        properties: {
+          status: { components: { list: Components.StatusTag } },
+          expectedClosingDate: { type: 'date' },
+        }
       } },
 
       { resource: Setting, options: { 
         parent: { name: 'System', icon: 'Settings' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions }
       } },
       { resource: Manager, options: { 
         parent: { name: 'System', icon: 'Shield' },
-        actions: { show: { component: 'GlobalShow', showInDrawer: false, actionType: 'record' } }
+        actions: { ...commonActions }
+      } },
+      { resource: Client, options: { 
+        parent: { name: 'Sales', icon: 'Users' },
+        actions: { ...commonActions }
+      } },
+      { resource: Vendor, options: { 
+        parent: { name: 'Finance', icon: 'Truck' },
+        actions: { ...commonActions }
       } },
     ],
     componentLoader,
@@ -515,6 +729,7 @@ const start = async () => {
     branding: {
       companyName: 'averqon HRMS',
       logo: '/logo.png',
+      favicon: '/logo.png',
       softwareBrothers: false,
       assets: {
         styles: [
@@ -545,9 +760,13 @@ const start = async () => {
             Ticket: 'Ticket',
             Attendance: 'Attendance',
             Finance: 'Finance',
+            'Finance Insights': 'Finance Insights',
+            'Sales Performance': 'Sales Performance',
             ClientRequest: 'Client Request',
             Meeting: 'Meeting',
             Manager: 'Manager',
+            Client: 'Client',
+            Vendor: 'Vendor',
             'HR Management': 'HR Management',
             Operations: 'Operations',
             Support: 'Support',
@@ -578,8 +797,76 @@ const start = async () => {
             Medium: 'Medium',
             High: 'High',
             Urgent: 'Urgent',
+            // Enum Value Labels
+            IT: 'IT',
+            HR: 'HR',
+            Design: 'Design',
+            Finance: 'Finance',
+            Marketing: 'Marketing',
+            Sales: 'Sales',
+            Operations: 'Operations',
+            Active: 'Active',
+            Inactive: 'Inactive',
+            'On Leave': 'On Leave',
+            // Finance Labels
+            Paid: 'Paid',
+            Overdue: 'Overdue',
+            Draft: 'Draft',
+            Salary: 'Salary',
+            Software: 'Software',
+            Hardware: 'Hardware',
+            Travel: 'Travel',
+            'Office Expense': 'Office Expense',
+            Approved: 'Approved',
+            // Sales Labels
+            New: 'New',
+            Contacted: 'Contacted',
+            Qualified: 'Qualified',
+            'Proposal Sent': 'Proposal Sent',
+            Negotiation: 'Negotiation',
+            Won: 'Won',
+            Lost: 'Lost',
+            Converted: 'Converted',
+            // Additional Category Labels
+            Internet: 'Internet',
+            Maintenance: 'Maintenance',
+            'Partially Paid': 'Partially Paid',
+            Rejected: 'Rejected',
+            Cancelled: 'Cancelled',
+            status: {
+              Completed: 'Completed',
+              'In Progress': 'In Progress',
+              Pending: 'Pending',
+              Delayed: 'Delayed',
+              Urgent: 'Urgent',
+              Active: 'Active',
+              Inactive: 'Inactive',
+              'On Leave': 'On Leave',
+              Paid: 'Paid',
+              Overdue: 'Overdue',
+              'Partially Paid': 'Partially Paid',
+              Won: 'Won',
+              Lost: 'Lost',
+            },
+            // Lead Sources
+            Website: 'Website',
+            Referral: 'Referral',
+            LinkedIn: 'LinkedIn',
+            Facebook: 'Facebook',
+            Instagram: 'Instagram',
+            WhatsApp: 'WhatsApp',
+            'Direct Call': 'Direct Call',
           },
           properties: {
+            name: 'Name',
+            email: 'Email',
+            employeeId: 'Employee ID',
+            phone: 'Phone',
+            designation: 'Designation',
+            joinDate: 'Join Date',
+            salary: 'Salary',
+            address: 'Address',
+            profileImage: 'Profile Image',
             title: 'Title',
             _id: 'ID',
             ticketId: 'Ticket ID',
@@ -600,18 +887,88 @@ const start = async () => {
             resolutionNotes: 'Resolution Notes',
             createdAt: 'Created At',
             updatedAt: 'Updated At',
+            // Revenue
+            revenueId: 'Revenue ID',
+            receivedDate: 'Received Date',
+            paymentMethod: 'Payment Method',
+            projectName: 'Project Name',
+            growth: 'Growth %',
+            // Invoices
+            invoiceId: 'Invoice ID',
+            invoiceAmount: 'Invoice Amount',
+            taxAmount: 'Tax Amount',
+            discountAmount: 'Discount Amount',
+            totalAmount: 'Total Amount',
+            paymentDate: 'Payment Date',
+            // Bills
+            billId: 'Bill ID',
+            vendorName: 'Vendor Name',
+            receiptUrl: 'Receipt URL',
+            // Leads
+            leadId: 'Lead ID',
+            leadName: 'Lead Name',
+            companyName: 'Company Name',
+            phoneNumber: 'Phone Number',
+            leadSource: 'Lead Source',
+            assignedTo: 'Assigned To',
+            followupDate: 'Follow-up Date',
+            // Deals
+            dealId: 'Deal ID',
+            dealName: 'Deal Name',
+            dealValue: 'Deal Value',
+            probability: 'Probability %',
+            expectedClosingDate: 'Expected Closing Date',
+            // Recruitment
+            type: 'Type',
+            location: 'Location',
+            isActive: 'Is Active',
+            postedDate: 'Posted Date',
+            description: 'Description',
+            notes: 'Notes / Remarks',
+            client: 'Client',
+            progress: 'Progress',
+            deadline: 'Deadline',
+            teamMembers: 'Team Members',
           },
+          labels: {
+            JobPosting: 'Job Posting',
+            isActive: {
+              true: 'Yes',
+              false: 'No'
+            },
+            type: {
+              'Full-time': 'Full-time',
+              'Part-time': 'Part-time',
+              'Contract': 'Contract',
+              'Internship': 'Internship'
+            }
+          }
         },
       },
     },
   };
 
   const authenticate = async ({ email, password }) => {
-    const manager = await Manager.findOne({ email });
-    if (manager) {
-      const matched = await bcrypt.compare(password, manager.password);
-      if (matched) return manager;
+    console.log(`[AUTH] Attempting login for: ${email}`);
+    
+    try {
+      const manager = await Manager.findOne({ email: email.toLowerCase() });
+      if (manager) {
+        // Verify password using bcrypt
+        const isMatch = await bcrypt.compare(password, manager.password);
+        if (isMatch) {
+          console.log(`[AUTH] Success for: ${email}`);
+          return manager;
+        } else {
+          console.log(`[AUTH] Password mismatch for: ${email}`);
+        }
+      } else {
+        console.log(`[AUTH] User not found: ${email}`);
+      }
+    } catch (error) {
+      console.error('[AUTH] Integration Error:', error.message);
     }
+
     return null;
   };
   // --- Client Support Portal APIs ---
@@ -712,7 +1069,7 @@ const start = async () => {
   const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     admin,
     {
-      cookiePassword: 'super-secret-password-32-chars-long', // Use environment variable in production
+      cookiePassword: 'super-secret-password-32-chars-long', 
       provider: authProvider,
     },
     null,
@@ -722,7 +1079,18 @@ const start = async () => {
       saveUninitialized: true,
     }
   );
+
+  // Mount AdminJS router BEFORE generic body parsers
   app.use(admin.options.rootPath, adminRouter);
+
+  // Now apply generic body parsers for the rest of the application
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
 
   // Global Error Handler for detailed 500 logging
   app.use((err, req, res, next) => {

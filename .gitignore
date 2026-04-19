@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# AdminJS
+.adminjs
+uploads
+admin.sqlite
+.env
