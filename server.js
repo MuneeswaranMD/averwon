@@ -1092,7 +1092,7 @@ const start = async () => {
   app.use(express.urlencoded({ extended: true }));
 
   // Fallback for SPA (Single Page Application)
-  app.get('/(.*)', (req, res, next) => {
+  app.use((req, res, next) => {
     // Skip if it's an API or AdminJS route
     if (req.url.startsWith('/admin') || req.url.startsWith('/api')) {
       return next();
