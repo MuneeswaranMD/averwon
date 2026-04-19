@@ -165,8 +165,8 @@ const start = async () => {
   app.use(express.static(path.join(__dirname, 'dist')));
   
   // Custom SPA Fallback Middleware
-  app.get('*', (req, res, next) => {
-    // Don't intercept AdminJS or API routes
+  app.use((req, res, next) => {
+    // Don't intercept AdminJS or API routes - let them 404 naturally
     if (req.url.startsWith('/admin') || req.url.startsWith('/api')) {
       return next();
     }
