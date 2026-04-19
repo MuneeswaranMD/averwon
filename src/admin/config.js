@@ -142,13 +142,24 @@ export const adminOptions = {
       } 
     },
     { resource: Models.Invoice, options: { 
+      id: 'Invoice',
       parent: { name: 'Finance', icon: 'FileText' },
       actions: { ...commonActions },
-      properties: { status: { components: { list: Components.StatusTag } } }
+      listProperties: ['invoiceId', 'clientName', 'totalAmount', 'status', 'dueDate'],
+      editProperties: ['invoiceId', 'clientName', 'projectName', 'invoiceAmount', 'taxAmount', 'totalAmount', 'dueDate', 'status'],
+      filterProperties: ['clientName', 'status', 'dueDate'],
+      properties: { 
+        status: { components: { list: Components.StatusTag } },
+        totalAmount: { type: 'number', props: { step: 0.01 } }
+      }
     } },
     { resource: Models.Bill, options: { 
+      id: 'Bill',
       parent: { name: 'Finance', icon: 'CreditCard' },
       actions: { ...commonActions },
+      listProperties: ['vendorName', 'category', 'amount', 'status', 'dueDate'],
+      editProperties: ['vendorName', 'category', 'amount', 'dueDate', 'paymentMethod', 'status'],
+      filterProperties: ['vendorName', 'category', 'status'],
       properties: { status: { components: { list: Components.StatusTag } } }
     } },
     { resource: Models.Payroll, options: { 
