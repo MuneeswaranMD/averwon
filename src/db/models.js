@@ -322,8 +322,39 @@ const VendorSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Vendor = mongoose.model('Vendor', VendorSchema);
 
+const ClientRequestSchema = new mongoose.Schema(
+  {
+    clientName: { type: String, required: true },
+    companyName: { type: String },
+    email: { type: String, required: true },
+    phone: { type: String },
+    projectType: {
+      type: String,
+      enum: [
+        'Website Development',
+        'Mobile App',
+        'UI/UX Design',
+        'CRM System',
+        'Billing Software',
+        'E-Commerce',
+        'Other',
+      ],
+    },
+    budget: { type: String },
+    deadline: { type: Date },
+    status: {
+      type: String,
+      enum: ['New', 'In Review', 'Approved', 'Rejected', 'Completed'],
+      default: 'New',
+    },
+    description: { type: String },
+  },
+  { timestamps: true }
+);
+const ClientRequest = mongoose.model('ClientRequest', ClientRequestSchema);
+
 export {
   Employee, Intern, Project, Task, Ticket, Attendance, LeaveRequest, Payroll, 
   Meeting, Activity, Revenue, Invoice, Bill, Lead, Deal, LiveChat, Setting,
-  JobPosting, JobApplication, Manager, Client, Vendor
+  JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest
 };

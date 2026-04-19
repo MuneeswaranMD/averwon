@@ -118,6 +118,16 @@ const start = async () => {
   const upload = multer({ dest: 'uploads/' });
   if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
+  // --- Public API for Website Contact Form ---
+  app.post('/api/client-requests', async (req, res) => {
+    try {
+      const clientRequest = await Models.ClientRequest.create(req.body);
+      res.json({ success: true, id: clientRequest._id });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/support/tickets', upload.single('attachment'), async (req, res) => {
     try {
       const ticketData = {
@@ -136,18 +146,21 @@ const start = async () => {
     try {
       const [
         totalEmp, interns, activeProjects, pendingTasks,
-        newLeads, ticketsToday,
-        totalTickets, openTickets, closedTickets
+        totalLeads, totalDeals,
+        totalTickets, openTickets, closedTickets,
+        revenueData, overdueInvoices
       ] = await Promise.all([
         Models.Employee.countDocuments(),
         Models.Intern.countDocuments(),
         Models.Project.countDocuments({ status: 'In Progress' }),
         Models.Task.countDocuments({ status: { $ne: 'Done' } }),
-        Models.Lead.countDocuments({ status: 'New' }),
-        Models.Ticket.countDocuments({ createdAt: { $gte: new Date().setHours(0, 0, 0, 0) } }),
+        Models.Lead.countDocuments(),
+        Models.Deal.countDocuments(),
         Models.Ticket.countDocuments(),
         Models.Ticket.countDocuments({ status: 'Open' }),
-        Models.Ticket.countDocuments({ status: 'Closed' })
+        Models.Ticket.countDocuments({ status: 'Closed' }),
+        Models.Revenue.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }]),
+        Models.Invoice.aggregate([{ $match: { status: 'Pending' } }, { $group: { _id: null, total: { $sum: "$totalAmount" } } }])
       ]);
 
       res.json({
@@ -156,8 +169,10 @@ const start = async () => {
           totalInterns: interns,
           activeProjects,
           pendingTasks,
-          newClientRequests: newLeads,
-          ticketsToday,
+          totalLeads,
+          totalDeals,
+          monthlyRevenue: revenueData[0]?.total || 0,
+          pendingPayments: overdueInvoices[0]?.total || 0,
           ticketMetrics: { total: totalTickets, open: openTickets, closed: closedTickets }
         }
       });

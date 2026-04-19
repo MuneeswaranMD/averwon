@@ -23,7 +23,7 @@ const FinanceDashboard = () => {
   useEffect(() => {
     fetch('/api/admin/dashboard-stats')
       .then(res => res.json())
-      .then(data => setStats(data))
+      .then(data => setStats(data.stats))
       .catch(err => console.error(err));
   }, []);
 
@@ -82,7 +82,7 @@ const FinanceDashboard = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Total Revenue</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>${stats.monthlyRevenue.toLocaleString()}</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>${(stats.monthlyRevenue || 0).toLocaleString()}</span>
           <span style={{ fontSize: '12px', color: C.success }}>+12.5% from last month</span>
         </div>
         <div style={cardStyle}>
@@ -92,7 +92,7 @@ const FinanceDashboard = () => {
         </div>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Pending Payments</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.warning }}>${stats.pendingPayments.toLocaleString()}</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.warning }}>${(stats.pendingPayments || 0).toLocaleString()}</span>
           <span style={{ fontSize: '12px', color: C.secondary }}>8 Pending Invoices</span>
         </div>
         <div style={cardStyle}>

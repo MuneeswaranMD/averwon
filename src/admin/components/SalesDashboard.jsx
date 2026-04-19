@@ -23,7 +23,7 @@ const SalesDashboard = () => {
   useEffect(() => {
     fetch('/api/admin/dashboard-stats')
       .then(res => res.json())
-      .then(data => setStats(data))
+      .then(data => setStats(data.stats))
       .catch(err => console.error(err));
   }, []);
 
@@ -62,12 +62,12 @@ const SalesDashboard = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Total Leads</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>{stats.totalLeads}</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>{stats.totalLeads || 0}</span>
           <span style={{ fontSize: '12px', color: C.success }}>+24 new this week</span>
         </div>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Total Deals</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>{stats.totalDeals}</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>{stats.totalDeals || 0}</span>
           <span style={{ fontSize: '12px', color: C.primary }}>Active: 15</span>
         </div>
         <div style={cardStyle}>

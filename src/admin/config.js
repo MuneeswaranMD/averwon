@@ -86,26 +86,123 @@ export const adminOptions = {
         actions: { ...commonActions }
       } 
     },
+    // --- Sales Module ---
+    { 
+      resource: Models.Deal, 
+      options: { 
+        id: 'Sales', // This creates the /admin/resources/Sales URL
+        parent: { name: 'Sales', icon: 'Target' },
+        actions: { 
+          ...commonActions,
+          list: { component: Components.SalesDashboard }
+        },
+        listProperties: ['dealId', 'dealName', 'clientName', 'dealValue', 'status'],
+        properties: { status: { components: { list: Components.StatusTag } } }
+      } 
+    },
     { resource: Models.Lead, options: { 
       parent: { name: 'Sales', icon: 'UserPlus' },
       actions: { ...commonActions },
       listProperties: ['leadId', 'leadName', 'companyName', 'leadSource', 'status', 'followupDate'],
       properties: {
         status: { components: { list: Components.StatusTag } },
-        notes: { 
-          type: 'textarea',
-          components: { list: Components.ContentToggle }
-        },
+        notes: { type: 'textarea', components: { list: Components.ContentToggle } }
       }
     } },
-    { resource: Models.Deal, options: { 
-      parent: { name: 'Sales', icon: 'Target' },
+    { resource: Models.Client, options: { 
+      parent: { name: 'Sales', icon: 'Contact' },
       actions: { ...commonActions },
-      listProperties: ['dealId', 'dealName', 'clientName', 'dealValue', 'status'],
-      properties: {
-        status: { components: { list: Components.StatusTag } },
-      }
+      properties: { status: { components: { list: Components.StatusTag } } }
     } },
+    { 
+      resource: Models.ClientRequest, 
+      options: { 
+        parent: { name: 'Sales', icon: 'FileText' },
+        actions: { ...commonActions },
+        listProperties: ['clientName', 'companyName', 'projectType', 'budget', 'status', 'createdAt'],
+        properties: {
+          status: { components: { list: Components.StatusTag } },
+          description: { type: 'textarea' }
+        }
+      } 
+    },
+
+    // --- Finance Module ---
+    { 
+      resource: Models.Revenue, 
+      options: { 
+        // Using 'Revenue' ID to match sidebar expectations, but keeping the landing dashboard
+        parent: { name: 'Finance', icon: 'DollarSign' },
+        actions: { 
+          ...commonActions,
+          list: { component: Components.FinanceDashboard }
+        },
+        listProperties: ['revenueId', 'clientName', 'amount', 'status', 'receivedDate'],
+        properties: { status: { components: { list: Components.StatusTag } } }
+      } 
+    },
+    { resource: Models.Invoice, options: { 
+      parent: { name: 'Finance', icon: 'FileText' },
+      actions: { ...commonActions },
+      properties: { status: { components: { list: Components.StatusTag } } }
+    } },
+    { resource: Models.Bill, options: { 
+      parent: { name: 'Finance', icon: 'CreditCard' },
+      actions: { ...commonActions },
+      properties: { status: { components: { list: Components.StatusTag } } }
+    } },
+    { resource: Models.Payroll, options: { 
+      parent: { name: 'Finance', icon: 'Wallet' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Vendor, options: { 
+      parent: { name: 'Finance', icon: 'Truck' },
+      actions: { ...commonActions }
+    } },
+
+    // --- Operations Module ---
+    { resource: Models.Project, options: { 
+      parent: { name: 'Operations', icon: 'Briefcase' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Task, options: { 
+      parent: { name: 'Operations', icon: 'CheckSquare' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Meeting, options: { 
+      parent: { name: 'Operations', icon: 'Video' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Activity, options: { 
+      parent: { name: 'Operations', icon: 'Activity' },
+      actions: { list: { isAccessible: true }, show: { isAccessible: true } }
+    } },
+
+    // --- Recruitment Module ---
+    { resource: Models.JobPosting, options: { 
+      parent: { name: 'Recruitment', icon: 'Search' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.JobApplication, options: { 
+      parent: { name: 'Recruitment', icon: 'FileUser' },
+      actions: { ...commonActions }
+    } },
+
+    // --- Support & Attendance ---
+    { resource: Models.Ticket, options: { 
+      parent: { name: 'Support', icon: 'LifeBuoy' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Attendance, options: { 
+      parent: { name: 'Support', icon: 'Clock' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.LeaveRequest, options: { 
+      parent: { name: 'Support', icon: 'Calendar' },
+      actions: { ...commonActions }
+    } },
+
+    // --- System Module ---
     { resource: Models.Setting, options: { 
       parent: { name: 'System', icon: 'Settings' },
       actions: { ...commonActions }
