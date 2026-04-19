@@ -36,6 +36,7 @@ export const adminOptions = {
   componentLoader,
   dashboard: { component: Components.Dashboard },
   resources: [
+    // --- HR Management ---
     { resource: Models.Employee, options: { 
       parent: { name: 'HR Management', icon: 'Users' },
       properties: {
@@ -50,6 +51,30 @@ export const adminOptions = {
       properties: { status: { components: { list: Components.StatusTag } } },
       actions: { ...commonActions }
     } },
+    { resource: Models.Attendance, options: { 
+      parent: { name: 'HR Management', icon: 'Clock' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.LeaveRequest, options: { 
+      parent: { name: 'HR Management', icon: 'Calendar' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Payroll, options: { 
+      parent: { name: 'HR Management', icon: 'Wallet' },
+      actions: { ...commonActions }
+    } },
+
+    // --- Recruitment ---
+    { resource: Models.JobPosting, options: { 
+      parent: { name: 'Recruitment', icon: 'Search' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.JobApplication, options: { 
+      parent: { name: 'Recruitment', icon: 'FileUser' },
+      actions: { ...commonActions }
+    } },
+
+    // --- Operations ---
     { resource: Models.Project, options: { 
       parent: { name: 'Operations', icon: 'Briefcase' },
       properties: { status: { components: { list: Components.StatusTag } } },
@@ -68,6 +93,13 @@ export const adminOptions = {
       properties: { status: { components: { list: Components.StatusTag } } },
       actions: { ...commonActions }
     } },
+    { resource: Models.Activity, options: { 
+      id: 'TeamActivity',
+      parent: { name: 'Operations', icon: 'Activity' },
+      actions: { list: { isAccessible: true }, show: { isAccessible: true } }
+    } },
+
+    // --- Support ---
     { 
       resource: Models.Ticket, 
       options: { 
@@ -75,22 +107,50 @@ export const adminOptions = {
         properties: {
           status: { components: { list: Components.StatusTag } },
           priority: { components: { list: Components.StatusTag } },
-          description: { 
-            type: 'textarea',
-            components: { list: Components.ContentToggle }
-          },
-          adminNotes: { type: 'textarea' },
-          resolutionNotes: { type: 'textarea' },
+          description: { type: 'textarea', components: { list: Components.ContentToggle } },
         },
-        listProperties: ['ticketId', 'title', 'category', 'priority', 'status', 'assignedTeam'],
+        listProperties: ['ticketId', 'title', 'category', 'priority', 'status'],
         actions: { ...commonActions }
       } 
     },
-    // --- Sales Module ---
+
+    // --- Finance ---
+    { 
+      resource: Models.Revenue, 
+      options: { 
+        parent: { name: 'Finance', icon: 'DollarSign' },
+        actions: { 
+          ...commonActions,
+          list: { component: Components.FinanceDashboard }
+        },
+        listProperties: ['revenueId', 'clientName', 'amount', 'status'],
+        properties: { status: { components: { list: Components.StatusTag } } }
+      } 
+    },
+    { resource: Models.Invoice, options: { 
+      id: 'Invoice',
+      parent: { name: 'Finance', icon: 'FileText' },
+      actions: { ...commonActions },
+      listProperties: ['invoiceId', 'clientName', 'totalAmount', 'status'],
+      properties: { status: { components: { list: Components.StatusTag } } }
+    } },
+    { resource: Models.Bill, options: { 
+      id: 'Bill',
+      parent: { name: 'Finance', icon: 'CreditCard' },
+      actions: { ...commonActions },
+      listProperties: ['vendorName', 'category', 'amount', 'status'],
+      properties: { status: { components: { list: Components.StatusTag } } }
+    } },
+    { resource: Models.Vendor, options: { 
+      parent: { name: 'Finance', icon: 'Truck' },
+      actions: { ...commonActions }
+    } },
+
+    // --- Sales ---
     { 
       resource: Models.Deal, 
       options: { 
-        id: 'Sales', // This creates the /admin/resources/Sales URL
+        id: 'Sales', 
         parent: { name: 'Sales', icon: 'Target' },
         actions: { 
           ...commonActions,
@@ -103,117 +163,18 @@ export const adminOptions = {
     { resource: Models.Lead, options: { 
       parent: { name: 'Sales', icon: 'UserPlus' },
       actions: { ...commonActions },
-      listProperties: ['leadId', 'leadName', 'companyName', 'leadSource', 'status', 'followupDate'],
-      properties: {
-        status: { components: { list: Components.StatusTag } },
-        notes: { type: 'textarea', components: { list: Components.ContentToggle } }
-      }
+      properties: { status: { components: { list: Components.StatusTag } } }
     } },
     { resource: Models.Client, options: { 
       parent: { name: 'Sales', icon: 'Contact' },
-      actions: { ...commonActions },
-      properties: { status: { components: { list: Components.StatusTag } } }
-    } },
-    { 
-      resource: Models.ClientRequest, 
-      options: { 
-        parent: { name: 'Sales', icon: 'FileText' },
-        actions: { ...commonActions },
-        listProperties: ['clientName', 'companyName', 'projectType', 'budget', 'status', 'createdAt'],
-        properties: {
-          status: { components: { list: Components.StatusTag } },
-          description: { type: 'textarea' }
-        }
-      } 
-    },
-
-    // --- Finance Module ---
-    { 
-      resource: Models.Revenue, 
-      options: { 
-        // Using 'Revenue' ID to match sidebar expectations, but keeping the landing dashboard
-        parent: { name: 'Finance', icon: 'DollarSign' },
-        actions: { 
-          ...commonActions,
-          list: { component: Components.FinanceDashboard }
-        },
-        listProperties: ['revenueId', 'clientName', 'amount', 'status', 'receivedDate'],
-        properties: { status: { components: { list: Components.StatusTag } } }
-      } 
-    },
-    { resource: Models.Invoice, options: { 
-      id: 'Invoice',
-      parent: { name: 'Finance', icon: 'FileText' },
-      actions: { ...commonActions },
-      listProperties: ['invoiceId', 'clientName', 'totalAmount', 'status', 'dueDate'],
-      editProperties: ['invoiceId', 'clientName', 'projectName', 'invoiceAmount', 'taxAmount', 'totalAmount', 'dueDate', 'status'],
-      filterProperties: ['clientName', 'status', 'dueDate'],
-      properties: { 
-        status: { components: { list: Components.StatusTag } },
-        totalAmount: { type: 'number', props: { step: 0.01 } }
-      }
-    } },
-    { resource: Models.Bill, options: { 
-      id: 'Bill',
-      parent: { name: 'Finance', icon: 'CreditCard' },
-      actions: { ...commonActions },
-      listProperties: ['vendorName', 'category', 'amount', 'status', 'dueDate'],
-      editProperties: ['vendorName', 'category', 'amount', 'dueDate', 'paymentMethod', 'status'],
-      filterProperties: ['vendorName', 'category', 'status'],
-      properties: { status: { components: { list: Components.StatusTag } } }
-    } },
-    { resource: Models.Payroll, options: { 
-      parent: { name: 'Finance', icon: 'Wallet' },
       actions: { ...commonActions }
     } },
-    { resource: Models.Vendor, options: { 
-      parent: { name: 'Finance', icon: 'Truck' },
+    { resource: Models.ClientRequest, options: { 
+      parent: { name: 'Sales', icon: 'Zap' },
       actions: { ...commonActions }
     } },
 
-    // --- Operations Module ---
-    { resource: Models.Project, options: { 
-      parent: { name: 'Operations', icon: 'Briefcase' },
-      actions: { ...commonActions }
-    } },
-    { resource: Models.Task, options: { 
-      parent: { name: 'Operations', icon: 'CheckSquare' },
-      actions: { ...commonActions }
-    } },
-    { resource: Models.Meeting, options: { 
-      parent: { name: 'Operations', icon: 'Video' },
-      actions: { ...commonActions }
-    } },
-    { resource: Models.Activity, options: { 
-      parent: { name: 'Operations', icon: 'Activity' },
-      actions: { list: { isAccessible: true }, show: { isAccessible: true } }
-    } },
-
-    // --- Recruitment Module ---
-    { resource: Models.JobPosting, options: { 
-      parent: { name: 'Recruitment', icon: 'Search' },
-      actions: { ...commonActions }
-    } },
-    { resource: Models.JobApplication, options: { 
-      parent: { name: 'Recruitment', icon: 'FileUser' },
-      actions: { ...commonActions }
-    } },
-
-    // --- Support & Attendance ---
-    { resource: Models.Ticket, options: { 
-      parent: { name: 'Support', icon: 'LifeBuoy' },
-      actions: { ...commonActions }
-    } },
-    { resource: Models.Attendance, options: { 
-      parent: { name: 'Support', icon: 'Clock' },
-      actions: { ...commonActions }
-    } },
-    { resource: Models.LeaveRequest, options: { 
-      parent: { name: 'Support', icon: 'Calendar' },
-      actions: { ...commonActions }
-    } },
-
-    // --- System Module ---
+    // --- System ---
     { resource: Models.Setting, options: { 
       parent: { name: 'System', icon: 'Settings' },
       actions: { ...commonActions }
@@ -225,23 +186,12 @@ export const adminOptions = {
   ],
   branding: {
     companyName: 'averqon HRMS',
-    logo: '/logo.png',
-    favicon: '/logo.png',
     softwareBrothers: false,
-    assets: {
-      styles: [
-        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
-      ],
-    },
     theme: {
       colors: {
         primary100: '#2563EB',
         accent: '#2563EB',
-        hoverBg: '#F3F4F6',
         bg: '#F5F7FA',
-      },
-      typography: {
-        fontFamily: "'Inter', sans-serif",
       },
     },
   },
@@ -251,32 +201,18 @@ export const adminOptions = {
       en: {
         labels: {
           Employee: 'Employee',
-          Project: 'Project',
-          Task: 'Task',
-          Ticket: 'Ticket',
+          Payroll: 'Payroll',
           Attendance: 'Attendance',
-          Finance: 'Finance',
-          'Finance Insights': 'Finance Insights',
-          'Sales Performance': 'Sales Performance',
-          ClientRequest: 'Client Request',
-          Meeting: 'Meeting',
-          Manager: 'Manager',
-          Client: 'Client',
-          Vendor: 'Vendor',
+          'LeaveRequest': 'Leave Request',
+          JobPosting: 'Job Posting',
           'HR Management': 'HR Management',
           Operations: 'Operations',
           Support: 'Support',
           Sales: 'Sales',
+          Finance: 'Finance',
           System: 'System',
-          IT: 'IT', HR: 'HR', Design: 'Design', Finance: 'Finance', Marketing: 'Marketing', Sales: 'Sales', Operations: 'Operations',
-          Active: 'Active', Inactive: 'Inactive', 'On Leave': 'On Leave',
-          Open: 'Open', 'In Progress': 'In Progress', Pending: 'Pending', Resolved: 'Resolved', Closed: 'Closed',
-          JobPosting: 'Job Posting',
         }
       }
     }
-  },
-  env: {
-    NODE_ENV: process.env.NODE_ENV || 'production',
   }
 };

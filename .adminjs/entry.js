@@ -1,5 +1,4 @@
 AdminJS.UserComponents = {}
-AdminJS.env.NODE_ENV = "production"
 import Dashboard from '../src/admin/components/Dashboard'
 AdminJS.UserComponents.Dashboard = Dashboard
 import Sidebar from '../src/admin/components/Sidebar'
