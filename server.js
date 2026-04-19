@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import AdminJS, { ComponentLoader, DefaultAuthProvider } from 'adminjs';
 import AdminJSExpress from '@adminjs/express';
@@ -378,7 +379,7 @@ const start = async () => {
   app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => res.status(200).json({}));
 
   // MongoDB Connection
-  const uri = "mongodb+srv://muneeswaran:Munees270904@admin.9gzsnkj.mongodb.net/?appName=admin";
+  const uri = process.env.MONGODB_URI || "mongodb+srv://muneeswaran:Munees270904@admin.9gzsnkj.mongodb.net/?appName=admin";
   try {
     await mongoose.connect(uri);
     console.log('✅ Connected to MongoDB');
@@ -1098,8 +1099,9 @@ const start = async () => {
     res.status(500).send('Internal Server Error');
   });
 
-  app.listen(3000, () => {
-    console.log(`🚀 AdminJS is running on http://localhost:3000/admin`);
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`🚀 AdminJS is running on port ${port}`);
   });
 };
 
