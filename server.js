@@ -74,8 +74,9 @@ const start = async () => {
   }
 
   // --- AdminJS Authentication ---
-  const authenticate = async ({ email, password }) => {
+  const authenticate = async (email, password) => {
     try {
+      if (!email || !password) return null;
       const manager = await Models.Manager.findOne({ email: email.toLowerCase() });
       if (manager) {
         const isMatch = await bcrypt.compare(password, manager.password);
