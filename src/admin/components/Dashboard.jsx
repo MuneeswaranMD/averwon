@@ -249,8 +249,8 @@ const Dashboard = () => {
   return (
     <div style={layout.page}>
       <style>{`
-        * { box-sizing: border-box; }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        * { box-sizing: border-box; }
         button:hover { opacity: 0.85; }
         tr:hover td { background: #F9FAFB; }
       `}</style>
