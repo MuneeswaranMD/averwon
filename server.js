@@ -12,6 +12,7 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
+import cors from 'cors';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'averqon-employee-secret-key';
 
@@ -43,6 +44,10 @@ const start = async () => {
   const app = express();
 
   // Basic Middleware
+  app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : true,
+    credentials: true
+  }));
   app.use((req, res, next) => {
     if (req.url.startsWith('/admin')) return next();
     express.json()(req, res, next);
@@ -198,7 +203,12 @@ const start = async () => {
     secret: 'averqon-session-secret',
     resave: false,
     saveUninitialized: true,
-    name: 'adminjs'
+    name: 'adminjs',
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    }
   };
 
   app.use(session(sessionOptions));
@@ -354,6 +364,7 @@ const start = async () => {
       res.cookie('employeeToken', token, { 
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000 
       });
 
