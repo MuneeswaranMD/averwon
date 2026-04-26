@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # AdminJS
-.adminjs
+# .adminjs (Pre-bundled assets)
 uploads
 admin.sqlite
 .env
