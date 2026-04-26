@@ -1,94 +1,111 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import {
-  Box, Card, CardContent, Typography, Button, Grid, Table, TableHead,
-  TableRow, TableCell, TableBody, TablePagination, Chip, Avatar, LinearProgress, Stack
-} from '@mui/material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { SectionHeader, StatusChip, UserAvatar, ProgressRow } from '../components/ui';
+import { Plus, Mail, MapPin, Calendar, Briefcase, IndianRupee } from 'lucide-react';
+import { 
+  SectionHeader, 
+  StatusChip, 
+  UserAvatar, 
+  Card, 
+  Button 
+} from '../components/ui';
 
 export default function Clients() {
   const clients = useSelector(s => s.clients.items);
-  const { themeMode } = useSelector(s => s.ui);
-  const dark = themeMode === 'dark';
-  const [page, setPage] = useState(0);
-
+  
   return (
-    <Box>
+    <div className="space-y-6">
       <SectionHeader
         title="Clients"
         subtitle={`${clients.length} total clients · ${clients.filter(c => c.status === 'Active').length} active`}
-        action={<Button variant="contained" startIcon={<AddRoundedIcon />}>Add Client</Button>}
+        action={<Button icon={Plus}>Add Client</Button>}
       />
 
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+      {/* Clients Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {clients.map(client => (
-          <Grid item xs={12} sm={6} md={3} key={client.id}>
-            <Card sx={{ '&:hover': { boxShadow: '0 8px 30px rgba(0,0,0,0.12)', transform: 'translateY(-2px)' }, transition: 'all 0.2s', cursor: 'pointer' }}>
-              <CardContent sx={{ p: 2.5 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Avatar sx={{ width: 44, height: 44, background: `#2563EB20`, color: '#2563EB', fontWeight: 700, fontSize: 14, borderRadius: '12px' }}>
-                    {client.name.slice(0, 2).toUpperCase()}
-                  </Avatar>
-                  <StatusChip label={client.status} />
-                </Box>
-                <Typography fontWeight={700} fontSize="14px" sx={{ mb: 0.3 }}>{client.name}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>{client.industry} · {client.location}</Typography>
+          <div 
+            key={client.id} 
+            className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+          >
+            <div className="flex justify-between items-start mb-6">
+              <UserAvatar name={client.name} size={48} />
+              <StatusChip label={client.status} size="medium" />
+            </div>
+            
+            <h3 className="text-lg font-black text-slate-800 tracking-tight group-hover:text-blue-600 transition-colors">
+              {client.name}
+            </h3>
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-6">
+              <Briefcase size={12} /> {client.industry} · <MapPin size={12} /> {client.location}
+            </div>
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography fontWeight={800} fontSize="16px" color="primary.main">₹{(client.totalRevenue / 1000).toFixed(0)}k</Typography>
-                    <Typography variant="caption" color="text.secondary">Revenue</Typography>
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography fontWeight={800} fontSize="16px">{client.projects}</Typography>
-                    <Typography variant="caption" color="text.secondary">Projects</Typography>
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography fontWeight={800} fontSize="16px">
-                      {Math.floor((new Date() - new Date(client.since)) / (1000 * 60 * 60 * 24 * 30))}mo
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">As Client</Typography>
-                  </Box>
-                </Box>
+            <div className="grid grid-cols-3 gap-2 mb-6 py-4 border-y border-slate-50">
+              <div className="text-center">
+                <p className="text-sm font-black text-blue-600">₹{(client.totalRevenue / 1000).toFixed(0)}k</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Revenue</p>
+              </div>
+              <div className="text-center border-x border-slate-50">
+                <p className="text-sm font-black text-slate-800">{client.projects}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Projects</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-black text-slate-800">
+                  {Math.floor((new Date() - new Date(client.since)) / (1000 * 60 * 60 * 24 * 30))}m
+                </p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Tenure</p>
+              </div>
+            </div>
 
-                <Typography variant="caption" color="text.secondary">📧 {client.email}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+            <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500">
+              <Mail size={14} className="text-slate-400" />
+              <span className="truncate">{client.email}</span>
+            </div>
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      <Card>
-        <CardContent sx={{ p: 2.5 }}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>All Clients</Typography>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {['Client', 'Industry', 'Contact', 'Revenue', 'Projects', 'Status', 'Since'].map(h => <TableCell key={h} sx={{ fontWeight: 700, fontSize: '11px', textTransform: 'uppercase' }}>{h}</TableCell>)}
-              </TableRow>
-            </TableHead>
-            <TableBody>
+      <Card className="!p-0" title="Client Directory">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50">
+                {['Client', 'Industry', 'Contact person', 'Total Revenue', 'Projects', 'Status', 'Client Since'].map(h => (
+                  <th key={h} className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
               {clients.map(c => (
-                <TableRow key={c.id} hover sx={{ '& td': { py: 1.2, fontSize: '13px' } }}>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 30, height: 30, background: '#2563EB20', color: '#2563EB', fontSize: 11, borderRadius: '8px' }}>{c.name.slice(0, 2)}</Avatar>
-                      <Typography fontSize="13px" fontWeight={600}>{c.name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ color: 'text.secondary' }}>{c.industry}</TableCell>
-                  <TableCell sx={{ color: 'text.secondary' }}>{c.contact}</TableCell>
-                  <TableCell fontWeight={700} color="primary.main">₹{c.totalRevenue.toLocaleString('en-IN')}</TableCell>
-                  <TableCell>{c.projects}</TableCell>
-                  <TableCell><StatusChip label={c.status} /></TableCell>
-                  <TableCell sx={{ color: 'text.secondary' }}>{c.since}</TableCell>
-                </TableRow>
+                <tr key={c.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar name={c.name} size={32} />
+                      <span className="text-[13px] font-bold text-slate-800">{c.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-[13px] font-medium text-slate-500">{c.industry}</td>
+                  <td className="px-6 py-4 text-[13px] font-medium text-slate-500">{c.contact}</td>
+                  <td className="px-6 py-4">
+                    <span className="text-[13px] font-bold text-blue-600">₹{c.totalRevenue.toLocaleString('en-IN')}</span>
+                  </td>
+                  <td className="px-6 py-4 text-[13px] font-bold text-slate-700">{c.projects}</td>
+                  <td className="px-6 py-4">
+                    <StatusChip label={c.status} />
+                  </td>
+                  <td className="px-6 py-4 text-[12px] font-medium text-slate-400">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={14} />
+                      {new Date(c.since).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
+            </tbody>
+          </table>
+        </div>
       </Card>
-    </Box>
+    </div>
   );
 }

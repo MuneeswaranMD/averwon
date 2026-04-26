@@ -7,7 +7,4 @@ export default defineConfig({
   resolve: {
     conditions: ['module', 'browser', 'development', 'import'],
   },
-  optimizeDeps: {
-    include: ['@mui/icons-material'],
-  },
 })

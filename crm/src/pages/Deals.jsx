@@ -1,32 +1,52 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { moveDeal, addDeal, updateDeal, deleteDeal } from '../store';
-import {
-  Box, Card, CardContent, Typography, Button, Chip, Avatar, Stack, Dialog,
-  DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select,
-  FormControl, InputLabel, Grid, IconButton, LinearProgress, Tooltip
-} from '@mui/material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import DragIndicatorRoundedIcon from '@mui/icons-material/DragIndicatorRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
-import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded';
-import { SectionHeader, StatusChip, UserAvatar } from '../components/ui';
+import { 
+  Plus, 
+  GripVertical, 
+  Edit2, 
+  Trash2, 
+  IndianRupee, 
+  Target, 
+  Calendar,
+  ChevronRight
+} from 'lucide-react';
+import { 
+  SectionHeader, 
+  StatusChip, 
+  UserAvatar, 
+  Card, 
+  Button, 
+  Input, 
+  Select, 
+  Modal 
+} from '../components/ui';
 
 const STAGES = ['New', 'Qualification', 'Proposal', 'Negotiation', 'Won', 'Lost'];
 const SALESREPS = ['Priya Nair', 'Rahul Das', 'Ankit Joshi'];
 const DEFAULT_FORM = { title: '', client: '', value: '', stage: 'New', salesperson: 'Priya Nair', expectedClose: '', probability: 30 };
 
 const stageColors = {
-  New: '#64748B', Qualification: '#2563EB', Proposal: '#7C3AED',
-  Negotiation: '#F59E0B', Won: '#10B981', Lost: '#EF4444'
+  New: 'bg-slate-500',
+  Qualification: 'bg-blue-600',
+  Proposal: 'bg-indigo-600',
+  Negotiation: 'bg-amber-500',
+  Won: 'bg-emerald-500',
+  Lost: 'bg-rose-500'
+};
+
+const stageTextColors = {
+  New: 'text-slate-500',
+  Qualification: 'text-blue-600',
+  Proposal: 'text-indigo-600',
+  Negotiation: 'text-amber-600',
+  Won: 'text-emerald-600',
+  Lost: 'text-rose-600'
 };
 
 export default function Deals() {
   const dispatch = useDispatch();
   const deals = useSelector(s => s.deals.items);
-  const { themeMode } = useSelector(s => s.ui);
-  const dark = themeMode === 'dark';
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [editItem, setEditItem] = useState(null);
@@ -51,129 +71,181 @@ export default function Deals() {
   };
 
   return (
-    <Box>
+    <div className="space-y-6">
       <SectionHeader
         title="Deals Pipeline"
         subtitle={`Pipeline value: ₹${totalValue.toLocaleString('en-IN')} · Won: ₹${wonValue.toLocaleString('en-IN')}`}
         action={
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => { setOpen(true); setEditItem(null); setForm(DEFAULT_FORM); }}>
+          <Button icon={Plus} onClick={() => { setOpen(true); setEditItem(null); setForm(DEFAULT_FORM); }}>
             Add Deal
           </Button>
         }
       />
 
       {/* Kanban Board */}
-      <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 2 }}>
+      <div className="flex gap-6 overflow-x-auto pb-8 snap-x">
         {STAGES.map(stage => {
-          const stageDealss = byStage(stage);
-          const stageValue = stageDealss.reduce((a, c) => a + Number(c.value), 0);
+          const stageDeals = byStage(stage);
+          const stageValue = stageDeals.reduce((a, c) => a + Number(c.value), 0);
           return (
-            <Box
+            <div
               key={stage}
               onDragOver={onDragOver}
               onDrop={e => onDrop(e, stage)}
-              sx={{ minWidth: 260, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}
+              className="min-w-[300px] flex-shrink-0 space-y-4"
             >
               {/* Stage Header */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, px: 0.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: stageColors[stage] }} />
-                  <Typography variant="body2" fontWeight={700}>{stage}</Typography>
-                  <Chip label={stageDealss.length} size="small" sx={{ height: 18, fontSize: '10px', fontWeight: 700 }} />
-                </Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>₹{(stageValue / 1000).toFixed(0)}k</Typography>
-              </Box>
+              <div className="flex justify-between items-center px-2">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-6 rounded-full ${stageColors[stage]}`} />
+                  <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-widest">{stage}</h3>
+                  <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-1.5 py-0.5 rounded-md">
+                    {stageDeals.length}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-slate-400">
+                  ₹{(stageValue / 1000).toFixed(0)}k
+                </p>
+              </div>
 
               {/* Deal Cards */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, minHeight: 120 }}>
-                {stageDealss.map(deal => (
-                  <Card
+              <div className="space-y-3 min-h-[400px]">
+                {stageDeals.map(deal => (
+                  <div
                     key={deal.id}
                     draggable
                     onDragStart={() => setDragId(deal.id)}
-                    sx={{
-                      cursor: 'grab', borderLeft: `4px solid ${stageColors[deal.stage]}`,
-                      transition: 'box-shadow 0.2s, transform 0.15s',
-                      '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.12)', transform: 'translateY(-2px)' },
-                    }}
+                    className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-grab active:cursor-grabbing group relative overflow-hidden"
                   >
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography sx={{ fontSize: '13px', fontWeight: 700, lineHeight: 1.3, flex: 1, mr: 1 }}>{deal.title}</Typography>
-                        <DragIndicatorRoundedIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
-                      </Box>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>{deal.client}</Typography>
+                    <div className={`absolute top-0 left-0 bottom-0 w-1 ${stageColors[deal.stage]}`} />
+                    
+                    <div className="flex justify-between items-start mb-3 pl-1">
+                      <h4 className="text-[13px] font-black text-slate-800 leading-tight flex-1 pr-2">
+                        {deal.title}
+                      </h4>
+                      <GripVertical size={14} className="text-slate-300 group-hover:text-slate-400" />
+                    </div>
+                    
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 pl-1">
+                      {deal.client}
+                    </p>
 
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                        <Typography sx={{ fontSize: '15px', fontWeight: 800, color: stageColors[stage] }}>
+                    <div className="flex justify-between items-end mb-3 pl-1">
+                      <div className="space-y-0.5">
+                        <p className={`text-sm font-black ${stageTextColors[stage]}`}>
                           ₹{Number(deal.value).toLocaleString('en-IN')}
-                        </Typography>
-                        <Chip label={`${deal.probability}%`} size="small" sx={{ height: 18, fontSize: '10px', fontWeight: 700, background: `${stageColors[stage]}20`, color: stageColors[stage] }} />
-                      </Box>
+                        </p>
+                        <p className="text-[10px] font-bold text-slate-300 uppercase italic">
+                          Win Probability
+                        </p>
+                      </div>
+                      <div className={`text-[10px] font-black px-1.5 py-0.5 rounded ${stageColors[stage]} bg-opacity-10 ${stageTextColors[stage]}`}>
+                        {deal.probability}%
+                      </div>
+                    </div>
 
-                      <LinearProgress variant="determinate" value={deal.probability}
-                        sx={{ height: 4, borderRadius: 2, mb: 1.5, background: `${stageColors[stage]}20`, '& .MuiLinearProgress-bar': { background: stageColors[stage] } }} />
+                    <div className="h-1.5 w-full bg-slate-50 rounded-full mb-4 overflow-hidden">
+                      <div 
+                        className={`h-full ${stageColors[stage]} transition-all duration-500`} 
+                        style={{ width: `${deal.probability}%` }}
+                      />
+                    </div>
 
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                          <UserAvatar name={deal.salesperson} size={22} />
-                          <Typography variant="caption" color="text.secondary">{deal.salesperson.split(' ')[0]}</Typography>
-                        </Box>
-                        <Stack direction="row">
-                          <Tooltip title="Edit" arrow>
-                            <IconButton size="small" onClick={() => openEdit(deal)} sx={{ p: 0.3 }}><EditRoundedIcon sx={{ fontSize: 14, color: 'text.secondary' }} /></IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete" arrow>
-                            <IconButton size="small" onClick={() => dispatch(deleteDeal(deal.id))} sx={{ p: 0.3 }}><DeleteRoundedIcon sx={{ fontSize: 14, color: 'text.disabled' }} /></IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </Box>
-
-                      <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-                        Close: {deal.expectedClose}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                    <div className="flex justify-between items-center pt-3 border-t border-slate-50">
+                      <div className="flex items-center gap-1.5">
+                        <UserAvatar name={deal.salesperson} size={20} />
+                        <span className="text-[11px] font-bold text-slate-500">
+                          {deal.salesperson.split(' ')[0]}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => openEdit(deal)}
+                          className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                        <button 
+                          onClick={() => dispatch(deleteDeal(deal.id))}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </Box>
-            </Box>
+                {stageDeals.length === 0 && (
+                  <div className="h-32 border-2 border-dashed border-slate-100 rounded-3xl flex items-center justify-center">
+                    <p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">No deals</p>
+                  </div>
+                )}
+              </div>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
-      {/* Deal Form */}
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle fontWeight={800}>{editItem ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
-        <DialogContent sx={{ pt: '12px !important' }}>
-          <Grid container spacing={2}>
-            {[['Deal Title', 'title', 'text'], ['Client Name', 'client', 'text'], ['Expected Close', 'expectedClose', 'date']].map(([label, key, type]) => (
-              <Grid item xs={12} key={key}>
-                <TextField fullWidth size="small" label={label} type={type} value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }} InputLabelProps={type === 'date' ? { shrink: true } : {}} />
-              </Grid>
-            ))}
-            <Grid item xs={6}>
-              <TextField fullWidth size="small" label="Deal Value (₹)" type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }} />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField fullWidth size="small" label="Win Probability (%)" type="number" value={form.probability} onChange={e => setForm(f => ({ ...f, probability: Number(e.target.value) }))} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }} />
-            </Grid>
-            {[['Stage', 'stage', STAGES], ['Salesperson', 'salesperson', SALESREPS]].map(([label, key, options]) => (
-              <Grid item xs={6} key={key}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>{label}</InputLabel>
-                  <Select value={form[key]} label={label} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} sx={{ borderRadius: '10px' }}>
-                    {options.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-            ))}
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button onClick={() => setOpen(false)} variant="outlined" sx={{ borderRadius: '10px' }}>Cancel</Button>
-          <Button onClick={save} variant="contained" sx={{ borderRadius: '10px' }}>{editItem ? 'Update Deal' : 'Add Deal'}</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+      {/* Deal Form Modal */}
+      <Modal 
+        isOpen={open} 
+        onClose={() => setOpen(false)} 
+        title={editItem ? 'Update Deal' : 'Create New Deal'}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <Input 
+              label="Deal Title" 
+              value={form.title} 
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))} 
+              placeholder="e.g. Enterprise Software License"
+            />
+          </div>
+          <Input 
+            label="Client Name" 
+            value={form.client} 
+            onChange={e => setForm(f => ({ ...f, client: e.target.value }))} 
+            placeholder="Search or enter client"
+          />
+          <Input 
+            label="Expected Close" 
+            type="date" 
+            value={form.expectedClose} 
+            onChange={e => setForm(f => ({ ...f, expectedClose: e.target.value }))} 
+          />
+          <Input 
+            label="Deal Value (₹)" 
+            type="number" 
+            value={form.value} 
+            onChange={e => setForm(f => ({ ...f, value: e.target.value }))} 
+            placeholder="0.00"
+          />
+          <Input 
+            label="Win Probability (%)" 
+            type="number" 
+            value={form.probability} 
+            onChange={e => setForm(f => ({ ...f, probability: Number(e.target.value) }))} 
+            placeholder="30"
+          />
+          <Select 
+            label="Stage" 
+            value={form.stage} 
+            onChange={e => setForm(f => ({ ...f, stage: e.target.value }))}
+            options={STAGES.map(s => ({ label: s, value: s }))}
+          />
+          <Select 
+            label="Lead Salesperson" 
+            value={form.salesperson} 
+            onChange={e => setForm(f => ({ ...f, salesperson: e.target.value }))}
+            options={SALESREPS.map(s => ({ label: s, value: s }))}
+          />
+          
+          <div className="md:col-span-2 flex justify-end gap-3 mt-6 pt-6 border-t border-slate-100">
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={save}>{editItem ? 'Save Changes' : 'Create Deal'}</Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
   );
 }

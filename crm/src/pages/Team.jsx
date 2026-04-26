@@ -1,57 +1,102 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Box, Card, CardContent, Typography, Grid, Chip, Avatar, LinearProgress } from '@mui/material';
-import { SectionHeader, UserAvatar } from '../components/ui';
+import { Mail, Phone, MapPin, Award, TrendingUp } from 'lucide-react';
+import { SectionHeader, Card, StatusChip } from '../components/ui';
 
 export default function Team() {
   const team = useSelector(s => s.team.items);
-  const { themeMode } = useSelector(s => s.ui);
-  const dark = themeMode === 'dark';
   const maxRevenue = Math.max(...team.map(m => m.revenue));
 
-  const avatarColors = ['#2563EB', '#7C3AED', '#10B981', '#F59E0B'];
+  const avatarGradients = [
+    'from-blue-600 to-indigo-600',
+    'from-purple-600 to-pink-600',
+    'from-emerald-600 to-teal-600',
+    'from-amber-600 to-orange-600'
+  ];
+
+  const ringColors = [
+    'ring-blue-100',
+    'ring-purple-100',
+    'ring-emerald-100',
+    'ring-amber-100'
+  ];
 
   return (
-    <Box>
-      <SectionHeader title="Team" subtitle={`${team.length} members · Sales & Support`} />
-      <Grid container spacing={2.5}>
-        {team.map((member, i) => (
-          <Grid item xs={12} sm={6} md={3} key={member.id}>
-            <Card sx={{ '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 40px rgba(0,0,0,0.12)' }, transition: 'all 0.25s', cursor: 'pointer' }}>
-              <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                <Avatar sx={{ width: 64, height: 64, mx: 'auto', mb: 2, background: `linear-gradient(135deg, ${avatarColors[i % 4]}, ${avatarColors[(i + 1) % 4]})`, fontSize: 22, fontWeight: 800, borderRadius: '16px' }}>
-                  {member.avatar}
-                </Avatar>
-                <Typography fontWeight={800} fontSize="15px">{member.name}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>{member.role}</Typography>
-                <Chip label={member.status} size="small" color="success" sx={{ mb: 2, fontWeight: 700, fontSize: '11px' }} />
+    <div className="space-y-6">
+      <SectionHeader 
+        title="Team Directory" 
+        subtitle={`${team.length} specialists · Engineering & Operations`} 
+      />
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {team.map((member, i) => {
+          const revenueProgress = Math.round((member.revenue / maxRevenue) * 100);
+          const gradient = avatarGradients[i % 4];
+          const ring = ringColors[i % 4];
 
-                <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                  {[{ label: 'Leads', value: member.leads }, { label: 'Deals', value: member.deals }].map(s => (
-                    <Grid item xs={6} key={s.label}>
-                      <Box sx={{ p: 1, background: dark ? 'rgba(255,255,255,0.05)' : '#F8FAFC', borderRadius: 2 }}>
-                        <Typography fontWeight={800} fontSize="18px">{s.value}</Typography>
-                        <Typography variant="caption" color="text.secondary">{s.label}</Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
+          return (
+            <div key={member.id} className="group relative bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              {/* Member Header */}
+              <div className="flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${gradient} p-0.5 shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                  <div className="w-full h-full rounded-[1.4rem] bg-white p-0.5">
+                    <div className={`w-full h-full rounded-[1.2rem] bg-gradient-to-br ${gradient} flex items-center justify-center text-2xl font-black text-white`}>
+                      {member.avatar}
+                    </div>
+                  </div>
+                </div>
+                
+                <h3 className="mt-4 text-[16px] font-black text-slate-800 tracking-tight">{member.name}</h3>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{member.role}</p>
+                
+                <div className="mt-4">
+                  <StatusChip label={member.status} />
+                </div>
+              </div>
 
-                <Box sx={{ textAlign: 'left' }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>Revenue</Typography>
-                    <Typography variant="caption" fontWeight={700} color="primary.main">₹{(member.revenue / 1000).toFixed(0)}k</Typography>
-                  </Box>
-                  <LinearProgress variant="determinate" value={Math.round((member.revenue / maxRevenue) * 100)}
-                    sx={{ height: 6, borderRadius: 3, background: `${avatarColors[i % 4]}20`, '& .MuiLinearProgress-bar': { background: avatarColors[i % 4], borderRadius: 3 } }} />
-                </Box>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                {[
+                  { label: 'Leads', value: member.leads, icon: Award, color: 'text-blue-500', bg: 'bg-blue-50' },
+                  { label: 'Deals', value: member.deals, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50' }
+                ].map(stat => (
+                  <div key={stat.label} className="bg-slate-50/50 rounded-2xl p-3 text-center border border-slate-50">
+                    <p className="text-lg font-black text-slate-800">{stat.value}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
 
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>📧 {member.email}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+              {/* Revenue Progress */}
+              <div className="mt-6 space-y-2">
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Achieved</span>
+                  <span className="text-[12px] font-black text-indigo-600">₹{(member.revenue / 1000).toFixed(0)}k</span>
+                </div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full bg-gradient-to-r ${gradient} rounded-full transition-all duration-1000`}
+                    style={{ width: `${revenueProgress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-center gap-4">
+                <button className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title={member.email}>
+                  <Mail size={16} />
+                </button>
+                <button className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Call Member">
+                  <Phone size={16} />
+                </button>
+                <button className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Office Location">
+                  <MapPin size={16} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

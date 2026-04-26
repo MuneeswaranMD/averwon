@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
-import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
-import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
-import CurrencyRupeeRoundedIcon from '@mui/icons-material/CurrencyRupeeRounded';
-import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
-import MarkEmailUnreadRoundedIcon from '@mui/icons-material/MarkEmailUnreadRounded';
-import MailRoundedIcon from '@mui/icons-material/MailRounded';
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
-import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import VideoCallRoundedIcon from '@mui/icons-material/VideoCallRounded';
+import { 
+  Users, 
+  GraduationCap, 
+  FolderOpen, 
+  CheckSquare, 
+  IndianRupee, 
+  FileText, 
+  CalendarCheck, 
+  Mail, 
+  History, 
+  CheckCircle, 
+  AlertCircle, 
+  Search, 
+  Bell, 
+  ChevronDown, 
+  Video 
+} from 'lucide-react';
 
 // ── Color Tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -217,22 +218,22 @@ const Dashboard = () => {
   const totalRev = stats.monthlyRevenue || 0;
 
   const statCards = [
-    { icon: <PeopleAltRoundedIcon />, label: 'Total Employees', value: stats.totalEmployees || 0, sub: 'Active staff', badge: 'Active', badgeType: 'success', color: C.primary, bg: C.primaryLight },
-    { icon: <SchoolRoundedIcon />, label: 'Total Interns', value: stats.totalInterns || 0, sub: 'Active interns', badge: 'Active', badgeType: 'primary', color: C.indigo, bg: C.indigoLight },
-    { icon: <FolderOpenRoundedIcon />, label: 'Active Projects', value: stats.activeProjects || 0, sub: 'Ongoing work', badge: 'In Progress', badgeType: 'warning', color: C.amber, bg: C.amberLight },
-    { icon: <CheckBoxRoundedIcon />, label: 'Pending Tasks', value: stats.pendingTasks || 0, sub: 'Awaiting action', badge: 'Pending', badgeType: 'danger', color: C.rose, bg: C.roseLight },
-    { icon: <CurrencyRupeeRoundedIcon />, label: 'Monthly Revenue', value: "₹" + (stats.monthlyRevenue || 0).toLocaleString('en-IN'), sub: 'vs last month', badge: '+18%', badgeType: 'success', color: C.emerald, bg: C.emeraldLight },
-    { icon: <DescriptionRoundedIcon />, label: 'Pending Invoices', value: "₹" + (stats.pendingPayments || 0).toLocaleString('en-IN'), sub: 'Awaiting payment', badge: 'Unpaid', badgeType: 'warning', color: C.amber, bg: C.amberLight },
-    { icon: <EventAvailableRoundedIcon />, label: 'Attendance Rate', value: (stats.attendanceRate || 0) + "%", sub: "Today's presence", badge: 'Good', badgeType: 'success', color: C.primary, bg: C.primaryLight },
-    { icon: <MarkEmailUnreadRoundedIcon />, label: 'New Leads', value: stats.totalLeads || 0, sub: 'Client leads', badge: 'Total', badgeType: 'primary', color: C.indigo, bg: C.indigoLight },
+    { icon: <Users />, label: 'Total Employees', value: stats.totalEmployees || 0, sub: 'Active staff', badge: 'Active', badgeType: 'success', color: C.primary, bg: C.primaryLight },
+    { icon: <GraduationCap />, label: 'Total Interns', value: stats.totalInterns || 0, sub: 'Active interns', badge: 'Active', badgeType: 'primary', color: C.indigo, bg: C.indigoLight },
+    { icon: <FolderOpen />, label: 'Active Projects', value: stats.activeProjects || 0, sub: 'Ongoing work', badge: 'In Progress', badgeType: 'warning', color: C.amber, bg: C.amberLight },
+    { icon: <CheckSquare />, label: 'Pending Tasks', value: stats.pendingTasks || 0, sub: 'Awaiting action', badge: 'Pending', badgeType: 'danger', color: C.rose, bg: C.roseLight },
+    { icon: <IndianRupee />, label: 'Monthly Revenue', value: "₹" + (stats.monthlyRevenue || 0).toLocaleString('en-IN'), sub: 'vs last month', badge: '+18%', badgeType: 'success', color: C.emerald, bg: C.emeraldLight },
+    { icon: <FileText />, label: 'Pending Invoices', value: "₹" + (stats.pendingPayments || 0).toLocaleString('en-IN'), sub: 'Awaiting payment', badge: 'Unpaid', badgeType: 'warning', color: C.amber, bg: C.amberLight },
+    { icon: <CalendarCheck />, label: 'Attendance Rate', value: (stats.attendanceRate || 0) + "%", sub: "Today's presence", badge: 'Good', badgeType: 'success', color: C.primary, bg: C.primaryLight },
+    { icon: <Mail />, label: 'New Leads', value: stats.totalLeads || 0, sub: 'Client leads', badge: 'Total', badgeType: 'primary', color: C.indigo, bg: C.indigoLight },
   ];
 
   const tMetrics = stats.ticketMetrics || { total: 0, open: 0, closed: 0, urgent: 0, pending: 0 };
   const ticketCards = [
-    { icon: <MailRoundedIcon />, label: 'Total Tickets', value: tMetrics.total, sub: 'All tickets', color: C.primary, bg: C.primaryLight },
-    { icon: <HistoryRoundedIcon />, label: 'In Progress', value: tMetrics.pending, sub: 'Pending resolution', color: C.amber, bg: C.amberLight },
-    { icon: <CheckCircleRoundedIcon />, label: 'Closed Tickets', value: tMetrics.closed, sub: 'Resolved', color: C.emerald, bg: C.emeraldLight },
-    { icon: <ErrorRoundedIcon />, label: 'Urgent Tickets', value: tMetrics.urgent, sub: 'Action needed', color: C.rose, bg: C.roseLight },
+    { icon: <Mail />, label: 'Total Tickets', value: tMetrics.total, sub: 'All tickets', color: C.primary, bg: C.primaryLight },
+    { icon: <History />, label: 'In Progress', value: tMetrics.pending, sub: 'Pending resolution', color: C.amber, bg: C.amberLight },
+    { icon: <CheckCircle />, label: 'Closed Tickets', value: tMetrics.closed, sub: 'Resolved', color: C.emerald, bg: C.emeraldLight },
+    { icon: <AlertCircle />, label: 'Urgent Tickets', value: tMetrics.urgent, sub: 'Action needed', color: C.rose, bg: C.roseLight },
   ];
 
   const layout = {
@@ -264,11 +265,11 @@ const Dashboard = () => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: C.card, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '7px 12px' }}>
-            <SearchRoundedIcon style={{ fontSize: '18px', color: C.grayLight }} />
+            <Search style={{ fontSize: '18px', color: C.textLight, width: '18px', height: '18px' }} />
             <input placeholder="Search..." style={{ border: 'none', outline: 'none', fontSize: '13px', color: C.textSub, background: 'transparent', width: '160px' }} />
           </div>
           <button style={{ position: 'relative', background: C.card, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontSize: '15px' }}>
-            <NotificationsRoundedIcon style={{ fontSize: '20px', color: C.primary }} />
+            <Bell style={{ fontSize: '20px', color: C.primary, width: '20px', height: '20px' }} />
             <span style={{ position: 'absolute', top: '5px', right: '5px', width: '7px', height: '7px', background: C.danger, borderRadius: '50%', border: `1.5px solid ${C.card}` }} />
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: C.card, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 12px 6px 8px' }}>
@@ -277,7 +278,7 @@ const Dashboard = () => {
               <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: C.text }}>Munees Waran</p>
               <p style={{ margin: 0, fontSize: '11px', color: C.textMuted }}>Super Admin</p>
             </div>
-            <ExpandMoreRoundedIcon style={{ fontSize: '16px', color: C.grayLight }} />
+            <ChevronDown style={{ fontSize: '16px', color: C.grayLight, width: '16px', height: '16px' }} />
           </div>
         </div>
       </div>
@@ -288,7 +289,7 @@ const Dashboard = () => {
           <div key={i} style={card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: s.color, boxShadow: `0 2px 8px ${s.color}15` }}>
-                {React.cloneElement(s.icon, { sx: { fontSize: 22, color: 'inherit' } })}
+                {React.cloneElement(s.icon, { size: 22, color: 'currentColor' })}
               </div>
               <Badge label={s.badge} type={s.badgeType} />
             </div>
@@ -309,7 +310,7 @@ const Dashboard = () => {
             <div key={i} style={card}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
                 <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: s.color, boxShadow: `0 2px 8px ${s.color}15` }}>
-                  {React.cloneElement(s.icon, { sx: { fontSize: 24, color: 'inherit' } })}
+                  {React.cloneElement(s.icon, { size: 24, color: 'currentColor' })}
                 </div>
                 <div>
                   <p style={{ ...T.label, marginBottom: '2px', color: C.textMuted, fontSize: '11px' }}>{s.label}</p>
@@ -474,7 +475,7 @@ const Dashboard = () => {
               {meetings.length === 0 && <p style={{ ...T.small, textAlign: 'center', padding: '16px 0' }}>No upcoming meetings</p>}
               {meetings.map((m, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: `1px solid ${C.border}`, borderRadius: '8px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: C.primaryLight, color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}><VideoCallRoundedIcon /></div>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: C.primaryLight, color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}><Video size={20} /></div>
                   <div style={{ flex: 1 }}>
                     <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: C.text }}>{m.title}</p>
                     <p style={{ margin: '2px 0 0', fontSize: '12px', color: C.textMuted }}>{m.time} · {m.participants?.length || 0} participants</p>

@@ -1,8 +1,24 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Box, Card, CardContent, Typography, Grid, LinearProgress, Chip, Avatar, Divider } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
-import { SectionHeader, UserAvatar, ProgressRow } from '../components/ui';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
+import { 
+  TrendingUp, 
+  Users, 
+  Target, 
+  Activity, 
+  ChevronRight,
+  PieChart as PieIcon,
+  BarChart3
+} from 'lucide-react';
+import { SectionHeader, Card, ProgressRow, UserAvatar } from '../components/ui';
 
 const performanceData = [
   { name: 'Priya Nair', leads: 14, deals: 8 },
@@ -13,10 +29,9 @@ const performanceData = [
 export default function Reports() {
   const leads = useSelector(s => s.leads.items);
   const deals = useSelector(s => s.deals.items);
-  const { themeMode } = useSelector(s => s.ui);
-  const dark = themeMode === 'dark';
-  const gridColor = dark ? '#334155' : '#E2E8F0';
-  const textColor = dark ? '#94A3B8' : '#64748B';
+  
+  const gridColor = '#F1F5F9';
+  const textColor = '#94A3B8';
 
   const conversionRate = Math.round((leads.filter(l => l.status === 'Converted').length / leads.length) * 100);
   const wonDeals = deals.filter(d => d.stage === 'Won');
@@ -29,88 +44,121 @@ export default function Reports() {
   ];
 
   return (
-    <Box>
+    <div className="space-y-8">
       <SectionHeader title="Reports & Analytics" subtitle="Performance metrics and business insights" />
 
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+      {/* Hero Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Deals Won', value: wonDeals.length, color: '#7C3AED' },
-          { label: 'Lead Conversion', value: `${conversionRate}%`, color: '#2563EB' },
-          { label: 'Avg Deal Prob', value: wonDeals.length ? `${Math.round(wonDeals.reduce((a, c) => a + (c.probability || 0), 0) / wonDeals.length)}%` : '0%', color: '#F59E0B' },
-          { label: 'Closed Deals', value: deals.filter(d => ['Won', 'Lost'].includes(d.stage)).length, color: '#EF4444' },
+          { label: 'Deals Won', value: wonDeals.length, icon: Target, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'Lead Conversion', value: `${conversionRate}%`, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Avg Deal Prob', value: wonDeals.length ? `${Math.round(wonDeals.reduce((a, c) => a + (c.probability || 0), 0) / wonDeals.length)}%` : '0%', icon: Activity, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Closed Deals', value: deals.filter(d => ['Won', 'Lost'].includes(d.stage)).length, icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
         ].map(s => (
-          <Grid item xs={6} md={3} key={s.label}>
-            <Card>
-              <CardContent sx={{ p: 2.5, textAlign: 'center' }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.6px', display: 'block', mb: 0.8 }}>{s.label}</Typography>
-                <Typography variant="h4" fontWeight={800} sx={{ color: s.color }}>{s.value}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          <div key={s.label} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className={`p-4 rounded-2xl ${s.bg}`}>
+              <s.icon size={24} className={s.color} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{s.label}</p>
+              <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            </div>
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Lead Status Bar */}
-        <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Lead Status Distribution</Typography>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={leadsByStatus} margin={{ left: -10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                  <XAxis dataKey="name" tick={{ fill: textColor, fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: textColor, fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ borderRadius: 10, border: `1px solid ${gridColor}`, fontSize: 12 }} />
-                  <Bar dataKey="value" name="Leads" fill="#2563EB" radius={[6, 6, 0, 0]} />
+        <div className="lg:col-span-12 xl:col-span-8">
+          <Card className="!p-8">
+            <div className="flex justify-between items-center mb-10">
+              <div>
+                <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                  <BarChart3 className="text-indigo-600" size={20} />
+                  Lead Status Distribution
+                </h2>
+                <p className="text-xs font-medium text-slate-400 mt-1">Status breakdown across the entire funnel</p>
+              </div>
+              <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">View Funnel</button>
+            </div>
+
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={leadsByStatus} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="6 6" stroke={gridColor} vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: textColor, fontSize: 11, fontWeight: 700 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                  />
+                  <YAxis 
+                    tick={{ fill: textColor, fontSize: 11, fontWeight: 700 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#F8FAFC' }}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: '800' }} 
+                  />
+                  <Bar dataKey="value" name="Leads" fill="#2563EB" radius={[8, 8, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
+            </div>
           </Card>
-        </Grid>
+        </div>
 
         {/* Team Performance */}
-        <Grid item xs={12} md={5}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Team Performance</Typography>
+        <div className="lg:col-span-12 xl:col-span-4">
+          <Card className="h-full !p-8">
+            <h2 className="text-xl font-black text-slate-800 tracking-tight mb-8">Performance Leaderboard</h2>
+            <div className="space-y-8">
               {performanceData.map((member, i) => (
-                <Box key={member.name} sx={{ mb: i < performanceData.length - 1 ? 2.5 : 0 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.8 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <UserAvatar name={member.name} size={28} />
-                      <Typography fontSize="12.5px" fontWeight={600}>{member.name}</Typography>
-                    </Box>
-                    <Typography fontSize="12px" fontWeight={700} color="primary.main">{member.deals} Deals</Typography>
-                  </Box>
-                  <ProgressRow label={`${member.leads} leads`} value={member.deals} max={15} color="#2563EB" />
-                </Box>
+                <div key={member.name} className="space-y-3">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400 italic">
+                    Ranking #{i + 1}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar name={member.name} size={36} className="shadow-lg shadow-slate-100" />
+                      <div>
+                        <p className="text-[13px] font-black text-slate-800 leading-none">{member.name}</p>
+                        <p className="text-[11px] font-bold text-slate-400 mt-1">{member.leads} Leads Generated</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-black text-indigo-600 leading-none">{member.deals}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-1">Deals Won</p>
+                    </div>
+                  </div>
+                  <ProgressRow 
+                    value={member.deals} 
+                    max={15} 
+                    color={i === 0 ? "bg-indigo-600" : i === 1 ? "bg-blue-500" : "bg-slate-400"} 
+                  />
+                </div>
               ))}
-            </CardContent>
+            </div>
           </Card>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
 
-      {/* Sales Summary Table */}
-      <Card>
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Sales Summary</Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
-            {[
-              { label: 'Total Leads', value: leads.length, detail: 'All time' },
-              { label: 'Deals Closed', value: deals.filter(d => d.stage === 'Won' || d.stage === 'Lost').length, detail: 'Won + Lost' },
-              { label: 'Win Rate', value: `${deals.filter(d => d.stage === 'Won').length ? Math.round((deals.filter(d => d.stage === 'Won').length / deals.filter(d => ['Won', 'Lost'].includes(d.stage)).length) * 100) : 0}%`, detail: 'Won deals ratio' },
-              { label: 'Pipeline Deals', value: deals.filter(d => !['Won', 'Lost'].includes(d.stage)).length, detail: 'Active deals' },
-            ].map(s => (
-              <Box key={s.label} sx={{ p: 2, background: dark ? 'rgba(255,255,255,0.04)' : '#F8FAFC', borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.5px' }}>{s.label}</Typography>
-                <Typography variant="h5" fontWeight={800} sx={{ my: 0.5 }}>{s.value}</Typography>
-                <Typography variant="caption" color="text.secondary">{s.detail}</Typography>
-              </Box>
-            ))}
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
+      {/* Sales Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Total Leads', value: leads.length, detail: 'Cumulative prospects', icon: '💎' },
+          { label: 'Deals Closed', value: deals.filter(d => d.stage === 'Won' || d.stage === 'Lost').length, detail: 'Won vs Lost outcome', icon: '🎯' },
+          { label: 'Win Rate', value: `${deals.filter(d => d.stage === 'Won').length ? Math.round((deals.filter(d => d.stage === 'Won').length / deals.filter(d => ['Won', 'Lost'].includes(d.stage)).length) * 100) : 0}%`, detail: 'Sales effectiveness', icon: '🏆' },
+          { label: 'Pipeline Value', value: deals.filter(d => !['Won', 'Lost'].includes(d.stage)).length, detail: 'In-progress opportunities', icon: '⚡' },
+        ].map(s => (
+          <div key={s.label} className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 text-center group hover:bg-white hover:shadow-xl transition-all">
+            <span className="text-2xl mb-3 block">{s.icon}</span>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{s.label}</p>
+            <p className="text-2xl font-black text-slate-800 mb-1">{s.value}</p>
+            <p className="text-[10px] font-bold text-slate-400 italic">{s.detail}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -1,88 +1,139 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import {
-  Box, Card, CardContent, Typography, Grid, LinearProgress, Chip, Tabs, Tab, Button
-} from '@mui/material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { SectionHeader, StatusChip, ProgressRow } from '../components/ui';
+import { Plus, Calendar, Clock, Users, IndianRupee, BarChart3 } from 'lucide-react';
+import { 
+  SectionHeader, 
+  StatusChip, 
+  Card, 
+  Button 
+} from '../components/ui';
 
 export default function Projects() {
   const projects = useSelector(s => s.projects.items);
-  const { themeMode } = useSelector(s => s.ui);
-  const dark = themeMode === 'dark';
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState('All');
 
-  const statusFilter = tab === 0 ? projects : tab === 1 ? projects.filter(p => p.status === 'In Progress') : tab === 2 ? projects.filter(p => p.status === 'Completed') : projects.filter(p => p.status === 'Planning');
-  const statusColors = { 'In Progress': '#F59E0B', Completed: '#10B981', Planning: '#2563EB' };
+  const tabs = ['All', 'In Progress', 'Completed', 'Planning'];
+  const statusFilter = tab === 'All' ? projects : projects.filter(p => p.status === tab);
+  
+  const statusColors = { 
+    'In Progress': 'bg-amber-500', 
+    'Completed': 'bg-emerald-500', 
+    'Planning': 'bg-blue-600' 
+  };
+
+  const statusTextColors = { 
+    'In Progress': 'text-amber-600', 
+    'Completed': 'text-emerald-600', 
+    'Planning': 'text-blue-600' 
+  };
 
   return (
-    <Box>
+    <div className="space-y-6">
       <SectionHeader
         title="Projects"
         subtitle={`${projects.length} total · ${projects.filter(p => p.status === 'In Progress').length} active`}
-        action={<Button variant="contained" startIcon={<AddRoundedIcon />}>New Project</Button>}
+        action={<Button icon={Plus}>New Project</Button>}
       />
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3, '& .MuiTab-root': { fontSize: '13px', fontWeight: 600 } }}>
-        {['All', 'In Progress', 'Completed', 'Planning'].map((label, i) => (
-          <Tab key={label} label={label} id={`tab-${i}`} />
+      {/* Modern Tabs */}
+      <div className="flex p-1 bg-slate-100/50 rounded-2xl w-fit mb-8">
+        {tabs.map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+              tab === t 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            {t}
+          </button>
         ))}
-      </Tabs>
+      </div>
 
-      <Grid container spacing={2.5}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {statusFilter.map(project => {
           const budgetPct = Math.round((project.spent / project.budget) * 100);
-          const color = statusColors[project.status] || '#64748B';
+          const colorClass = statusColors[project.status] || 'bg-slate-400';
+          const textClass = statusTextColors[project.status] || 'text-slate-400';
+          
           return (
-            <Grid item xs={12} md={6} key={project.id}>
-              <Card sx={{ '&:hover': { boxShadow: '0 8px 30px rgba(0,0,0,0.12)', transform: 'translateY(-2px)' }, transition: 'all 0.2s', cursor: 'pointer' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box>
-                      <Typography fontWeight={700} fontSize="15px" sx={{ mb: 0.3 }}>{project.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">{project.client}</Typography>
-                    </Box>
-                    <StatusChip label={project.status} />
-                  </Box>
+            <div 
+              key={project.id}
+              className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-black text-slate-800 tracking-tight group-hover:text-blue-600 transition-colors">
+                    {project.name}
+                  </h3>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    {project.client}
+                  </p>
+                </div>
+                <StatusChip label={project.status} size="medium" />
+              </div>
 
-                  {/* Progress */}
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="caption" fontWeight={600} color="text.secondary">Progress</Typography>
-                      <Typography variant="caption" fontWeight={700}>{project.progress}%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={project.progress}
-                      sx={{ height: 8, borderRadius: 4, background: `${color}20`, '& .MuiLinearProgress-bar': { background: color, borderRadius: 4 } }} />
-                  </Box>
+              {/* Progress Section */}
+              <div className="space-y-3 mb-8">
+                <div className="flex justify-between items-end">
+                  <div className="flex items-center gap-1.5">
+                    <BarChart3 size={14} className="text-slate-300" />
+                    <span className="text-[10px] font-black text-slate-400 uppercase">Completion Rate</span>
+                  </div>
+                  <span className={`text-[13px] font-black ${textClass}`}>{project.progress}%</span>
+                </div>
+                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${colorClass} transition-all duration-500`} 
+                    style={{ width: `${project.progress}%` }}
+                  />
+                </div>
+              </div>
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Box sx={{ p: 1.5, background: dark ? 'rgba(255,255,255,0.04)' : '#F8FAFC', borderRadius: 2 }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700}>BUDGET</Typography>
-                        <Typography fontWeight={800} fontSize="13px">₹{project.budget.toLocaleString('en-IN')}</Typography>
-                        <Typography variant="caption" color={budgetPct > 90 ? 'error.main' : 'text.secondary'}>Used: {budgetPct}%</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box sx={{ p: 1.5, background: dark ? 'rgba(255,255,255,0.04)' : '#F8FAFC', borderRadius: 2 }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={700}>DEADLINE</Typography>
-                        <Typography fontWeight={700} fontSize="13px">{project.deadline}</Typography>
-                        <Typography variant="caption" color="text.secondary">Due date</Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="p-4 bg-slate-50 rounded-2xl space-y-1">
+                  <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                    <span>Budget</span>
+                    <span className={budgetPct > 90 ? 'text-rose-500' : 'text-emerald-500'}>
+                      {budgetPct}% Used
+                    </span>
+                  </div>
+                  <p className="text-sm font-black text-slate-800">
+                    ₹{project.budget.toLocaleString('en-IN')}
+                  </p>
+                </div>
 
-                  <Box sx={{ mt: 2, display: 'flex', gap: 0.6, flexWrap: 'wrap' }}>
-                    {project.team.map(member => (
-                      <Chip key={member} label={member} size="small" variant="outlined" sx={{ fontSize: '10px', height: 20 }} />
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                <div className="p-4 bg-slate-50 rounded-2xl space-y-1">
+                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                    Deadline
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm font-black text-slate-800">
+                    <Calendar size={14} className="text-slate-300" />
+                    {project.deadline}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-50">
+                <div className="flex items-center gap-1.5 mr-auto">
+                  <Users size={14} className="text-slate-300" />
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Team:</span>
+                </div>
+                {project.team.map(member => (
+                  <span 
+                    key={member} 
+                    className="px-2.5 py-1 bg-slate-50 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-100 group-hover:border-blue-100 group-hover:bg-blue-50/30 transition-colors"
+                  >
+                    {member}
+                  </span>
+                ))}
+              </div>
+            </div>
           );
         })}
-      </Grid>
-    </Box>
+      </div>
+    </div>
   );
 }
