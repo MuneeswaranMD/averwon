@@ -42,7 +42,18 @@ const start = async () => {
 
   // Basic Middleware
   app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : true,
+    origin: (origin, callback) => {
+      const allowed = process.env.ALLOWED_ORIGINS 
+        ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+        : [];
+      
+      // Allow requests with no origin (like mobile apps or curl) or if in allowed list
+      if (!origin || allowed.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true
   }));
   app.use((req, res, next) => {
