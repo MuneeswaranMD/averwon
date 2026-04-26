@@ -1,7 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import AdminJS from 'adminjs';
-import AdminJSExpress from '@adminjs/express';
 import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -30,8 +28,7 @@ const authenticateEmployee = (req, res, next) => {
   }
 };
 
-// --- Shared Assets ---
-import { adminOptions, componentLoader } from './src/admin/config.js';
+// --- Shared Assets (AdminJS config moved inside start for memory optimization) ---
 import * as Models from './src/db/models.js';
 
 // --- DNS Workaround for SRV Records ---
@@ -233,25 +230,52 @@ const start = async () => {
     }
   });
 
-  const admin = new AdminJS(adminOptions);
-  await admin.initialize();
-  
-  const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
-    admin,
-    {
-      authenticate,
-      cookiePassword: 'super-secret-password-32-chars-long', 
-    },
-    null,
-    sessionOptions
-  );
+  // --- AdminJS (Conditional based on Environment) ---
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      console.log('🛡️  Loading AdminJS in development mode...');
+      const AdminJSImport = await import('adminjs');
+      const AdminJS = AdminJSImport.default || AdminJSImport;
+      
+      const AdminJSExpressImport = await import('@adminjs/express');
+      const AdminJSExpress = AdminJSExpressImport.default || AdminJSExpressImport;
+      
+      const { adminOptions } = await import('./src/admin/config.js');
+      
+      const admin = new AdminJS(adminOptions);
+      await admin.initialize();
+      
+      const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
+        admin,
+        {
+          authenticate,
+          cookiePassword: 'super-secret-password-32-chars-long', 
+        },
+        null,
+        sessionOptions
+      );
 
-  // Serve pre-bundled AdminJS assets explicitly to resolve 404s and MIME type errors on Render
-  // This MUST be before adminRouter to intercept asset requests correctly
-  app.use('/admin/frontend/assets', express.static(path.join(__dirname, '.adminjs')));
+      // Serve pre-bundled AdminJS assets explicitly
+      app.use('/admin/frontend/assets', express.static(path.join(__dirname, '.adminjs')));
 
-  // Mount AdminJS
-  app.use(admin.options.rootPath, adminRouter);
+      // Mount AdminJS
+      app.use(admin.options.rootPath, adminRouter);
+      console.log(`🛡️  Admin panel available at root path: ${admin.options.rootPath}`);
+    } catch (err) {
+      console.error('❌ Failed to initialize AdminJS:', err);
+    }
+  } else {
+    console.log('🛡️  AdminJS disabled in production to save memory.');
+    app.get('/admin*', (req, res) => {
+      res.status(503).send(`
+        <div style="font-family: sans-serif; padding: 40px; text-align: center;">
+          <h1 style="color: #2563EB;">Admin Panel Disabled</h1>
+          <p>The AdminJS dashboard is disabled in production to optimize memory usage on the Render free tier.</p>
+          <p>Please use the local development environment for administrative tasks.</p>
+        </div>
+      `);
+    });
+  }
 
   // --- API Routes for External Interactions ---
   const upload = multer({ dest: 'uploads/' });
@@ -784,10 +808,12 @@ const start = async () => {
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   });
 
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`🛡️  Admin panel at http://localhost:${PORT}${admin.options.rootPath}`);
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🛡️  Admin panel available at: http://localhost:${PORT}/admin`);
+    }
   });
 };
 
