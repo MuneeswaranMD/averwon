@@ -6,16 +6,16 @@ import Layout from './components/Layout.jsx';
 
 // Pages
 import Dashboard from './pages/Dashboard.jsx';
-import Leads from './pages/Leads.jsx';
-import Clients from './pages/Clients.jsx';
-import Deals from './pages/Deals.jsx';
-import Projects from './pages/Projects.jsx';
-import Tasks from './pages/Tasks.jsx';
-import Tickets from './pages/Tickets.jsx';
-import Team from './pages/Team.jsx';
-import Calendar from './pages/Calendar.jsx';
-import Reports from './pages/Reports.jsx';
-import Settings from './pages/Settings.jsx';
+import Leads     from './pages/Leads.jsx';
+import Clients   from './pages/Clients.jsx';
+import Deals     from './pages/Deals.jsx';
+import Projects  from './pages/Projects.jsx';
+import Tasks     from './pages/Tasks.jsx';
+import Tickets   from './pages/Tickets.jsx';
+import Calendar  from './pages/Calendar.jsx';
+import Reports   from './pages/Reports.jsx';
+import Settings  from './pages/Settings.jsx';
+import Leave     from './pages/Leave.jsx';
 
 export default function App() {
   return (
@@ -23,16 +23,16 @@ export default function App() {
       <BrowserRouter>
         <Layout>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/leads" element={<Leads />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/deals" element={<Deals />} />
+            <Route path="/"         element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/tickets" element={<Tickets />} />
-            <Route path="/team" element={<Team />} />
+            <Route path="/tasks"    element={<Tasks />} />
+            <Route path="/leave"    element={<Leave />} />
+            <Route path="/leads"    element={<Leads />} />
+            <Route path="/clients"  element={<Clients />} />
+            <Route path="/deals"    element={<Deals />} />
+            <Route path="/tickets"  element={<Tickets />} />
             <Route path="/calendar" element={<Calendar />} />
-            <Route path="/reports" element={<Reports />} />
+            <Route path="/reports"  element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </Layout>

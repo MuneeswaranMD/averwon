@@ -24,7 +24,6 @@ import {
 
 const STATUSES = ['Todo', 'In Progress', 'Done'];
 const PRIORITIES = ['Low', 'Medium', 'High'];
-const ASSIGNEES = ['Priya Nair', 'Rahul Das', 'Ankit Joshi', 'Sneha Patel'];
 
 const priorityColors = {
   Low: 'bg-emerald-500',
@@ -38,11 +37,12 @@ const statusColors = {
   Done: 'bg-emerald-500'
 };
 
-const DEFAULT_FORM = { title: '', priority: 'Medium', status: 'Todo', assignee: 'Priya Nair', due: '', project: '' };
+const DEFAULT_FORM = { title: '', priority: 'Medium', status: 'Todo', assignee: '', due: '', project: '' };
 
 export default function Tasks() {
   const dispatch = useDispatch();
-  const tasks = useSelector(s => s.tasks.items);
+  const tasks    = useSelector(s => s.tasks.items);
+  const users    = useSelector(s => s.users.items).filter(u => u.role !== 'admin');
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [editItem, setEditItem] = useState(null);
@@ -197,7 +197,7 @@ export default function Tasks() {
             label="Assignee" 
             value={form.assignee} 
             onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))}
-            options={ASSIGNEES.map(a => ({ label: a, value: a }))}
+            options={users.map(u => ({ label: u.name, value: u.name }))}
           />
           <Input 
             label="Due Date" 

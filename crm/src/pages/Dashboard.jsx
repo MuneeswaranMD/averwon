@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { 
   Users, Building2, Handshake, Ticket, Plus, ArrowRight, Clock, 
-  ChevronRight, LayoutDashboard, LayoutGrid, Target, Zap
+  ChevronRight, FolderOpen, CheckSquare, CalendarDays, Target, Zap
 } from 'lucide-react';
 import { StatCard, SectionHeader, UserAvatar } from '../components/ui';
 
@@ -41,15 +41,25 @@ const quickActions = [
 ];
 
 export default function Dashboard() {
-  const { themeMode } = useSelector(s => s.ui);
-  const leads = useSelector(s => s.leads.items);
-  const clients = useSelector(s => s.clients.items);
-  const deals = useSelector(s => s.deals.items);
-  const tickets = useSelector(s => s.tickets.items);
+  const { themeMode }  = useSelector(s => s.ui);
+  const currentUser    = useSelector(s => s.auth.currentUser);
+  const leads          = useSelector(s => s.leads.items);
+  const clients        = useSelector(s => s.clients.items);
+  const deals          = useSelector(s => s.deals.items);
+  const tickets        = useSelector(s => s.tickets.items);
+  const projects       = useSelector(s => s.projects.items);
+  const tasks          = useSelector(s => s.tasks.items);
+  const leaveRequests  = useSelector(s => s.leave.items);
+  const users          = useSelector(s => s.users.items);
 
-  const dark = themeMode === 'dark';
-  const activeDeals = deals.filter(d => !['Won', 'Lost'].includes(d.stage)).length;
-  const openTickets = tickets.filter(t => t.status !== 'Resolved').length;
+  const isAdmin        = currentUser?.role === 'admin';
+  const dark           = themeMode === 'dark';
+  const activeDeals    = deals.filter(d => !['Won', 'Lost'].includes(d.stage)).length;
+  const openTickets    = tickets.filter(t => t.status !== 'Resolved').length;
+  const activeProjects = projects.filter(p => p.status === 'In Progress').length;
+  const pendingTasks   = tasks.filter(t => t.status !== 'Done').length;
+  const pendingLeaves  = leaveRequests.filter(l => l.status === 'Pending').length;
+  const teamSize       = users.filter(u => u.role !== 'admin').length;
 
   const gridColor = dark ? '#334155' : '#F1F5F9';
   const textColor = dark ? '#94A3B8' : '#64748B';
@@ -59,9 +69,12 @@ export default function Dashboard() {
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Good morning, Admin 👋</h1>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+            Good morning, {currentUser?.name?.split(' ')[0] || 'Admin'} 👋
+          </h1>
           <p className="text-sm font-medium text-slate-400 mt-1">
-            Here's what's happening today — {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            {pendingLeaves > 0 && isAdmin && <span className="ml-2 text-amber-500 font-bold">· {pendingLeaves} leave request{pendingLeaves > 1 ? 's' : ''} pending</span>}
           </p>
         </div>
         <div className="flex gap-2">
@@ -78,10 +91,10 @@ export default function Dashboard() {
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Total Leads" value={leads.length} icon={<Users />} color="#2563EB" trend={12} trendLabel="vs last month" />
-        <StatCard label="Total Clients" value={clients.length} icon={<Building2 />} color="#7C3AED" trend={8} trendLabel="vs last month" />
-        <StatCard label="Active Deals" value={activeDeals} icon={<Handshake />} color="#F59E0B" trend={-3} trendLabel="vs last month" />
-        <StatCard label="Open Tickets" value={openTickets} icon={<Ticket />} color="#EF4444" trend={-5} trendLabel="vs last month" />
+        <StatCard label="Active Projects" value={activeProjects} icon={<FolderOpen />} color="#2563EB" trend={8} trendLabel="vs last month" />
+        <StatCard label="Pending Tasks"   value={pendingTasks}  icon={<CheckSquare />} color="#F59E0B" trend={-3} trendLabel="vs last month" />
+        <StatCard label="Team Members"    value={teamSize}       icon={<Users />}   color="#7C3AED" trend={2} trendLabel="this month" />
+        <StatCard label="Leave Requests"  value={pendingLeaves}  icon={<CalendarDays />} color="#EF4444" trend={pendingLeaves} trendLabel="awaiting approval" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
