@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LifeBuoy, ShieldCheck, Clock, Search, Send, Paperclip, ChevronRight, CheckCircle } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Support = () => {
   const [activeTab, setActiveTab] = useState('submit'); // 'submit' | 'track'
@@ -28,7 +29,7 @@ const Support = () => {
     if (file) data.append('attachment', file);
 
     try {
-      const res = await fetch('/api/support/tickets', { method: 'POST', body: data });
+      const res = await fetch(API_ENDPOINTS.TICKETS, { method: 'POST', body: data });
       const json = await res.json();
       if (json.success) {
         setSubmitStatus({ loading: false, success: true, ticketId: json.ticketId });
@@ -45,7 +46,7 @@ const Support = () => {
     e.preventDefault();
     setTrackStatus({ loading: true, error: '' });
     try {
-      const res = await fetch(`/api/support/tickets/${trackQuery.ticketId}?email=${trackQuery.email}`);
+      const res = await fetch(`${API_ENDPOINTS.TICKET_TRACK(trackQuery.ticketId)}?email=${trackQuery.email}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to fetch ticket');
       setTicketDetails(json);
@@ -59,7 +60,7 @@ const Support = () => {
   const sendComment = async () => {
     if (!newComment.trim()) return;
     try {
-      const res = await fetch(`/api/support/tickets/${ticketDetails.ticketId}/comments`, {
+      const res = await fetch(API_ENDPOINTS.TICKET_COMMENTS(ticketDetails.ticketId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ senderRole: 'Client', message: newComment })

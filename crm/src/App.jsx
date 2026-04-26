@@ -1,9 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Provider, useSelector } from 'react-redux';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { Provider } from 'react-redux';
 import { store } from './store/index.js';
-import { getTheme } from './theme.js';
 import Layout from './components/Layout.jsx';
 
 // Pages
@@ -19,13 +17,9 @@ import Calendar from './pages/Calendar.jsx';
 import Reports from './pages/Reports.jsx';
 import Settings from './pages/Settings.jsx';
 
-function ThemedApp() {
-  const { themeMode } = useSelector(s => s.ui);
-  const theme = getTheme(themeMode);
-
+export default function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <Provider store={store}>
       <BrowserRouter>
         <Layout>
           <Routes>
@@ -43,14 +37,6 @@ function ThemedApp() {
           </Routes>
         </Layout>
       </BrowserRouter>
-    </ThemeProvider>
-  );
-}
-
-export default function App() {
-  return (
-    <Provider store={store}>
-      <ThemedApp />
     </Provider>
   );
 }

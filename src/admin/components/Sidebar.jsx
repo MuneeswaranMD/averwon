@@ -1,382 +1,201 @@
 import React, { useState } from 'react';
-import {
-  Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Collapse, Tooltip, Typography, Avatar, Divider, IconButton
-} from '@mui/material';
+import { 
+  LayoutDashboard, Users, Search, Briefcase, Headset, Wallet, 
+  Target, Shield, ChevronDown, ChevronLeft, ChevronRight, LogOut,
+  BadgeCheck, GraduationCap, Clock, Palmtree, CreditCard, UserCheck,
+  FolderOpen, CheckSquare, Video, Ticket, TrendingUp, ReceiptText,
+  Settings, ShieldAlert
+} from 'lucide-react';
 
-// MUI Icons
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
-import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
-import BusinessCenterRoundedIcon from '@mui/icons-material/BusinessCenterRounded';
-import SupportAgentRoundedIcon from '@mui/icons-material/SupportAgentRounded';
-import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
-import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded';
-import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
-import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-
-// Child icons
-import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
-import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
-import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
-import WorkRoundedIcon from '@mui/icons-material/WorkRounded';
-import AssignmentIndRoundedIcon from '@mui/icons-material/AssignmentIndRounded';
-import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
-import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
-import VideocamRoundedIcon from '@mui/icons-material/VideocamRounded';
-import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
-import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
-import PersonSearchRoundedIcon from '@mui/icons-material/PersonSearchRounded';
-import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
-
-// Using static path for AdminJS bundling stability
 const averqonLogo = '/logo.png';
 
 const COLLAPSED_W = 72;
 const EXPANDED_W = 260;
 
-const PRIMARY = '#2563EB';
-const PRIMARY_LIGHT = '#EFF6FF';
-const BG = '#FFFFFF';
-const BORDER = '#E2E8F0';
-const TEXT = '#334155';
-const MUTED = '#64748B';
-const NAV_SELECTED_BG = '#EFF6FF';
-const NAV_HOVER_BG = '#F8FAFC';
-
 const navConfig = [
   {
+    name: 'Dashboard',
+    icon: <LayoutDashboard size={22} />,
+    path: '/admin',
+  },
+  {
     name: 'HR Management',
-    icon: <PeopleAltRoundedIcon />,
+    icon: <Users size={22} />,
     items: [
-      { name: 'Employees', path: '/admin/resources/Employee', icon: <BadgeRoundedIcon fontSize="small" /> },
-      { name: 'Interns', path: '/admin/resources/Intern', icon: <SchoolRoundedIcon fontSize="small" /> },
-      { name: 'Attendance', path: '/admin/resources/Attendance', icon: <AccessTimeRoundedIcon fontSize="small" /> },
-      { name: 'Leave Requests', path: '/admin/resources/LeaveRequest', icon: <BeachAccessRoundedIcon fontSize="small" /> },
-      { name: 'Payroll', path: '/admin/resources/Payroll', icon: <PaymentsRoundedIcon fontSize="small" /> },
+      { name: 'Employees', path: '/admin/resources/Employee', icon: <BadgeCheck size={18} /> },
+      { name: 'Interns', path: '/admin/resources/Intern', icon: <GraduationCap size={18} /> },
+      { name: 'Attendance', path: '/admin/resources/Attendance', icon: <Clock size={18} /> },
+      { name: 'Leave Requests', path: '/admin/resources/LeaveRequest', icon: <Palmtree size={18} /> },
+      { name: 'Payroll', path: '/admin/resources/Payroll', icon: <CreditCard size={18} /> },
     ],
   },
   {
     name: 'Recruitment',
-    icon: <ManageSearchRoundedIcon />,
+    icon: <Search size={22} />,
     items: [
-      { name: 'Job Postings', path: '/admin/resources/JobPosting', icon: <WorkRoundedIcon fontSize="small" /> },
-      { name: 'Applications', path: '/admin/resources/JobApplication', icon: <AssignmentIndRoundedIcon fontSize="small" /> },
+      { name: 'Job Postings', path: '/admin/resources/JobPosting', icon: <Briefcase size={18} /> },
+      { name: 'Applications', path: '/admin/resources/JobApplication', icon: <UserCheck size={18} /> },
     ],
   },
   {
     name: 'Operations',
-    icon: <BusinessCenterRoundedIcon />,
+    icon: <Briefcase size={22} />,
     items: [
-      { name: 'Projects', path: '/admin/resources/Project', icon: <FolderOpenRoundedIcon fontSize="small" /> },
-      { name: 'Tasks', path: '/admin/resources/Task', icon: <CheckBoxRoundedIcon fontSize="small" /> },
-      { name: 'Meetings', path: '/admin/resources/Meeting', icon: <VideocamRoundedIcon fontSize="small" /> },
+      { name: 'Projects', path: '/admin/resources/Project', icon: <FolderOpen size={18} /> },
+      { name: 'Tasks', path: '/admin/resources/Task', icon: <CheckSquare size={18} /> },
+      { name: 'Meetings', path: '/admin/resources/Meeting', icon: <Video size={18} /> },
     ],
   },
   {
     name: 'Support',
-    icon: <SupportAgentRoundedIcon />,
+    icon: <Headset size={22} />,
     items: [
-      { name: 'Tickets', path: '/admin/resources/Ticket', icon: <ConfirmationNumberRoundedIcon fontSize="small" /> },
+      { name: 'Tickets', path: '/admin/resources/Ticket', icon: <Ticket size={18} /> },
     ],
   },
   {
     name: 'Finance',
-    icon: <AccountBalanceWalletRoundedIcon />,
+    icon: <Wallet size={22} />,
     items: [
-      { name: 'Revenue', path: '/admin/resources/Revenue', icon: <TrendingUpRoundedIcon fontSize="small" /> },
-      { name: 'Invoices', path: '/admin/resources/Invoice', icon: <ReceiptLongRoundedIcon fontSize="small" /> },
-      { name: 'Bills', path: '/admin/resources/Bill', icon: <CreditCardRoundedIcon fontSize="small" /> },
+      { name: 'Revenue', path: '/admin/resources/Revenue', icon: <TrendingUp size={18} /> },
+      { name: 'Invoices', path: '/admin/resources/Invoice', icon: <ReceiptText size={18} /> },
+      { name: 'Bills', path: '/admin/resources/Bill', icon: <CreditCard size={18} /> },
     ],
   },
   {
-    name: 'Sales',
-    icon: <TrackChangesRoundedIcon />,
+    name: 'Sales & CRM',
+    icon: <Target size={22} />,
     items: [
-      { name: 'Leads', path: '/admin/resources/Lead', icon: <PersonSearchRoundedIcon fontSize="small" /> },
-      { name: 'Deals', path: '/admin/resources/Sales', icon: <HandshakeRoundedIcon fontSize="small" /> },
+      { name: 'Dashboard', path: '/admin/sales-dashboard', icon: <LayoutDashboard size={18} /> },
+      { name: 'Leads', path: '/admin/sales/leads', icon: <UserCheck size={18} /> },
+      { name: 'Deals', path: '/admin/sales/deals', icon: <Briefcase size={18} /> },
     ],
   },
   {
     name: 'System',
-    icon: <ShieldRoundedIcon />,
+    icon: <Shield size={22} />,
     items: [
-      { name: 'Settings', path: '/admin/resources/Setting', icon: <SettingsRoundedIcon fontSize="small" /> },
-      { name: 'Admin Account', path: '/admin/resources/Manager', icon: <AdminPanelSettingsRoundedIcon fontSize="small" /> },
+      { name: 'Admins', path: '/admin/system/admins', icon: <ShieldAlert size={18} /> },
+      { name: 'Settings', path: '/admin/system/settings', icon: <Settings size={18} /> },
     ],
-  },
+  }
 ];
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [open, setOpen] = useState({ 'HR Management': true, Operations: true });
-  const currentPath = window.location.pathname;
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [openMenus, setOpenMenus] = useState({});
 
-  const toggle = (name) => setOpen(prev => ({ ...prev, [name]: !prev[name] }));
-  const isActive = (path) => currentPath === path;
-  const sectionActive = (items) => items.some(i => currentPath === i.path);
+  const toggleMenu = (name) => {
+    if (isCollapsed) setIsCollapsed(false);
+    setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const handleLogout = () => {
+    window.location.href = '/admin/logout';
+  };
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: collapsed ? COLLAPSED_W : EXPANDED_W,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: collapsed ? COLLAPSED_W : EXPANDED_W,
-          boxSizing: 'border-box',
-          background: BG,
-          borderRight: `1px solid ${BORDER}`,
-          overflowX: 'hidden',
-          transition: 'width 0.28s cubic-bezier(0.4,0,0.6,1)',
-          display: 'flex',
-          flexDirection: 'column',
-        },
-      }}
+    <div 
+      className="h-screen bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out fixed left-0 top-0 z-50 shadow-sm"
+      style={{ width: isCollapsed ? COLLAPSED_W : EXPANDED_W }}
     >
-      {/* ── Brand ── */}
-      <Box
-        sx={{
-          px: collapsed ? 0 : 2,
-          py: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          position: 'relative',
-          borderBottom: `1px solid ${BORDER}`,
-          mb: 1,
-        }}
-      >
-        {/* Collapse Toggle */}
-        <IconButton
-          onClick={() => setCollapsed(c => !c)}
-          size="small"
-          sx={{
-            position: 'absolute',
-            right: -12,
-            top: 28,
-            width: 24,
-            height: 24,
-            background: '#fff',
-            border: `1px solid ${BORDER}`,
-            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-            zIndex: 10,
-            '&:hover': { background: PRIMARY_LIGHT },
-          }}
+      {/* Header */}
+      <div className="p-6 flex items-center justify-between border-b border-slate-100 h-20">
+        <div className={`flex items-center gap-3 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 invisible' : 'opacity-100'}`}>
+          <img src={averqonLogo} alt="Logo" className="w-8 h-8 rounded-lg" />
+          <span className="font-bold text-xl text-slate-800 tracking-tight">Averqon</span>
+        </div>
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
         >
-          {collapsed
-            ? <ChevronRightRoundedIcon sx={{ fontSize: 14, color: PRIMARY }} />
-            : <ChevronLeftRoundedIcon sx={{ fontSize: 14, color: PRIMARY }} />}
-        </IconButton>
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
+      </div>
 
-        {!collapsed && (
-          <Box sx={{ textAlign: 'center', mb: 1 }}>
-            <Box
-              component="img"
-              src={averqonLogo}
-              sx={{
-                height: 48,
-                width: 'auto',
-                mb: 1.5,
-                borderRadius: '8px'
-              }}
-            />
-            <Typography variant="subtitle1" fontWeight={800} color={PRIMARY} sx={{ fontSize: '18px', lineHeight: 1.2, letterSpacing: '1px' }}>
-              AVERQON
-            </Typography>
-            <Typography variant="caption" sx={{ color: PRIMARY, fontWeight: 700, letterSpacing: '1.5px', opacity: 0.8, fontSize: '10px' }}>
-              SMART MANAGEMENT
-            </Typography>
-          </Box>
-        )}
-        {collapsed && (
-          <Box
-            component="img"
-            src={averqonLogo}
-            sx={{ height: 32, width: 32, borderRadius: '6px' }}
-          />
-        )}
-      </Box>
-
-      {/* ── Navigation ── */}
-      <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', px: 1.5, pb: 2, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { borderRadius: 4, background: BORDER } }}>
-
-        {/* Dashboard */}
-        <Tooltip title={collapsed ? 'Dashboard' : ''} placement="right" arrow>
-          <ListItemButton
-            component="a"
-            href="/admin"
-            selected={currentPath === '/admin'}
-            sx={{
-              borderRadius: '10px',
-              mb: 0.5,
-              py: 1.1,
-              px: 1.5,
-              gap: 1.5,
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              color: currentPath === '/admin' ? PRIMARY : TEXT,
-              background: currentPath === '/admin' ? NAV_SELECTED_BG : 'transparent',
-              border: `1px solid ${currentPath === '/admin' ? BORDER : 'transparent'}`,
-              '&:hover': { background: NAV_HOVER_BG, color: PRIMARY },
-              '&.Mui-selected': { background: NAV_SELECTED_BG, '&:hover': { background: NAV_SELECTED_BG } },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
-              <DashboardRoundedIcon sx={{ fontSize: 20 }} />
-            </ListItemIcon>
-            {!collapsed && (
-              <ListItemText
-                primary="Dashboard"
-                primaryTypographyProps={{ fontSize: '14px', fontWeight: 600, color: 'inherit' }}
-              />
-            )}
-          </ListItemButton>
-        </Tooltip>
-
-        {/* Sections */}
-        {navConfig.map((section) => {
-          const secActive = sectionActive(section.items);
-          const isOpen = open[section.name];
-
-          return (
-            <Box key={section.name}>
-              <Tooltip title={collapsed ? section.name : ''} placement="right" arrow>
-                <ListItemButton
-                  onClick={() => !collapsed && toggle(section.name)}
-                  sx={{
-                    borderRadius: '10px',
-                    py: 1.1,
-                    px: 1.5,
-                    gap: 1.5,
-                    justifyContent: collapsed ? 'center' : 'space-between',
-                    color: secActive ? PRIMARY : TEXT,
-                    '&:hover': { background: PRIMARY_LIGHT, color: PRIMARY },
-                    mb: 0.25,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <ListItemIcon sx={{ minWidth: 0, color: secActive ? PRIMARY : MUTED }}>
-                      {React.cloneElement(section.icon, { sx: { fontSize: 20 } })}
-                    </ListItemIcon>
-                    {!collapsed && (
-                      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'inherit' }}>
-                        {section.name}
-                      </Typography>
-                    )}
-                  </Box>
-                  {!collapsed && (
-                    <ExpandMoreRoundedIcon
-                      sx={{
-                        fontSize: 18,
-                        color: MUTED,
-                        transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                        transition: 'transform 0.2s',
-                      }}
-                    />
-                  )}
-                </ListItemButton>
-              </Tooltip>
-
-              {/* Child items */}
-              {!collapsed && (
-                <Collapse in={isOpen} timeout={200} unmountOnExit>
-                  <Box
-                    sx={{
-                      mx: 0.5,
-                      mb: 1,
-                      background: '#fff',
-                      borderRadius: '12px',
-                      border: `1px solid ${BORDER}`,
-                      overflow: 'hidden',
-                    }}
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto py-6 scrollbar-hide px-3">
+        <nav className="space-y-1">
+          {navConfig.map((group) => (
+            <div key={group.name}>
+              {group.items ? (
+                <>
+                  <button
+                    onClick={() => toggleMenu(group.name)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group
+                      ${openMenus[group.name] ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}
+                    `}
                   >
-                    <List disablePadding>
-                      {section.items.map((item) => {
-                        const active = isActive(item.path);
-                        return (
-                          <ListItemButton
-                            key={item.name}
-                            component="a"
-                            href={item.path}
-                            sx={{
-                              py: 0.9,
-                              px: 1.5,
-                              gap: 1.2,
-                              color: active ? PRIMARY : MUTED,
-                              background: active ? PRIMARY_LIGHT : 'transparent',
-                              borderLeft: `3px solid ${active ? PRIMARY : 'transparent'}`,
-                              '&:hover': { background: PRIMARY_LIGHT, color: PRIMARY },
-                            }}
-                          >
-                            <ListItemIcon sx={{ minWidth: 0, color: 'inherit', opacity: active ? 1 : 0.65 }}>
-                              {item.icon}
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={item.name}
-                              primaryTypographyProps={{
-                                fontSize: '13px',
-                                fontWeight: active ? 600 : 400,
-                                color: 'inherit',
-                              }}
-                            />
-                          </ListItemButton>
-                        );
-                      })}
-                    </List>
-                  </Box>
-                </Collapse>
+                    <span className={`${openMenus[group.name] ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'} transition-colors`}>
+                      {group.icon}
+                    </span>
+                    {!isCollapsed && (
+                      <>
+                        <span className="flex-1 text-left text-sm font-semibold">{group.name}</span>
+                        <ChevronDown 
+                          size={16} 
+                          className={`transition-transform duration-200 ${openMenus[group.name] ? 'rotate-180' : ''}`} 
+                        />
+                      </>
+                    )}
+                  </button>
+                  
+                  {!isCollapsed && openMenus[group.name] && (
+                    <div className="mt-1 ml-4 space-y-1 border-l-2 border-blue-100 pl-2">
+                      {group.items.map((item) => (
+                        <a
+                          key={item.name}
+                          href={item.path}
+                          className="flex items-center gap-3 p-2.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 transition-all text-sm font-medium"
+                        >
+                          <span className="text-slate-300">{item.icon}</span>
+                          {item.name}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <a
+                  href={group.path}
+                  className="flex items-center gap-3 p-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-all group"
+                >
+                  <span className="text-slate-400 group-hover:text-blue-500 transition-colors">
+                    {group.icon}
+                  </span>
+                  {!isCollapsed && (
+                    <span className="text-sm font-semibold">{group.name}</span>
+                  )}
+                </a>
               )}
-            </Box>
-          );
-        })}
-      </Box>
+            </div>
+          ))}
+        </nav>
+      </div>
 
-      {/* ── Profile Footer ── */}
-      <Divider sx={{ borderColor: BORDER }} />
-      <Box
-        sx={{
-          p: collapsed ? 1 : 1.5,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.2,
-          justifyContent: collapsed ? 'center' : 'flex-start',
-        }}
-      >
-        <Avatar
-          src={`https://ui-avatars.com/api/?name=Admin&background=2563EB&color=fff&size=36`}
-          sx={{ width: 36, height: 36, borderRadius: '10px', flexShrink: 0 }}
-        />
-        {!collapsed && (
-          <>
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
-              <Typography sx={{ fontSize: '13px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Admin User
-              </Typography>
-              <Typography sx={{ fontSize: '11px', color: MUTED }}>Super Admin</Typography>
-            </Box>
-            <Tooltip title="Logout" placement="top" arrow>
-              <IconButton
-                component="a"
-                href="/admin/logout"
-                size="small"
-                sx={{ color: MUTED, '&:hover': { color: '#EF4444', background: '#FEF2F2' } }}
-              >
-                <LogoutRoundedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-          </>
+      {/* Footer / User Profile */}
+      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="flex items-center gap-3 p-2">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-200">
+            M
+          </div>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800 truncate">Munees Waran</p>
+              <p className="text-[11px] text-slate-500 font-medium">Super Admin</p>
+            </div>
+          )}
+        </div>
+        {!isCollapsed && (
+          <button 
+            onClick={handleLogout}
+            className="w-full mt-3 flex items-center justify-center gap-2 p-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-100 hover:bg-red-50 font-bold text-sm transition-all shadow-sm"
+          >
+            <LogOut size={16} /> Logout
+          </button>
         )}
-      </Box>
-    </Drawer>
+      </div>
+    </div>
   );
 };
 

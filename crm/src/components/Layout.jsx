@@ -1,18 +1,26 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { useSelector } from 'react-redux';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
+const EXPANDED_W = 265;
+const COLLAPSED_W = 75;
+
 export default function Layout({ children }) {
+  const { sidebarOpen } = useSelector(s => s.ui);
+
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-inter">
       <Sidebar />
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div 
+        className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+        style={{ marginLeft: sidebarOpen ? EXPANDED_W : COLLAPSED_W }}
+      >
         <Topbar />
-        <Box sx={{ flex: 1, overflowY: 'auto', p: 3, background: 'background.default' }}>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8">
           {children}
-        </Box>
-      </Box>
-    </Box>
+        </main>
+      </div>
+    </div>
   );
 }

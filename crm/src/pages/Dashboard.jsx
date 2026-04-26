@@ -1,18 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Box, Grid, Card, CardContent, Typography, Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, Divider, Button, Paper, Stack, AvatarGroup } from '@mui/material';
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Legend, ResponsiveContainer } from 'recharts';
-import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
-import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
-import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded';
-import CurrencyRupeeRoundedIcon from '@mui/icons-material/CurrencyRupeeRounded';
-import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import { StatCard, StatusChip, SectionHeader, UserAvatar } from '../components/ui';
-
-
+import { 
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, 
+  CartesianGrid, Tooltip as RTooltip, ResponsiveContainer 
+} from 'recharts';
+import { 
+  Users, Building2, Handshake, Ticket, Plus, ArrowRight, Clock, 
+  ChevronRight, LayoutDashboard, LayoutGrid, Target, Zap
+} from 'lucide-react';
+import { StatCard, SectionHeader, UserAvatar } from '../components/ui';
 
 const dealStageData = [
   { stage: 'New', count: 5, value: 210000 },
@@ -39,10 +35,9 @@ const activities = [
 ];
 
 const quickActions = [
-  { label: 'Add Lead', color: 'primary', icon: '👤' },
-  { label: 'New Deal', color: 'secondary', icon: '🤝' },
-
-  { label: 'Add Task', color: 'warning', icon: '✅' },
+  { label: 'Add Lead', color: 'bg-blue-600', icon: <Plus size={16} /> },
+  { label: 'New Deal', color: 'bg-indigo-600', icon: <Handshake size={16} /> },
+  { label: 'Add Task', color: 'bg-amber-500', icon: <Zap size={16} /> },
 ];
 
 export default function Dashboard() {
@@ -53,135 +48,140 @@ export default function Dashboard() {
   const tickets = useSelector(s => s.tickets.items);
 
   const dark = themeMode === 'dark';
-
   const activeDeals = deals.filter(d => !['Won', 'Lost'].includes(d.stage)).length;
   const openTickets = tickets.filter(t => t.status !== 'Resolved').length;
 
-
-  const chartColor = dark ? '#93C5FD' : '#2563EB';
-  const gridColor = dark ? '#334155' : '#E2E8F0';
+  const gridColor = dark ? '#334155' : '#F1F5F9';
   const textColor = dark ? '#94A3B8' : '#64748B';
 
   return (
-    <Box>
-      {/* Welcome */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h4" fontWeight={800}>Good morning, Admin 👋</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Here's what's happening with your CRM today — {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </Typography>
-        </Box>
-        <Stack direction="row" gap={1}>
+    <div className="p-6 max-w-[1600px] mx-auto space-y-8">
+      {/* Welcome Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Good morning, Admin 👋</h1>
+          <p className="text-sm font-medium text-slate-400 mt-1">
+            Here's what's happening today — {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <div className="flex gap-2">
           {quickActions.map(a => (
-            <Button key={a.label} variant="contained" color={a.color} size="small" startIcon={<span>{a.icon}</span>}
-              sx={{ borderRadius: '10px', fontSize: '12px', py: 1 }}>
-              {a.label}
-            </Button>
+            <button 
+              key={a.label} 
+              className={`${a.color} text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-blue-100`}
+            >
+              {a.icon} {a.label}
+            </button>
           ))}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
-      {/* Stats */}
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        {[
-          { label: 'Total Leads', value: leads.length, icon: <PeopleAltRoundedIcon />, color: '#2563EB', trend: 12, trendLabel: 'vs last month' },
-          { label: 'Total Clients', value: clients.length, icon: <BusinessRoundedIcon />, color: '#7C3AED', trend: 8, trendLabel: 'vs last month' },
-          { label: 'Active Deals', value: activeDeals, icon: <HandshakeRoundedIcon />, color: '#F59E0B', trend: -3, trendLabel: 'vs last month' },
-          { label: 'Open Tickets', value: openTickets, icon: <ConfirmationNumberRoundedIcon />, color: '#EF4444', trend: -5, trendLabel: 'vs last month' },
-        ].map(s => (
-          <Grid item xs={12} sm={6} md={2.4} key={s.label}>
-            <StatCard {...s} />
-          </Grid>
-        ))}
-      </Grid>
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard label="Total Leads" value={leads.length} icon={<Users />} color="#2563EB" trend={12} trendLabel="vs last month" />
+        <StatCard label="Total Clients" value={clients.length} icon={<Building2 />} color="#7C3AED" trend={8} trendLabel="vs last month" />
+        <StatCard label="Active Deals" value={activeDeals} icon={<Handshake />} color="#F59E0B" trend={-3} trendLabel="vs last month" />
+        <StatCard label="Open Tickets" value={openTickets} icon={<Ticket />} color="#EF4444" trend={-5} trendLabel="vs last month" />
+      </div>
 
-      <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
-
-
-        {/* Lead Source */}
-        <Grid item xs={12}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>Lead Sources</Typography>
-              <Typography variant="caption" color="text.secondary">This month's lead origins</Typography>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-                    {leadSourceData.map(entry => <Cell key={entry.name} fill={entry.color} />)}
-                  </Pie>
-                  <RTooltip formatter={(v) => [`${v}%`, '']} contentStyle={{ borderRadius: 10, border: `1px solid ${gridColor}`, fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8, mt: 1 }}>
-                {leadSourceData.map(s => (
-                  <Box key={s.name} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
-                      <Typography variant="caption" fontWeight={500}>{s.name}</Typography>
-                    </Box>
-                    <Typography variant="caption" fontWeight={700}>{s.value}%</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={2.5}>
-
-
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Activity Feed */}
-        <Grid item xs={12} md={7}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" fontWeight={700}>Recent Activity</Typography>
-                <Button size="small" endIcon={<ArrowForwardRoundedIcon />} sx={{ fontSize: '12px' }}>View all</Button>
-              </Box>
-              <List disablePadding>
-                {activities.map((a, i) => (
-                  <React.Fragment key={i}>
-                    <ListItem disablePadding sx={{ py: 1.2 }}>
-                      <ListItemAvatar sx={{ minWidth: 40 }}>
-                        <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: `${a.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{a.icon}</Box>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={<Typography sx={{ fontSize: '12.5px', fontWeight: 600 }}>{a.action}</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary">{a.detail}</Typography>}
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                        <AccessTimeRoundedIcon sx={{ fontSize: 11, color: 'text.disabled' }} />
-                        <Typography variant="caption" color="text.disabled" sx={{ fontSize: '10px' }}>{a.time}</Typography>
-                      </Box>
-                    </ListItem>
-                    {i < activities.length - 1 && <Divider sx={{ borderColor: 'divider' }} />}
-                  </React.Fragment>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={5}>
-           <Card>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Deal Pipeline</Typography>
-              <ResponsiveContainer width="100%" height={262}>
-                <BarChart data={dealStageData} margin={{ left: -10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                  <XAxis dataKey="stage" tick={{ fill: textColor, fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: textColor, fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <RTooltip contentStyle={{ borderRadius: 10, border: `1px solid ${gridColor}`, fontSize: 12 }} />
-                  <Bar dataKey="count" name="Deals" fill="#2563EB" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
+        <div className="lg:col-span-12 xl:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-black text-slate-800">Recent Activity</h2>
+            <button className="text-blue-600 text-xs font-bold flex items-center gap-1 hover:underline">
+              View all <ChevronRight size={14} />
+            </button>
+          </div>
+          <div className="space-y-1">
+            {activities.map((a, i) => (
+              <div key={i} className="flex items-center gap-4 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 px-2 rounded-2xl transition-colors">
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                  style={{ backgroundColor: `${a.color}15` }}
+                >
+                  {a.icon}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-slate-800">{a.action}</p>
+                  <p className="text-xs font-medium text-slate-400 mt-0.5">{a.detail}</p>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400">
+                  <Clock size={12} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{a.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
+        {/* Lead Source Distribution */}
+        <div className="lg:col-span-12 xl:col-span-4 bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col">
+          <h2 className="text-xl font-black text-slate-800 mb-1">Lead Sources</h2>
+          <p className="text-xs font-medium text-slate-400 mb-6">Origins for this month</p>
+          
+          <div className="h-[200px] w-full mb-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie 
+                  data={leadSourceData} 
+                  cx="50%" cy="50%" 
+                  innerRadius={60} 
+                  outerRadius={85} 
+                  paddingAngle={6} 
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {leadSourceData.map(entry => <Cell key={entry.name} fill={entry.color} />)}
+                </Pie>
+                <RTooltip 
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: '800' }} 
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
-      </Grid>
-    </Box>
+          <div className="space-y-3">
+            {leadSourceData.map(s => (
+              <div key={s.name} className="flex justify-between items-center group">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                  <span className="text-xs font-bold text-slate-600 group-hover:text-slate-800 transition-colors uppercase tracking-tight">{s.name}</span>
+                </div>
+                <span className="text-xs font-black text-slate-400">{s.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Deal Pipeline */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+        <h2 className="text-xl font-black text-slate-800 mb-6">Deal Pipeline</h2>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dealStageData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="6 6" stroke={gridColor} vertical={false} />
+              <XAxis 
+                dataKey="stage" 
+                tick={{ fill: textColor, fontSize: 11, fontWeight: 700 }} 
+                axisLine={false} 
+                tickLine={false} 
+              />
+              <YAxis 
+                tick={{ fill: textColor, fontSize: 11, fontWeight: 700 }} 
+                axisLine={false} 
+                tickLine={false} 
+              />
+              <RTooltip 
+                cursor={{ fill: '#F8FAFC' }}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: '800' }} 
+              />
+              <Bar dataKey="count" name="Deals" fill="#2563EB" radius={[8, 8, 0, 0]} barSize={40} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
   );
 }

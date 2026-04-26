@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, MapPin, Clock, ArrowUpRight, Search, X, UploadCloud, CheckCircle } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const CareersSection = () => {
   const [jobs, setJobs] = useState([]);
@@ -14,7 +15,7 @@ const CareersSection = () => {
 
   // Fetch Live Jobs from backend
   useEffect(() => {
-    fetch('/api/jobs')
+    fetch(API_ENDPOINTS.JOBS)
       .then(res => res.json())
       .then(data => {
         setJobs(data);
@@ -38,7 +39,7 @@ const CareersSection = () => {
     if (file) payload.append('resume', file);
 
     try {
-      const res = await fetch('/api/applications', { method: 'POST', body: payload });
+      const res = await fetch(API_ENDPOINTS.APPLICATIONS, { method: 'POST', body: payload });
       const json = await res.json();
       if (json.success) {
         setSubmitState({ loading: false, success: true });
