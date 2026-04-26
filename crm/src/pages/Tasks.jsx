@@ -40,15 +40,20 @@ const statusColors = {
 const DEFAULT_FORM = { title: '', priority: 'Medium', status: 'Todo', assignee: '', due: '', project: '' };
 
 export default function Tasks() {
-  const dispatch = useDispatch();
-  const tasks    = useSelector(s => s.tasks.items);
-  const users    = useSelector(s => s.users.items).filter(u => u.role !== 'admin');
+  const dispatch    = useDispatch();
+  const tasks       = useSelector(s => s.tasks.items);
+  const users       = useSelector(s => s.users.items).filter(u => u.role !== 'admin');
+  const currentUser = useSelector(s => s.auth.currentUser);
+
+  const isAdmin     = currentUser?.role === 'admin';
+  const myTasks     = isAdmin ? tasks : tasks.filter(t => t.assignee === currentUser?.name);
+
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [editItem, setEditItem] = useState(null);
   const [dragId, setDragId] = useState(null);
 
-  const byStatus = (st) => tasks.filter(t => t.status === st);
+  const byStatus = (st) => myTasks.filter(t => t.status === st);
 
   const save = () => {
     if (editItem) dispatch(updateTask({ ...editItem, ...form }));
