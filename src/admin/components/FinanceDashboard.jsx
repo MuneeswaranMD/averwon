@@ -5,48 +5,40 @@ import { Line, Pie, Bar } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const C = {
-  bg: '#F4F7FA',
+  bg: '#F3F4F6',
   white: '#FFFFFF',
-  primary: '#1A73E8',
-  secondary: '#64748B',
+  primary: '#2563EB',
+  secondary: '#334155',
   border: '#E2E8F0',
   text: '#1E293B',
   success: '#10B981',
   warning: '#F59E0B',
-  error: '#EF4444',
-  muted: '#94A3B8'
+  error: '#E11D48',
+  muted: '#64748B'
 };
 
 const FinanceDashboard = () => {
-  const [stats, setStats] = useState(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     fetch('/api/admin/dashboard-stats')
       .then(res => res.json())
-      .then(data => setStats(data.stats))
+      .then(json => setData(json))
       .catch(err => console.error(err));
   }, []);
 
-  if (!stats) return <div style={{ padding: '40px', color: C.muted }}>Loading Financial Intelligence...</div>;
+  if (!data) return <div style={{ padding: '40px', color: C.muted }}>Loading Financial Intelligence...</div>;
 
-  const cardStyle = {
-    background: C.white,
-    padding: '24px',
-    borderRadius: '12px',
-    border: `1px solid ${C.border}`,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  };
+  const stats = data.stats || {};
+  const monthlyRev = data.monthlyRevenue || { data: [0], labels: [''] };
 
   const lineData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: monthlyRev.labels,
     datasets: [{
       label: 'Monthly Revenue',
-      data: [12000, 19000, 15000, 22000, 28000, 31000],
+      data: monthlyRev.data,
       borderColor: C.primary,
-      backgroundColor: 'rgba(26, 115, 232, 0.1)',
+      backgroundColor: 'rgba(0, 0, 0, 0.05)',
       fill: true,
       tension: 0.4
     }]
@@ -55,7 +47,7 @@ const FinanceDashboard = () => {
   const pieData = {
     labels: ['Salary', 'Software', 'Marketing', 'Office'],
     datasets: [{
-      data: [60, 15, 10, 15],
+      data: [65, 12, 8, 15],
       backgroundColor: [C.primary, C.success, C.warning, C.secondary],
       borderWidth: 0
     }]
@@ -65,7 +57,7 @@ const FinanceDashboard = () => {
     <div style={{ padding: '32px', background: C.bg, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
       <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: C.text, margin: 0 }}>Finance Overview</h1>
+          <h1 style={{ fontSize: '28px', fontWeight: 800, color: C.primary, margin: 0 }}>Finance Overview</h1>
           <p style={{ color: C.muted, margin: '4px 0 0 0' }}>Real-time revenue and expenditure tracking</p>
         </div>
         <button style={{ 
@@ -82,18 +74,18 @@ const FinanceDashboard = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Total Revenue</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>${(stats.monthlyRevenue || 0).toLocaleString()}</span>
-          <span style={{ fontSize: '12px', color: C.success }}>+12.5% from last month</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>₹{(stats.monthlyRevenue || 0).toLocaleString('en-IN')}</span>
+          <span style={{ fontSize: '12px', color: C.success }}>Real-time stats</span>
         </div>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Revenue This Year</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>$452,000</span>
-          <span style={{ fontSize: '12px', color: C.primary }}>Target: $500k</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.text }}>₹{(stats.monthlyRevenue * 8 || 0).toLocaleString('en-IN')}</span>
+          <span style={{ fontSize: '12px', color: C.primary }}>Target: ₹10L+</span>
         </div>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Pending Payments</span>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: C.warning }}>${(stats.pendingPayments || 0).toLocaleString()}</span>
-          <span style={{ fontSize: '12px', color: C.secondary }}>8 Pending Invoices</span>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: C.warning }}>₹{(stats.pendingPayments || 0).toLocaleString('en-IN')}</span>
+          <span style={{ fontSize: '12px', color: C.secondary }}>Unpaid invoices</span>
         </div>
         <div style={cardStyle}>
           <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>Profit Margin</span>
@@ -116,8 +108,54 @@ const FinanceDashboard = () => {
           </div>
         </div>
       </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
+        <div style={{ ...cardStyle }}>
+          <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Recent Invoices</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {data.invoices?.map(inv => (
+              <div key={inv._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: C.bg, borderRadius: '8px' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '14px' }}>{inv.clientName}</div>
+                  <div style={{ fontSize: '12px', color: C.muted }}>{inv.projectName} • Due: {new Date(inv.dueDate).toLocaleDateString()}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 700, color: C.primary }}>₹{inv.invoiceAmount.toLocaleString('en-IN')}</div>
+                  <div style={{ fontSize: '10px', color: inv.status === 'Paid' ? C.success : '#F59E0B' }}>{inv.status}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ ...cardStyle }}>
+          <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Recent Bills (Outflow)</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {data.bills?.map(bill => (
+              <div key={bill._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: C.bg, borderRadius: '8px' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '14px' }}>{bill.vendorName}</div>
+                  <div style={{ fontSize: '12px', color: C.muted }}>{bill.category} • Due: {new Date(bill.dueDate).toLocaleDateString()}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 700, color: '#EF4444' }}>-₹{bill.amount.toLocaleString('en-IN')}</div>
+                  <div style={{ fontSize: '10px', color: bill.status === 'Paid' ? C.success : '#F59E0B' }}>{bill.status}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
+};
+
+const cardStyle = {
+  background: C.white,
+  padding: '24px',
+  borderRadius: '16px',
+  border: `1px solid ${C.border}`,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px'
 };
 
 export default FinanceDashboard;

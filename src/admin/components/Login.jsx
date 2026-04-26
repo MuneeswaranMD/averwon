@@ -11,17 +11,53 @@ const C = {
   textMuted: '#6B7280',
 };
 
+import { auth } from '../../lib/firebase.js';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+
 const Login = (props) => {
   const { action, message, branding } = props;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // If successful, we can auto-fill and submit or hit a special endpoint
+      // For now, let's fill the email and a "magic" password the server recognizes
+      // or redirect to a callback route if we set one up.
+      
+      // Simpler approach for AdminJS integration:
+      // Post to a dedicated Google Auth endpoint that sets the session
+      const response = await fetch('/api/admin/google-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: user.email,
+          uid: user.uid,
+          idToken: await user.getIdToken()
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        window.location.href = '/admin';
+      } else {
+        setError(data.error || 'Google login failed for this account');
+      }
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      setError(err.message);
+    }
+  };
 
   const handleDemoLogin = (e) => {
     const form = e.currentTarget.closest('form');
     setEmail('admin@averqon.ai');
     setPassword('admin123');
-    // Using a small timeout to allow state to reflect in the DOM if needed, 
-    // but also setting values directly for immediate submission reliability.
     setTimeout(() => {
       form.submit();
     }, 50);
@@ -68,7 +104,7 @@ const Login = (props) => {
         </div>
 
         {/* Error Message */}
-        {message && (
+        {(message || error) && (
           <div style={{
             padding: '12px',
             background: '#FEF2F2',
@@ -78,7 +114,7 @@ const Login = (props) => {
             fontSize: '13px',
             marginBottom: '24px'
           }}>
-            {message.message}
+            {error || message.message}
           </div>
         )}
 
@@ -158,6 +194,38 @@ const Login = (props) => {
           </button>
 
           <div style={{ marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                border: `1px solid ${C.border}`,
+                color: C.text,
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#F9FAFB';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#FFFFFF';
+              }}
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: '18px' }} />
+              Login with Google
+            </button>
+          </div>
+
+          <div style={{ marginTop: '12px' }}>
             <button
               type="button"
               onClick={handleDemoLogin}

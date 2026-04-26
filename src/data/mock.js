@@ -3,82 +3,124 @@ export const heroImages = {
 };
 
 export const aboutImages = {
-  main: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800', // team collaboration
-  office: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800', // modern office
-  team: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=800', // tech team
+  main: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200', 
+  office: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=1200',
+  team: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=1200', 
 };
 
 export const services = [
-  { id: 1, title: 'Web Development', description: 'Building high-performance, responsive websites and progressive web applications.', icon: 'Globe' },
-  { id: 2, title: 'Mobile Apps', description: 'Crafting intuitive iOS and Android applications for seamless mobile experiences.', icon: 'Smartphone' },
-  { id: 3, title: 'UI/UX Design', description: 'Creating user-centric designs that are visually stunning and highly functional.', icon: 'Palette' },
-  { id: 4, title: 'AI Solutions', description: 'Leveraging artificial intelligence to automate processes and drive insights.', icon: 'Brain' },
-  { id: 5, title: 'Cloud Services', description: 'Providing scalable, secure cloud architecture for modern digital infrastructure.', icon: 'Cloud' },
-  { id: 6, title: 'Blockchain', description: 'Decentralized solutions for transparent, secure, and efficient systems.', icon: 'Link' },
-  { id: 7, title: 'Managed IT', description: 'End-to-end IT management to keep your business running smoothly.', icon: 'Database' },
-  { id: 8, title: 'Business Strategy', description: 'Expert technical consultancy to help your business stay ahead.', icon: 'Lightbulb' },
+  { 
+    id: 1, 
+    title: 'Enterprise Software', 
+    description: 'Custom-built ERP and CRM systems designed to streamline complex business operations and data management.', 
+    icon: 'Globe' 
+  },
+  { 
+    id: 2, 
+    title: 'Mobile Architecture', 
+    description: 'High-performance cross-platform applications built with React Native and Flutter for global scalability.', 
+    icon: 'Smartphone' 
+  },
+  { 
+    id: 3, 
+    title: 'Product Engineering', 
+    description: 'Full-lifecycle product development focusing on rapid prototyping, MVP builds, and enterprise scaling.', 
+    icon: 'Palette' 
+  },
+  { 
+    id: 4, 
+    title: 'AI & Data Science', 
+    description: 'Implementing LLMs, predictive modeling, and automated decision-making systems for competitive advantage.', 
+    icon: 'Brain' 
+  },
+  { 
+    id: 5, 
+    title: 'Cloud Infrastructure', 
+    description: 'Optimized AWS/Azure cloud architecture featuring automated CI/CD pipelines and high-availability systems.', 
+    icon: 'Cloud' 
+  },
+  { 
+    id: 6, 
+    title: 'Blockchain Solutions', 
+    description: 'Private and public blockchain integration for secure smart contracts and supply chain transparency.', 
+    icon: 'Link' 
+  },
+  { 
+    id: 7, 
+    title: 'Managed Security', 
+    description: 'Comprehensive cybersecurity audits, threat detection, and 24/7 managed IT infrastructure support.', 
+    icon: 'Database' 
+  },
+  { 
+    id: 8, 
+    title: 'Digital Consulting', 
+    description: 'Strategic technology roadmapping to help businesses navigate digital transformation and market shifts.', 
+    icon: 'Lightbulb' 
+  },
 ];
 
 export const stats = [
-  { id: 1, label: 'Projects Completed', value: 50, suffix: '+' },
-  { id: 2, label: 'Happy Clients', value: 20, suffix: '+' },
-  { id: 3, label: 'Expert Team', value: 50, suffix: '+' },
-  { id: 4, label: 'Years Experience', value: 5, suffix: '+' },
+  { id: 1, label: 'Global Launches', value: 120, suffix: '+' },
+  { id: 2, label: 'Enterprise Partners', value: 45, suffix: '' },
+  { id: 3, label: 'Full-stack Engineers', value: 85, suffix: '+' },
+  { id: 4, label: 'Success Quotient', value: 98, suffix: '%' },
 ];
 
 export const projects = [
   {
     id: 1,
-    title: 'FinTech Dashboard',
-    description: 'A comprehensive financial tracking system with real-time data visualization and secure payment integrations.',
-    image: 'https://images.unsplash.com/photo-1611974714851-eb605161ca81?auto=format&fit=crop&q=80&w=1200',
-    technologies: ['React', 'Node.js', 'AWS', 'D3.js']
+    title: 'AverLink Logistics',
+    description: 'A NEXT-GEN logistics platform optimizing fleet management with real-time tracking and predictive maintenance.',
+    image: '/src/assets/averlink_logistics.png',
+    technologies: ['React', 'Node.js', 'AWS IoT', 'Python']
   },
   {
     id: 2,
-    title: 'E-commerce Platform',
-    description: 'Modern retail experience with AI-powered recommendations and seamless multi-channel inventory management.',
-    image: 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=1200',
-    technologies: ['Next.js', 'Tailwind CSS', 'Stripe', 'MongoDB']
+    title: 'NeoRetail Core',
+    description: 'Multi-tenant e-commerce engine serving 1M+ monthly users with integrated AI-driven inventory forecasting.',
+    image: '/src/assets/neoretail_core.png',
+    technologies: ['Next.js', 'PostgreSQL', 'Redis', 'TensorFlow']
   },
   {
     id: 3,
-    title: 'HealthCare Connect',
-    description: 'Patient management system featuring secure data encryption and real-time telemedicine capabilities.',
-    image: 'https://images.unsplash.com/photo-1504813184591-01572f98c85f?auto=format&fit=crop&q=80&w=1200',
-    technologies: ['React Native', 'Firebase', 'WebRTC']
+    title: 'Pulse Health App',
+    description: 'HIPAA-compliant telemedicine suite featuring real-time video consultation and encrypted patient records.',
+    image: '/src/assets/pulse_health.png',
+    technologies: ['React Native', 'Firebase', 'WebRTC', 'Go']
   },
   {
     id: 4,
-    title: 'AI Analytics Tool',
-    description: 'Enterprise-grade predictive analytics platform helping businesses make data-driven decisions.',
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200',
-    technologies: ['Python', 'TensorFlow', 'React', 'GraphQL']
+    title: 'Sentient Analytics',
+    description: 'Real-time sentiment analysis platform for hedge funds, processing millions of financial news feeds hourly.',
+    image: '/src/assets/sentient_analytics.png',
+    technologies: ['PyTorch', 'Rust', 'Apache Kafka', 'Next.js']
   }
 ];
+
 export const testimonials = [
   {
     id: 1,
-    name: 'Sarah Jennifer',
-    company: 'CEO at TechStream',
-    feedback: 'Averqon transformed our digital infrastructure. Their expertise in AI and cloud solutions helped us scale faster than we ever thought possible.',
+    name: 'Eleanor Thorne',
+    company: 'CTO at Meridian Global',
+    feedback: 'Averqon didn\'t just build a product; they architected a solution that redefined our operational efficiency. Their depth in AI integration is truly industry-leading.',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200',
     rating: 5
   },
   {
     id: 2,
-    name: 'Michael Chen',
-    company: 'Director at Nexus Corp',
-    feedback: 'The team at Averqon is world-class. They delivered our complex e-commerce platform on time and exceeded our expectations in every way.',
+    name: 'David Matsumo',
+    company: 'VP of Engineering, ZenDesk',
+    feedback: 'The technical rigour and project management from the Averqon team are exceptional. They delivered a high-availability legacy migration 3 weeks ahead of schedule.',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
     rating: 5
   },
   {
     id: 3,
-    name: 'Amanda Brooks',
-    company: 'Founder of Bloom AI',
-    feedback: 'Working with Averqon was a game-changer for our startup. Their UI/UX design and technical implementation are truly top-tier.',
+    name: 'Clarissa Vance',
+    company: 'Founder of Ark Technologies',
+    feedback: 'Averqon is the ultimate partner for scaling startups. Their UI/UX vision combined with robust backend engineering gave us the edge we needed in a crowded market.',
     image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
     rating: 5
   }
 ];
+

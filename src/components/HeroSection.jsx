@@ -252,7 +252,7 @@ const HeroSection = () => {
             return (
               <div key={i} className="floating-chip" style={{
                 position:'absolute', top:'50%', left:'50%',
-                transform:`translate(calc(-50% + ${chip.x}% * 2.5px * 10), calc(-50% + ${chip.y}% * 2.5px * 10)) translate(${chip.x < 0 ? '-190px' : '190px'}, ${chip.y < 0 ? '-140px' : '140px'}) translate(${mousePos.x*(4+i*2)}px,${mousePos.y*(4+i*2)}px)`,
+                transform:`translate(calc(-50% + ${chip.x * 2.5}px), calc(-50% + ${chip.y * 2.5}px)) translate(${chip.x < 0 ? '-190px' : '190px'}, ${chip.y < 0 ? '-140px' : '140px'}) translate(${mousePos.x*(4+i*2)}px,${mousePos.y*(4+i*2)}px)`,
                 animation:`float-chip 5s ease-in-out infinite`,
                 animationDelay:`${i*0.5}s`,
                 zIndex:20,

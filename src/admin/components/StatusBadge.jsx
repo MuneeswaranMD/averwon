@@ -7,17 +7,17 @@ const StatusTag = (props) => {
   if (!value) return null
 
   const colors = {
-    Active: '#10b981', // green
-    Approved: '#10b981',
-    Completed: '#10b981',
-    Paid: '#10b981',
-    Pending: '#f59e0b', // orange
-    'In Progress': '#3b82f6', // blue
-    Urgent: '#ef4444', // red
-    Delayed: '#f97316', // orange
+    Active: '#10B981',      // Emerald
+    Approved: '#0EA5E9',    // Cyan
+    Completed: '#22C55E',   // Green
+    Paid: '#10B981',        // Emerald
+    Pending: '#F59E0B',     // Amber
+    'In Progress': '#2563EB', // Blue
+    Urgent: '#E11D48',      // Rose
+    Delayed: '#F43F5E',     // Rose/Pink
   }
 
-  const color = colors[value] || '#6b7280' // gray
+  const color = colors[value] || '#64748B' // Muted Slate default
 
   return (
     <span style={{

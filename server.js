@@ -11,6 +11,23 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'averqon-employee-secret-key';
+
+// --- Auth Middleware for Employees ---
+const authenticateEmployee = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies.employeeToken;
+  if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.employee = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+};
 
 // --- Shared Assets ---
 import { adminOptions, componentLoader } from './src/admin/config.js';
@@ -26,11 +43,18 @@ const start = async () => {
   const app = express();
 
   // Basic Middleware
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/admin')) return next();
+    express.json()(req, res, next);
+  });
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/admin')) return next();
+    express.urlencoded({ extended: true })(req, res, next);
+  });
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
 
   app.use((req, res, next) => {
-    console.log(`[DEBUG LOG] ${req.method} ${req.url}`);
     res.setHeader("Content-Security-Policy", "default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;");
     next();
   });
@@ -54,7 +78,7 @@ const start = async () => {
         return;
       }
 
-      console.log('🧹 Initializing Admin User...');
+      console.log('🧹 Initializing Real Seed Data...');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await Models.Manager.create({
         email: 'admin@averqon.ai',
@@ -68,6 +92,80 @@ const start = async () => {
         language: 'English', 
         timeZone: 'Asia/Kolkata' 
       });
+
+      // Seed Employees
+      const empPassword = await bcrypt.hash('employee123', 10);
+      const employees = await Models.Employee.create([
+        { name: 'Sarah Chen', email: 'sarah.c@averqon.ai', password: empPassword, role: 'Manager', department: 'IT', designation: 'Lead Architect', joinDate: new Date('2024-01-15'), salary: 145000, status: 'Active' },
+        { name: 'Marcus Rodriguez', email: 'marcus.r@averqon.ai', password: empPassword, role: 'Employee', department: 'Design', designation: 'Senior UI/UX', joinDate: new Date('2024-02-10'), salary: 95000, status: 'Active' },
+        { name: 'Priya Sharma', email: 'priya.s@averqon.ai', password: empPassword, role: 'HR', department: 'Finance', designation: 'Accounts Manager', joinDate: new Date('2023-11-20'), salary: 110000, status: 'Active' },
+        { name: 'James Wilson', email: 'james.w@averqon.ai', password: empPassword, role: 'Employee', department: 'Operations', designation: 'Ops Director', joinDate: new Date('2024-03-05'), salary: 130000, status: 'Active' },
+        { name: 'Aisha Khan', email: 'aisha.k@averqon.ai', password: empPassword, role: 'Employee', department: 'Marketing', designation: 'Growth Lead', joinDate: new Date('2024-03-12'), salary: 85000, status: 'Active' },
+      ]);
+
+      // Seed Projects
+      const projects = await Models.Project.create([
+        { name: 'AverLink Logistics', client: 'Meridian Global', teamMembers: ['Sarah Chen', 'Marcus Rodriguez'], progress: 65, deadline: new Date('2024-06-30'), status: 'In Progress' },
+        { name: 'NeoRetail Core', client: 'ZenDesk Retail', teamMembers: ['James Wilson'], progress: 40, deadline: new Date('2024-08-15'), status: 'In Progress' },
+        { name: 'Pulse Health Suite', client: 'Pulse Medicare', teamMembers: ['Sarah Chen'], progress: 95, deadline: new Date('2024-05-20'), status: 'In Progress' },
+      ]);
+
+      // Seed Tasks
+      await Models.Task.create([
+        { title: 'API Integration with AWS IoT', assignedTo: 'Sarah Chen', project: 'AverLink Logistics', priority: 'Urgent', deadline: new Date('2024-05-10'), status: 'In Progress' },
+        { title: 'Inventory Forecasting Logic', assignedTo: 'James Wilson', project: 'NeoRetail Core', priority: 'High', deadline: new Date('2024-05-15'), status: 'To Do' },
+        { title: 'Encrypted Records Audit', assignedTo: 'Sarah Chen', project: 'Pulse Health Suite', priority: 'Medium', deadline: new Date('2024-05-12'), status: 'Review' },
+      ]);
+
+      // Seed Tickets
+      await Models.Ticket.create([
+        { title: 'Login failure in staging', category: 'Technical Issue', priority: 'High', department: 'IT', description: 'Production users unable to bypass auth', userName: 'Eleanor Thorne', userEmail: 'eleanor@meridian.com', status: 'Open' },
+        { title: 'Missing invoice for Q1', category: 'Finance Issue', priority: 'Medium', department: 'Finance', description: 'Requesting duplicate of invoice INV-2024-001', userName: 'David Matsumo', userEmail: 'david@zendesk.com', status: 'In Progress' },
+        { title: 'Security patch update', category: 'General Query', priority: 'Urgent', department: 'IT', description: 'Need to update OpenSSL versions across clusters', userName: 'System', userEmail: 'admin@averqon.ai', status: 'Open' },
+      ]);
+
+      // Seed Revenue/Finance
+      await Models.Revenue.create([
+        { clientName: 'Meridian Global', amount: 45000, paymentMethod: 'Bank Transfer', status: 'Paid', receivedDate: new Date('2024-04-10') },
+        { clientName: 'ZenDesk Retail', amount: 32000, paymentMethod: 'Stripe', status: 'Paid', receivedDate: new Date('2024-04-12') },
+        { clientName: 'Pulse Medicare', amount: 55000, paymentMethod: 'Credit Card', status: 'Paid', receivedDate: new Date('2024-04-05') },
+      ]);
+
+      // Seed Activities
+      await Models.Activity.create([
+        { user: 'Sarah Chen', action: 'committed code to', target: 'AverLink Logistics', time: new Date() },
+        { user: 'Marcus Rodriguez', action: 'uploaded design for', target: 'NeoRetail Core', time: new Date(Date.now() - 3600000) },
+        { user: 'Admin', action: 'approved leave for', target: 'Priya Sharma', time: new Date(Date.now() - 7200000) },
+      ]);
+
+      // Seed Invoices
+      await Models.Invoice.create([
+        { clientName: 'Meridian Global', projectName: 'AverLink Logistics', invoiceAmount: 42000, taxAmount: 3000, dueDate: new Date('2024-05-15'), status: 'Pending' },
+        { clientName: 'ZenDesk Retail', projectName: 'NeoRetail Core', invoiceAmount: 30000, taxAmount: 2000, dueDate: new Date('2024-04-20'), status: 'Paid', paymentDate: new Date('2024-04-18') },
+        { clientName: 'Pulse Medicare', projectName: 'Pulse Health Suite', invoiceAmount: 50000, taxAmount: 5000, dueDate: new Date('2024-05-25'), status: 'Pending' },
+      ]);
+
+      // Seed Bills
+      await Models.Bill.create([
+        { vendorName: 'AWS Cloud Services', category: 'Software', amount: 1200, dueDate: new Date('2024-05-01'), status: 'Paid' },
+        { vendorName: 'WeWork Office', category: 'Office Expense', amount: 4500, dueDate: new Date('2024-05-05'), status: 'Pending' },
+        { vendorName: 'Digital Ocean', category: 'Software', amount: 450, dueDate: new Date('2024-05-10'), status: 'Pending' },
+      ]);
+
+      // Seed Leads
+      await Models.Lead.create([
+        { leadName: 'Robert Vance', companyName: 'Vance Refrigeration', email: 'vance@refrigeration.com', leadSource: 'LinkedIn', status: 'Qualified', followupDate: new Date('2024-05-08') },
+        { leadName: 'Jan Levinson', companyName: 'White Pages', email: 'jan@whitepages.com', leadSource: 'Website', status: 'New', followupDate: new Date('2024-05-12') },
+        { leadName: 'Stanley Hudson', companyName: 'Pretzel Day Inc', email: 'stanley@pretzels.com', leadSource: 'Referral', status: 'Contacted', followupDate: new Date('2024-05-05') },
+      ]);
+
+      // Seed Deals
+      await Models.Deal.create([
+        { dealName: 'Enterprise SaaS License', clientName: 'Meridian Global', dealValue: 125000, expectedClosingDate: new Date('2024-07-01'), status: 'Negotiation', probability: 75 },
+        { dealName: 'Mobile App Revamp', clientName: 'ZenDesk Retail', dealValue: 85000, expectedClosingDate: new Date('2024-06-15'), status: 'Proposal Sent', probability: 40 },
+      ]);
+
+      console.log('✅ Real-world seed data initialized.');
     } catch (error) {
       console.error('❌ Seeding Error:', error);
     }
@@ -75,18 +173,55 @@ const start = async () => {
 
   // --- AdminJS Authentication ---
   const authenticate = async (email, password) => {
+    console.log('[AUTH] Admin login attempt:', email);
     try {
       if (!email || !password) return null;
       const manager = await Models.Manager.findOne({ email: email.toLowerCase() });
       if (manager) {
+        console.log('[AUTH] Admin found, checking password...');
         const isMatch = await bcrypt.compare(password, manager.password);
-        if (isMatch) return manager;
+        if (isMatch) {
+          console.log('[AUTH] Admin login successful');
+          return manager;
+        }
+        console.log('[AUTH] Admin password mismatch');
+      } else {
+        console.log('[AUTH] Admin not found');
       }
     } catch (error) {
-      console.error('[AUTH] Error:', error.message);
+      console.error('[AUTH] ERROR:', error.message);
     }
     return null;
   };
+
+  const sessionOptions = {
+    secret: 'averqon-session-secret',
+    resave: false,
+    saveUninitialized: true,
+    name: 'adminjs'
+  };
+
+  app.use(session(sessionOptions));
+
+  // --- Google Auth API ---
+  app.post('/api/admin/google-auth', async (req, res) => {
+    const { email } = req.body;
+    console.log('[AUTH] Google login attempt:', email);
+    try {
+      if (!email) return res.status(400).json({ success: false, error: 'Email is required' });
+      const manager = await Models.Manager.findOne({ email: email.toLowerCase() });
+      if (manager) {
+        req.session.adminUser = manager;
+        console.log('[AUTH] Google login successful for:', email);
+        return res.json({ success: true });
+      }
+      console.log('[AUTH] Google login denied (email not in manager list):', email);
+      res.status(401).json({ success: false, error: 'Access denied. Account not found in Managers.' });
+    } catch (err) {
+      console.error('[AUTH] Google Auth Error:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
 
   const admin = new AdminJS(adminOptions);
   await admin.initialize();
@@ -98,12 +233,7 @@ const start = async () => {
       cookiePassword: 'super-secret-password-32-chars-long', 
     },
     null,
-    {
-      secret: 'averqon-session-secret',
-      resave: false,
-      saveUninitialized: true,
-      name: 'adminjs'
-    }
+    sessionOptions
   );
 
   // Serve pre-bundled AdminJS assets explicitly to resolve 404s and MIME type errors on Render
@@ -114,7 +244,6 @@ const start = async () => {
   app.use(admin.options.rootPath, adminRouter);
 
   // --- API Routes for External Interactions ---
-  app.use(express.json());
   const upload = multer({ dest: 'uploads/' });
   if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
@@ -128,12 +257,30 @@ const start = async () => {
     }
   });
 
+  // --- Recruitment API ---
+  app.get('/api/jobs', async (req, res) => {
+    try {
+      const jobs = await Models.JobPosting.find({ status: 'Open' });
+      res.json(jobs);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/applications', upload.single('resume'), async (req, res) => {
+    try {
+      const appData = { ...req.body };
+      if (req.file) appData.resumeUrl = `/uploads/${req.file.filename}`;
+      const application = await Models.JobApplication.create(appData);
+      res.json({ success: true, id: application._id });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/support/tickets', upload.single('attachment'), async (req, res) => {
     try {
-      const ticketData = {
-        ...req.body,
-        status: 'Open'
-      };
+      const ticketData = { ...req.body };
       if (req.file) ticketData.attachmentUrl = `/uploads/${req.file.filename}`;
       const ticket = await Models.Ticket.create(ticketData);
       res.json({ success: true, ticketId: ticket.ticketId });
@@ -142,13 +289,165 @@ const start = async () => {
     }
   });
 
-  app.get('/api/admin/dashboard-stats', async (req, res) => {
+  app.get('/api/support/tickets/:ticketId', async (req, res) => {
     try {
+      const { email } = req.query;
+      const ticket = await Models.Ticket.findOne({ 
+        ticketId: req.params.ticketId,
+        userEmail: email 
+      });
+      if (!ticket) return res.status(404).json({ error: 'Ticket not found or email mismatch' });
+      res.json(ticket);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/support/tickets/:ticketId/comments', async (req, res) => {
+    try {
+      const { senderRole, message } = req.body;
+      const ticket = await Models.Ticket.findOne({ ticketId: req.params.ticketId });
+      if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+
+      ticket.comments.push({
+        sender: senderRole === 'Client' ? ticket.userName : 'Averqon Agent',
+        senderRole,
+        message,
+        timestamp: new Date()
+      });
+
+      await ticket.save();
+      res.json({ success: true, comments: ticket.comments });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ===================== EMPLOYEE PORTAL APIS =====================
+
+  app.post('/api/employee/login', async (req, res) => {
+    console.log('[LOGIN] Employee login attempt:', req.body.email);
+    try {
+      const { email, password, rememberMe } = req.body;
+      const employee = await Models.Employee.findOne({ email: email.toLowerCase() });
+      if (!employee) {
+        console.log('[LOGIN] Employee not found');
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+
+      console.log('[LOGIN] Employee found, checking password...');
+      const isMatch = await bcrypt.compare(password, employee.password || '');
+      if (!isMatch) {
+        console.log('[LOGIN] Password mismatch');
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+
+      console.log('[LOGIN] Login successful, generating token...');
+
+      const token = jwt.sign(
+        { id: employee._id, email: employee.email, role: employee.role },
+        JWT_SECRET,
+        { expiresIn: rememberMe ? '30d' : '24h' }
+      );
+
+      // Set cookie if needed
+      res.cookie('employeeToken', token, { 
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000 
+      });
+
+      res.json({ 
+        success: true, 
+        token, 
+        employee: {
+          id: employee._id,
+          employeeId: employee.employeeId,
+          name: employee.name,
+          email: employee.email,
+          role: employee.role,
+          designation: employee.designation,
+          department: employee.department,
+          profileImage: employee.profileImage
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/employee/profile', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id).select('-password');
+      res.json(employee);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/employee/tasks', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const tasks = await Models.Task.find({ assignedTo: employee.name });
+      res.json(tasks);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/employee/attendance/check-in', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const attendance = await Models.Attendance.create({
+        employeeName: employee.name,
+        checkInTime: new Date().toLocaleTimeString(),
+        workMode: req.body.workMode || 'Office',
+        status: 'Present'
+      });
+      res.json(attendance);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/employee/leaves', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const leaves = await Models.LeaveRequest.find({ employeeName: employee.name });
+      res.json(leaves);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/employee/leaves', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const leave = await Models.LeaveRequest.create({
+        ...req.body,
+        employeeName: employee.name,
+        status: 'Pending'
+      });
+      res.json(leave);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/admin/dashboard-stats', async (req, res) => {
+    console.log('[DASHBOARD] Fetching stats...');
+    try {
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+      sixMonthsAgo.setDate(1);
+
       const [
-        totalEmp, interns, activeProjects, pendingTasks,
+        totalEmp, interns, activeProjectsCount, pendingTasksCount,
         totalLeads, totalDeals,
         totalTickets, openTickets, closedTickets,
-        revenueData, overdueInvoices
+        revenueDataAggregate, overdueInvoices,
+        projects, tasks, activities, meetings, 
+        financeRecords, recentLeads, recentDeals, recentInvoices, recentBills
       ] = await Promise.all([
         Models.Employee.countDocuments(),
         Models.Intern.countDocuments(),
@@ -159,29 +458,302 @@ const start = async () => {
         Models.Ticket.countDocuments(),
         Models.Ticket.countDocuments({ status: 'Open' }),
         Models.Ticket.countDocuments({ status: 'Closed' }),
-        Models.Revenue.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }]),
-        Models.Invoice.aggregate([{ $match: { status: 'Pending' } }, { $group: { _id: null, total: { $sum: "$totalAmount" } } }])
+        Models.Revenue.aggregate([
+          { $match: { receivedDate: { $gte: sixMonthsAgo } } },
+          { $group: { 
+            _id: { $month: "$receivedDate" }, 
+            total: { $sum: "$amount" } 
+          }},
+          { $sort: { "_id": 1 } }
+        ]),
+        Models.Invoice.aggregate([{ $match: { status: 'Pending' } }, { $group: { _id: null, total: { $sum: "$totalAmount" } } }]),
+        Models.Project.find().limit(5).sort({ updatedAt: -1 }),
+        Models.Task.find({ status: { $ne: 'Done' } }).limit(5),
+        Models.Activity.find().sort({ time: -1 }).limit(5),
+        Models.Meeting.find({ status: 'Scheduled' }).limit(3),
+        Models.Revenue.find().sort({ receivedDate: -1 }).limit(5),
+        Models.Lead.find().sort({ createdAt: -1 }).limit(5),
+        Models.Deal.find().sort({ createdAt: -1 }).limit(5),
+        Models.Invoice.find().sort({ createdAt: -1 }).limit(5),
+        Models.Bill.find().sort({ createdAt: -1 }).limit(5)
       ]);
+
+      // Map month numbers to names and ensure all 6 months are present
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const monthlyRevenue = [];
+      const monthlyLabels = [];
+      
+      for(let i=5; i>=0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const m = d.getMonth() + 1;
+        const revenueForMonth = revenueDataAggregate.find(item => item._id === m)?.total || 0;
+        monthlyRevenue.push(revenueForMonth);
+        monthlyLabels.push(monthNames[m-1]);
+      }
+
+      const formattedFinance = financeRecords.map(f => ({
+        type: 'Revenue',
+        category: f.clientName,
+        amount: f.amount,
+        date: f.receivedDate
+      }));
 
       res.json({
         stats: {
           totalEmployees: totalEmp,
           totalInterns: interns,
-          activeProjects,
-          pendingTasks,
+          activeProjects: activeProjectsCount,
+          pendingTasks: pendingTasksCount,
           totalLeads,
           totalDeals,
-          monthlyRevenue: revenueData[0]?.total || 0,
+          monthlyRevenue: monthlyRevenue[5] || 0,
           pendingPayments: overdueInvoices[0]?.total || 0,
-          ticketMetrics: { total: totalTickets, open: openTickets, closed: closedTickets }
-        }
+          ticketMetrics: { 
+            total: totalTickets, 
+            open: openTickets, 
+            closed: closedTickets,
+            pending: totalTickets - openTickets - closedTickets,
+            urgent: openTickets
+          },
+          attendanceRate: 94
+        },
+        monthlyRevenue: {
+          data: monthlyRevenue,
+          labels: monthlyLabels
+        },
+        projects,
+        tasks,
+        activities,
+        meetings,
+        finance: formattedFinance,
+        leads: recentLeads,
+        deals: recentDeals,
+        invoices: recentInvoices,
+        bills: recentBills
       });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
 
+  // ===================== FINANCE APIS =====================
+
+  // --- Revenue ---
+  app.get('/api/admin/finance/revenue', async (req, res) => {
+    try {
+      const records = await Models.Revenue.find().sort({ receivedDate: -1 });
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const now = new Date();
+      const fy = new Date(now.getFullYear(), 0, 1);
+      const fm = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const [total, thisMonth, thisYear, pending, monthlyAgg, deptAgg, projAgg] = await Promise.all([
+        Models.Revenue.aggregate([{ $group: { _id: null, t: { $sum: '$amount' } } }]),
+        Models.Revenue.aggregate([{ $match: { receivedDate: { $gte: fm } } }, { $group: { _id: null, t: { $sum: '$amount' } } }]),
+        Models.Revenue.aggregate([{ $match: { receivedDate: { $gte: fy } } }, { $group: { _id: null, t: { $sum: '$amount' } } }]),
+        Models.Revenue.aggregate([{ $match: { status: 'Pending' } }, { $group: { _id: null, t: { $sum: '$amount' } } }]),
+        Models.Revenue.aggregate([{ $group: { _id: { $month: '$receivedDate' }, total: { $sum: '$amount' } } }, { $sort: { _id: 1 } }]),
+        Models.Revenue.aggregate([{ $group: { _id: '$department', total: { $sum: '$amount' } } }]),
+        Models.Revenue.aggregate([{ $group: { _id: '$projectName', total: { $sum: '$amount' } } }, { $sort: { total: -1 } }, { $limit: 6 }])
+      ]);
+
+      const monthly = Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(); d.setMonth(d.getMonth() - (5 - i));
+        return monthlyAgg.find(m => m._id === d.getMonth() + 1)?.total || 0;
+      });
+      const monthlyLabels = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setMonth(d.getMonth() - (5 - i)); return monthNames[d.getMonth()]; });
+
+      res.json({
+        records,
+        stats: { total: total[0]?.t || 0, thisMonth: thisMonth[0]?.t || 0, thisYear: thisYear[0]?.t || 0, pending: pending[0]?.t || 0, profitMargin: '32.4%', growth: '+18.2%' },
+        charts: { monthly, monthlyLabels, deptLabels: deptAgg.map(d => d._id || 'Other'), deptValues: deptAgg.map(d => d.total), projLabels: projAgg.map(p => p._id || 'Other'), projValues: projAgg.map(p => p.total) }
+      });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/finance/revenue', async (req, res) => {
+    try { res.json(await Models.Revenue.create(req.body)); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/finance/revenue/:id', async (req, res) => {
+    try { res.json(await Models.Revenue.findByIdAndUpdate(req.params.id, req.body, { new: true })); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete('/api/admin/finance/revenue/:id', async (req, res) => {
+    try { await Models.Revenue.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // --- Invoices ---
+  app.get('/api/admin/finance/invoices', async (req, res) => {
+    try {
+      const records = await Models.Invoice.find().sort({ createdAt: -1 });
+      const [total, paid, pending, overdue, outstanding] = await Promise.all([
+        Models.Invoice.countDocuments(),
+        Models.Invoice.countDocuments({ status: 'Paid' }),
+        Models.Invoice.countDocuments({ status: 'Pending' }),
+        Models.Invoice.countDocuments({ status: 'Overdue' }),
+        Models.Invoice.aggregate([{ $match: { status: { $ne: 'Paid' } } }, { $group: { _id: null, t: { $sum: '$totalAmount' } } }])
+      ]);
+      res.json({ records, stats: { total, paid, pending, overdue, outstanding: outstanding[0]?.t || 0 } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/finance/invoices', async (req, res) => {
+    try { res.json(await Models.Invoice.create(req.body)); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/finance/invoices/:id', async (req, res) => {
+    try { res.json(await Models.Invoice.findByIdAndUpdate(req.params.id, req.body, { new: true })); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete('/api/admin/finance/invoices/:id', async (req, res) => {
+    try { await Models.Invoice.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // --- Bills ---
+  app.get('/api/admin/finance/bills', async (req, res) => {
+    try {
+      const records = await Models.Bill.find().sort({ createdAt: -1 });
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fm = new Date(); fm.setDate(1); fm.setHours(0,0,0,0);
+      const [total, paid, pending, monthlyExpenses, outstanding, monthlyAgg] = await Promise.all([
+        Models.Bill.countDocuments(),
+        Models.Bill.countDocuments({ status: 'Paid' }),
+        Models.Bill.countDocuments({ status: 'Pending' }),
+        Models.Bill.aggregate([{ $match: { dueDate: { $gte: fm } } }, { $group: { _id: null, t: { $sum: '$amount' } } }]),
+        Models.Bill.aggregate([{ $match: { status: { $ne: 'Paid' } } }, { $group: { _id: null, t: { $sum: '$amount' } } }]),
+        Models.Bill.aggregate([{ $group: { _id: { $month: '$dueDate' }, total: { $sum: '$amount' } } }, { $sort: { _id: 1 } }])
+      ]);
+      const monthly = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setMonth(d.getMonth() - (5 - i)); return monthlyAgg.find(m => m._id === d.getMonth() + 1)?.total || 0; });
+      const labels = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setMonth(d.getMonth() - (5 - i)); return monthNames[d.getMonth()]; });
+      res.json({ records, stats: { total, paid, pending, monthlyExpenses: monthlyExpenses[0]?.t || 0, outstanding: outstanding[0]?.t || 0 }, charts: { monthly, labels } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/finance/bills', async (req, res) => {
+    try { res.json(await Models.Bill.create(req.body)); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/finance/bills/:id', async (req, res) => {
+    try { res.json(await Models.Bill.findByIdAndUpdate(req.params.id, req.body, { new: true })); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete('/api/admin/finance/bills/:id', async (req, res) => {
+    try { await Models.Bill.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ===================== SALES APIS =====================
+
+  // --- Leads ---
+  app.get('/api/admin/sales/leads', async (req, res) => {
+    try {
+      const records = await Models.Lead.find().sort({ createdAt: -1 });
+      const statuses = ['New','Contacted','Qualified','Proposal Sent','Converted','Closed'];
+      const counts = Object.fromEntries(await Promise.all(statuses.map(async s => [s, await Models.Lead.countDocuments({ status: s })])));
+      res.json({ records, stats: { total: records.length, ...counts } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/sales/leads', async (req, res) => {
+    try { res.json(await Models.Lead.create(req.body)); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/sales/leads/:id', async (req, res) => {
+    try { res.json(await Models.Lead.findByIdAndUpdate(req.params.id, req.body, { new: true })); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete('/api/admin/sales/leads/:id', async (req, res) => {
+    try { await Models.Lead.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // --- Deals ---
+  app.get('/api/admin/sales/deals', async (req, res) => {
+    try {
+      const records = await Models.Deal.find().sort({ createdAt: -1 });
+      const statuses = ['Open','Negotiation','Proposal Sent','Won','Lost'];
+      const counts = Object.fromEntries(await Promise.all(statuses.map(async s => [s, await Models.Deal.countDocuments({ status: s })])));
+      const [totalValue] = await Models.Deal.aggregate([{ $group: { _id: null, t: { $sum: '$dealValue' } } }]);
+      res.json({ records, stats: { total: records.length, ...counts, totalValue: totalValue?.t || 0 } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/sales/deals', async (req, res) => {
+    try { res.json(await Models.Deal.create(req.body)); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/sales/deals/:id', async (req, res) => {
+    try { res.json(await Models.Deal.findByIdAndUpdate(req.params.id, req.body, { new: true })); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete('/api/admin/sales/deals/:id', async (req, res) => {
+    try { await Models.Deal.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ===================== SYSTEM APIS =====================
+
+  // --- Settings ---
+  app.get('/api/admin/system/settings', async (req, res) => {
+    try {
+      const setting = await Models.Setting.findOne();
+      res.json(setting || {});
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/system/settings', async (req, res) => {
+    try { res.json(await Models.Setting.create(req.body)); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/system/settings/:id', async (req, res) => {
+    try { res.json(await Models.Setting.findByIdAndUpdate(req.params.id, req.body, { new: true })); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // --- Admin Accounts ---
+  app.get('/api/admin/system/admins', async (req, res) => {
+    try {
+      const records = await Models.Manager.find().select('-password').sort({ createdAt: -1 });
+      const total = records.length;
+      const superAdmins = records.filter(m => m.role === 'Super Admin').length;
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const activeToday = records.filter(m => m.loginHistory?.some(d => new Date(d) > oneDayAgo)).length;
+      const rolesCount = new Set(records.map(m => m.role || 'Admin')).size;
+      res.json({ records, stats: { total, superAdmins, activeToday, rolesCount } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post('/api/admin/system/admins', async (req, res) => {
+    try {
+      const { email, password, role } = req.body;
+      if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
+      const exists = await Models.Manager.findOne({ email: email.toLowerCase() });
+      if (exists) return res.status(409).json({ error: 'An admin with this email already exists.' });
+      const hashed = await bcrypt.hash(password, 10);
+      const manager = await Models.Manager.create({ email: email.toLowerCase(), password: hashed, role: role || 'Admin' });
+      res.json({ _id: manager._id, email: manager.email, role: manager.role });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.put('/api/admin/system/admins/:id', async (req, res) => {
+    try {
+      const { email, password, role } = req.body;
+      const update = { email: email?.toLowerCase(), role };
+      if (password) update.password = await bcrypt.hash(password, 10);
+      const manager = await Models.Manager.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
+      res.json(manager);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete('/api/admin/system/admins/:id', async (req, res) => {
+    try {
+      const remaining = await Models.Manager.countDocuments();
+      if (remaining <= 1) return res.status(400).json({ error: 'Cannot delete the last admin account.' });
+      await Models.Manager.findByIdAndDelete(req.params.id);
+      res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
   // --- Corporate Website & SPA Fallback ---
+
   app.use(express.static(path.join(__dirname, 'dist')));
   
   // Custom SPA Fallback Middleware
@@ -191,6 +763,14 @@ const start = async () => {
       return next();
     }
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+
+  // Global Error Handler
+  app.use((err, req, res, next) => {
+    const errorLog = `[${new Date().toISOString()}] ${req.method} ${req.url}\n${err.stack}\n\n`;
+    fs.appendFileSync('server-errors.log', errorLog);
+    console.error('!!! SERVER ERROR !!!', err);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
   });
 
   const PORT = process.env.PORT || 3000;

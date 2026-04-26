@@ -1,175 +1,382 @@
 import React, { useState } from 'react';
+import {
+  Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
+  Collapse, Tooltip, Typography, Avatar, Divider, IconButton
+} from '@mui/material';
 
-// ── Icons (Pure SVG for 100% compatibility) ──────────────────────────────────
-const Icon = {
-  HR: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
-  Recruit: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
-  Ops: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>,
-  Supp: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>,
-  Fin: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
-  Sales: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>,
-  Sys: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /></svg>,
-  Dash: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
-  Down: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>,
-  Right: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>,
-  Out: (s = 18) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>,
-};
+// MUI Icons
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
+import BusinessCenterRoundedIcon from '@mui/icons-material/BusinessCenterRounded';
+import SupportAgentRoundedIcon from '@mui/icons-material/SupportAgentRounded';
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
+import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 
-// ── Colors ────────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#F8FAFC',
-  white: '#FFFFFF',
-  border: '#E5E7EB',
-  primary: '#2563EB',
-  primaryLight: '#EEF4FF',
-  text: '#111827',
-  textMuted: '#6B7280',
-  textDim: '#9CA3AF',
-};
+// Child icons
+import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
+import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
+import WorkRoundedIcon from '@mui/icons-material/WorkRounded';
+import AssignmentIndRoundedIcon from '@mui/icons-material/AssignmentIndRounded';
+import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
+import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
+import VideocamRoundedIcon from '@mui/icons-material/VideocamRounded';
+import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
+import PersonSearchRoundedIcon from '@mui/icons-material/PersonSearchRounded';
+import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 
-const Sidebar = (props) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openSections, setOpenSections] = useState({ 'HR Management': true, 'Operations': true });
+// Using static path for AdminJS bundling stability
+const averqonLogo = '/logo.png';
 
-  const toggleSection = (name) => {
-    setOpenSections(prev => ({ ...prev, [name]: !prev[name] }));
-  };
+const COLLAPSED_W = 72;
+const EXPANDED_W = 260;
 
-  const nav = [
-    {
-      name: 'HR Management', icon: Icon.HR(),
-      items: [
-        { name: 'Employees', path: '/admin/resources/Employee' },
-        { name: 'Interns', path: '/admin/resources/Intern' },
-        { name: 'Attendance', path: '/admin/resources/Attendance' },
-        { name: 'Leave Requests', path: '/admin/resources/LeaveRequest' },
-        { name: 'Payroll', path: '/admin/resources/Payroll' },
-      ]
-    },
-    {
-      name: 'Recruitment', icon: Icon.Recruit(),
-      items: [
-        { name: 'Job Postings', path: '/admin/resources/JobPosting' },
-        { name: 'Applications', path: '/admin/resources/JobApplication' },
-      ]
-    },
-    {
-      name: 'Operations', icon: Icon.Ops(),
-      items: [
-        { name: 'Projects', path: '/admin/resources/Project' },
-        { name: 'Tasks', path: '/admin/resources/Task' },
-        { name: 'Meetings', path: '/admin/resources/Meeting' },
-        { name: 'Calendar', path: '#' },
-        { name: 'Team Activity', path: '#' },
-      ]
-    },
-    {
-      name: 'Support', icon: Icon.Supp(),
-      items: [
-        { name: 'Tickets', path: '/admin/resources/Ticket' },
-        { name: 'Live Chat', path: '#' },
-      ]
-    },
-    {
-      name: 'Finance', icon: Icon.Fin(),
-      items: [
-        { name: 'Revenue', path: '/admin/resources/Finance' },
-        { name: 'Invoices', path: '#' },
-        { name: 'Bills', path: '#' },
-      ]
-    },
-    {
-      name: 'Sales', icon: Icon.Sales(),
-      items: [
-        { name: 'Leads', path: '/admin/resources/ClientRequest' },
-        { name: 'Deals', path: '#' },
-      ]
-    },
-    {
-      name: 'System', icon: Icon.Sys(),
-      items: [
-        { name: 'Settings', path: '#' },
-        { name: 'Admin Account', path: '/admin/resources/Manager' },
-      ]
-    }
-  ];
+const PRIMARY = '#2563EB';
+const PRIMARY_LIGHT = '#EFF6FF';
+const BG = '#FFFFFF';
+const BORDER = '#E2E8F0';
+const TEXT = '#334155';
+const MUTED = '#64748B';
+const NAV_SELECTED_BG = '#EFF6FF';
+const NAV_HOVER_BG = '#F8FAFC';
 
+const navConfig = [
+  {
+    name: 'HR Management',
+    icon: <PeopleAltRoundedIcon />,
+    items: [
+      { name: 'Employees', path: '/admin/resources/Employee', icon: <BadgeRoundedIcon fontSize="small" /> },
+      { name: 'Interns', path: '/admin/resources/Intern', icon: <SchoolRoundedIcon fontSize="small" /> },
+      { name: 'Attendance', path: '/admin/resources/Attendance', icon: <AccessTimeRoundedIcon fontSize="small" /> },
+      { name: 'Leave Requests', path: '/admin/resources/LeaveRequest', icon: <BeachAccessRoundedIcon fontSize="small" /> },
+      { name: 'Payroll', path: '/admin/resources/Payroll', icon: <PaymentsRoundedIcon fontSize="small" /> },
+    ],
+  },
+  {
+    name: 'Recruitment',
+    icon: <ManageSearchRoundedIcon />,
+    items: [
+      { name: 'Job Postings', path: '/admin/resources/JobPosting', icon: <WorkRoundedIcon fontSize="small" /> },
+      { name: 'Applications', path: '/admin/resources/JobApplication', icon: <AssignmentIndRoundedIcon fontSize="small" /> },
+    ],
+  },
+  {
+    name: 'Operations',
+    icon: <BusinessCenterRoundedIcon />,
+    items: [
+      { name: 'Projects', path: '/admin/resources/Project', icon: <FolderOpenRoundedIcon fontSize="small" /> },
+      { name: 'Tasks', path: '/admin/resources/Task', icon: <CheckBoxRoundedIcon fontSize="small" /> },
+      { name: 'Meetings', path: '/admin/resources/Meeting', icon: <VideocamRoundedIcon fontSize="small" /> },
+    ],
+  },
+  {
+    name: 'Support',
+    icon: <SupportAgentRoundedIcon />,
+    items: [
+      { name: 'Tickets', path: '/admin/resources/Ticket', icon: <ConfirmationNumberRoundedIcon fontSize="small" /> },
+    ],
+  },
+  {
+    name: 'Finance',
+    icon: <AccountBalanceWalletRoundedIcon />,
+    items: [
+      { name: 'Revenue', path: '/admin/resources/Revenue', icon: <TrendingUpRoundedIcon fontSize="small" /> },
+      { name: 'Invoices', path: '/admin/resources/Invoice', icon: <ReceiptLongRoundedIcon fontSize="small" /> },
+      { name: 'Bills', path: '/admin/resources/Bill', icon: <CreditCardRoundedIcon fontSize="small" /> },
+    ],
+  },
+  {
+    name: 'Sales',
+    icon: <TrackChangesRoundedIcon />,
+    items: [
+      { name: 'Leads', path: '/admin/resources/Lead', icon: <PersonSearchRoundedIcon fontSize="small" /> },
+      { name: 'Deals', path: '/admin/resources/Sales', icon: <HandshakeRoundedIcon fontSize="small" /> },
+    ],
+  },
+  {
+    name: 'System',
+    icon: <ShieldRoundedIcon />,
+    items: [
+      { name: 'Settings', path: '/admin/resources/Setting', icon: <SettingsRoundedIcon fontSize="small" /> },
+      { name: 'Admin Account', path: '/admin/resources/Manager', icon: <AdminPanelSettingsRoundedIcon fontSize="small" /> },
+    ],
+  },
+];
+
+const Sidebar = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const [open, setOpen] = useState({ 'HR Management': true, Operations: true });
   const currentPath = window.location.pathname;
 
+  const toggle = (name) => setOpen(prev => ({ ...prev, [name]: !prev[name] }));
+  const isActive = (path) => currentPath === path;
+  const sectionActive = (items) => items.some(i => currentPath === i.path);
+
   return (
-    <div style={{
-      width: isCollapsed ? '72px' : '260px',
-      height: '100vh',
-      background: C.bg,
-      borderRight: `1px solid ${C.border}`,
-      display: 'flex',
-      flexDirection: 'column',
-      flexShrink: 0,
-      transition: 'width 0.3s ease',
-      position: 'relative',
-      fontFamily: "'Inter', sans-serif"
-    }}>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: collapsed ? COLLAPSED_W : EXPANDED_W,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: collapsed ? COLLAPSED_W : EXPANDED_W,
+          boxSizing: 'border-box',
+          background: BG,
+          borderRight: `1px solid ${BORDER}`,
+          overflowX: 'hidden',
+          transition: 'width 0.28s cubic-bezier(0.4,0,0.6,1)',
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      }}
+    >
       {/* ── Brand ── */}
-      <div style={{ padding: isCollapsed ? '24px 0' : '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', borderBottom: `1px solid ${C.border}`, marginBottom: '12px' }}>
-        <button onClick={() => setIsCollapsed(!isCollapsed)} style={{ position: 'absolute', right: '-12px', top: '24px', width: '24px', height: '24px', borderRadius: '50%', background: C.white, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.08)', zIndex: 10 }}>
-          {isCollapsed ? Icon.Right(12) : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>}
-        </button>
-        <div style={{ width: isCollapsed ? '40px' : '52px', height: isCollapsed ? '40px' : '52px', marginBottom: isCollapsed ? 0 : '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <img src="/logo.png" style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Logo" />
-        </div>
-        {!isCollapsed && (
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: C.text }}>averqon HRMS</h1>
-            <p style={{ margin: '2px 0 0', fontSize: '11px', color: C.textMuted, fontWeight: 500 }}>Smart Business Management</p>
-          </div>
+      <Box
+        sx={{
+          px: collapsed ? 0 : 2,
+          py: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          position: 'relative',
+          borderBottom: `1px solid ${BORDER}`,
+          mb: 1,
+        }}
+      >
+        {/* Collapse Toggle */}
+        <IconButton
+          onClick={() => setCollapsed(c => !c)}
+          size="small"
+          sx={{
+            position: 'absolute',
+            right: -12,
+            top: 28,
+            width: 24,
+            height: 24,
+            background: '#fff',
+            border: `1px solid ${BORDER}`,
+            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+            zIndex: 10,
+            '&:hover': { background: PRIMARY_LIGHT },
+          }}
+        >
+          {collapsed
+            ? <ChevronRightRoundedIcon sx={{ fontSize: 14, color: PRIMARY }} />
+            : <ChevronLeftRoundedIcon sx={{ fontSize: 14, color: PRIMARY }} />}
+        </IconButton>
+
+        {!collapsed && (
+          <Box sx={{ textAlign: 'center', mb: 1 }}>
+            <Box
+              component="img"
+              src={averqonLogo}
+              sx={{
+                height: 48,
+                width: 'auto',
+                mb: 1.5,
+                borderRadius: '8px'
+              }}
+            />
+            <Typography variant="subtitle1" fontWeight={800} color={PRIMARY} sx={{ fontSize: '18px', lineHeight: 1.2, letterSpacing: '1px' }}>
+              AVERQON
+            </Typography>
+            <Typography variant="caption" sx={{ color: PRIMARY, fontWeight: 700, letterSpacing: '1.5px', opacity: 0.8, fontSize: '10px' }}>
+              SMART MANAGEMENT
+            </Typography>
+          </Box>
         )}
-      </div>
+        {collapsed && (
+          <Box
+            component="img"
+            src={averqonLogo}
+            sx={{ height: 32, width: 32, borderRadius: '6px' }}
+          />
+        )}
+      </Box>
 
-      {/* ── Nav ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <a href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: currentPath === '/admin' ? C.primary : C.text, background: currentPath === '/admin' ? C.white : 'transparent', border: `1px solid ${currentPath === '/admin' ? C.border : 'transparent'}`, boxShadow: currentPath === '/admin' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}>
-          {Icon.Dash(18)}
-          {!isCollapsed && <span style={{ fontSize: '14px', fontWeight: 600 }}>Dashboard</span>}
-        </a>
+      {/* ── Navigation ── */}
+      <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', px: 1.5, pb: 2, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { borderRadius: 4, background: BORDER } }}>
 
-        {nav.map((sec, idx) => (
-          <div key={idx}>
-            <button onClick={() => toggleSection(sec.name)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', border: 'none', background: 'transparent', cursor: 'pointer', color: C.text }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {sec.icon}
-                {!isCollapsed && <span style={{ fontSize: '13px', fontWeight: 600 }}>{sec.name}</span>}
-              </div>
-              {!isCollapsed && <div style={{ transform: openSections[sec.name] ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }}>{Icon.Down(12)}</div>}
-            </button>
-            {!isCollapsed && openSections[sec.name] && (
-              <div style={{ margin: '4px 0 8px', padding: '4px', background: C.white, borderRadius: '12px', border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                {sec.items.map((item, i) => {
-                  const active = currentPath === item.path;
-                  return (
-                    <a key={i} href={item.path} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', color: active ? C.primary : C.textMuted, background: active ? C.primaryLight : 'transparent', fontSize: '13px', fontWeight: active ? 600 : 400 }}>
-                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: active ? C.primary : C.textDim }} />
-                      {item.name}
-                    </a>
-                  );
-                })}
-              </div>
+        {/* Dashboard */}
+        <Tooltip title={collapsed ? 'Dashboard' : ''} placement="right" arrow>
+          <ListItemButton
+            component="a"
+            href="/admin"
+            selected={currentPath === '/admin'}
+            sx={{
+              borderRadius: '10px',
+              mb: 0.5,
+              py: 1.1,
+              px: 1.5,
+              gap: 1.5,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              color: currentPath === '/admin' ? PRIMARY : TEXT,
+              background: currentPath === '/admin' ? NAV_SELECTED_BG : 'transparent',
+              border: `1px solid ${currentPath === '/admin' ? BORDER : 'transparent'}`,
+              '&:hover': { background: NAV_HOVER_BG, color: PRIMARY },
+              '&.Mui-selected': { background: NAV_SELECTED_BG, '&:hover': { background: NAV_SELECTED_BG } },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
+              <DashboardRoundedIcon sx={{ fontSize: 20 }} />
+            </ListItemIcon>
+            {!collapsed && (
+              <ListItemText
+                primary="Dashboard"
+                primaryTypographyProps={{ fontSize: '14px', fontWeight: 600, color: 'inherit' }}
+              />
             )}
-          </div>
-        ))}
-      </div>
+          </ListItemButton>
+        </Tooltip>
 
-      {/* ── Profile ── */}
-      <div style={{ padding: '16px', borderTop: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <img src="https://ui-avatars.com/api/?name=Admin&background=2563EB&color=fff&size=36" style={{ width: '36px', height: '36px', borderRadius: '10px' }} />
-        {!isCollapsed && (
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: C.text, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>Admin User</p>
-            <p style={{ margin: 0, fontSize: '11px', color: C.textMuted }}>Super Admin</p>
-          </div>
+        {/* Sections */}
+        {navConfig.map((section) => {
+          const secActive = sectionActive(section.items);
+          const isOpen = open[section.name];
+
+          return (
+            <Box key={section.name}>
+              <Tooltip title={collapsed ? section.name : ''} placement="right" arrow>
+                <ListItemButton
+                  onClick={() => !collapsed && toggle(section.name)}
+                  sx={{
+                    borderRadius: '10px',
+                    py: 1.1,
+                    px: 1.5,
+                    gap: 1.5,
+                    justifyContent: collapsed ? 'center' : 'space-between',
+                    color: secActive ? PRIMARY : TEXT,
+                    '&:hover': { background: PRIMARY_LIGHT, color: PRIMARY },
+                    mb: 0.25,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <ListItemIcon sx={{ minWidth: 0, color: secActive ? PRIMARY : MUTED }}>
+                      {React.cloneElement(section.icon, { sx: { fontSize: 20 } })}
+                    </ListItemIcon>
+                    {!collapsed && (
+                      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'inherit' }}>
+                        {section.name}
+                      </Typography>
+                    )}
+                  </Box>
+                  {!collapsed && (
+                    <ExpandMoreRoundedIcon
+                      sx={{
+                        fontSize: 18,
+                        color: MUTED,
+                        transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: 'transform 0.2s',
+                      }}
+                    />
+                  )}
+                </ListItemButton>
+              </Tooltip>
+
+              {/* Child items */}
+              {!collapsed && (
+                <Collapse in={isOpen} timeout={200} unmountOnExit>
+                  <Box
+                    sx={{
+                      mx: 0.5,
+                      mb: 1,
+                      background: '#fff',
+                      borderRadius: '12px',
+                      border: `1px solid ${BORDER}`,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <List disablePadding>
+                      {section.items.map((item) => {
+                        const active = isActive(item.path);
+                        return (
+                          <ListItemButton
+                            key={item.name}
+                            component="a"
+                            href={item.path}
+                            sx={{
+                              py: 0.9,
+                              px: 1.5,
+                              gap: 1.2,
+                              color: active ? PRIMARY : MUTED,
+                              background: active ? PRIMARY_LIGHT : 'transparent',
+                              borderLeft: `3px solid ${active ? PRIMARY : 'transparent'}`,
+                              '&:hover': { background: PRIMARY_LIGHT, color: PRIMARY },
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 0, color: 'inherit', opacity: active ? 1 : 0.65 }}>
+                              {item.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={item.name}
+                              primaryTypographyProps={{
+                                fontSize: '13px',
+                                fontWeight: active ? 600 : 400,
+                                color: 'inherit',
+                              }}
+                            />
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Box>
+                </Collapse>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
+
+      {/* ── Profile Footer ── */}
+      <Divider sx={{ borderColor: BORDER }} />
+      <Box
+        sx={{
+          p: collapsed ? 1 : 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.2,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+        }}
+      >
+        <Avatar
+          src={`https://ui-avatars.com/api/?name=Admin&background=2563EB&color=fff&size=36`}
+          sx={{ width: 36, height: 36, borderRadius: '10px', flexShrink: 0 }}
+        />
+        {!collapsed && (
+          <>
+            <Box sx={{ flex: 1, overflow: 'hidden' }}>
+              <Typography sx={{ fontSize: '13px', fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                Admin User
+              </Typography>
+              <Typography sx={{ fontSize: '11px', color: MUTED }}>Super Admin</Typography>
+            </Box>
+            <Tooltip title="Logout" placement="top" arrow>
+              <IconButton
+                component="a"
+                href="/admin/logout"
+                size="small"
+                sx={{ color: MUTED, '&:hover': { color: '#EF4444', background: '#FEF2F2' } }}
+              >
+                <LogoutRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          </>
         )}
-        {!isCollapsed && <a href="/admin/logout" style={{ color: C.textDim }}>{Icon.Out(16)}</a>}
-      </div>
-    </div>
+      </Box>
+    </Drawer>
   );
 };
 

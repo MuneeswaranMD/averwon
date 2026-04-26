@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNotice } from 'adminjs';
+import { useNotice, ApiClient } from 'adminjs';
 
 const C = {
   bg: '#F3F6F9',
@@ -20,6 +20,7 @@ const GlobalEdit = (props) => {
   const [params, setParams] = useState(initialRecord.params);
   const [loading, setLoading] = useState(false);
   const sendNotice = useNotice();
+  const api = new ApiClient();
 
   const properties = resource.editProperties;
   
@@ -32,48 +33,63 @@ const GlobalEdit = (props) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
-    
+
     try {
-      // Use FormData as it's more reliable with AdminJS's formidable parser
-      const formData = new FormData();
-      
-      // Filter out system fields and add params to form data
+      // Build a clean JSON payload
+      const payloadParams = {};
       Object.keys(params).forEach(key => {
-        if (!['_id', 'createdAt', 'updatedAt', '__v', 'id'].includes(key)) {
-          // Handle booleans (like isActive) - AdminJS expects 'true'/'false' strings or 1/0
-          if (typeof params[key] === 'boolean') {
-            formData.append(key, params[key] ? 'true' : 'false');
-          } else if (params[key] !== null && params[key] !== undefined) {
-            formData.append(key, params[key]);
-          }
-        }
+        // Filter out internal fields that should not be updated directly
+        if (['_id', 'createdAt', 'updatedAt', '__v', 'id'].includes(key)) return;
+        
+        // Skip password if empty
+        if (key === 'password' && !params[key]) return;
+        
+        payloadParams[key] = params[key];
       });
 
-      const response = await fetch(`/admin/api/resources/${resource.id}/records/${initialRecord.id}/edit`, {
-        method: 'POST',
-        // Don't set Content-Type header when sending FormData; browser will set it with boundary
-        body: formData,
+      console.log('[GlobalEdit] Sending update via ApiClient...', payloadParams);
+
+      // Using official ApiClient ensures CSRF tokens and correct headers are sent
+      const response = await api.recordAction({
+        resourceId: resource.id,
+        actionName: 'edit',
+        recordId: initialRecord.id,
+        data: payloadParams,
       });
-      
-      const data = await response.json();
-      
-      if (data.record && !data.record.errors) {
+
+      const data = response.data;
+      console.log('[GlobalEdit] Server response:', data);
+
+      const fieldErrors = data?.record?.errors;
+      const hasErrors = fieldErrors && Object.keys(fieldErrors).length > 0;
+
+      if (!hasErrors && (data?.notice?.type === 'success' || data?.redirectUrl)) {
         sendNotice({ message: 'Record updated successfully!', type: 'success' });
-        // Small delay to allow notice to be seen before redirect
         setTimeout(() => {
-          window.location.href = `/admin/resources/${resource.id}/records/${initialRecord.id}/show`;
-        }, 500);
+          const redirect = data?.redirectUrl || `/admin/resources/${resource.id}/records/${initialRecord.id}/show`;
+          window.location.href = redirect;
+        }, 800);
       } else {
-        console.error('Save failed:', data);
-        const errorMsg = data.record?.errors 
-          ? Object.entries(data.record.errors).map(([k, v]) => `${k}: ${v.message}`).join(', ')
-          : 'Failed to update record. Please check required fields.';
+        // Handle errors
+        let errorMsg = 'Failed to save. ';
+        if (hasErrors) {
+          errorMsg += Object.entries(fieldErrors)
+            .map(([field, err]) => `${field}: ${err?.message || err}`)
+            .join(' | ');
+        } else if (data?.notice?.message) {
+          errorMsg += data.notice.message;
+        } else if (data?.error?.message) {
+            errorMsg += data.error.message;
+        }
         sendNotice({ message: errorMsg, type: 'error' });
       }
     } catch (err) {
-      console.error('Network Error:', err);
-      sendNotice({ message: 'Network error occurred. Check browser console.', type: 'error' });
+      console.error('[GlobalEdit] API Error:', err);
+      // AdminJS ApiClient throws on non-200 responses sometimes
+      const errorMsg = err.response?.data?.notice?.message || err.message;
+      sendNotice({ message: `Save failed: ${errorMsg}`, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -211,10 +227,12 @@ const GlobalEdit = (props) => {
                       </select>
                     ) : (
                       <input
-                        type={prop.type === 'number' ? 'number' : prop.type === 'date' ? 'date' : 'text'}
+                        type={name === 'password' || prop.type === 'password' ? 'password' : (prop.type === 'number' ? 'number' : prop.type === 'date' ? 'date' : 'text')}
                         name={name}
                         value={params[name] || ''}
                         onChange={(e) => handleChange(name, e.target.value)}
+                        autoComplete={name === 'password' ? 'new-password' : 'off'}
+                        placeholder={name === 'password' ? 'Leave blank to keep unchanged' : ''}
                         style={{
                           width: '100%',
                           padding: '12px 16px',

@@ -88,35 +88,7 @@ const CareersSection = () => {
             </div>
           ) : (
             jobs.map((job, i) => (
-              <motion.div
-                key={job._id || i}
-                initial={{ opacity: 0, scale: 0.98 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="group p-8 md:p-10 rounded-[3rem] bg-slate-50 border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-8 hover:bg-white hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500"
-              >
-                <div className="flex items-center gap-8">
-                  <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center shadow-sm group-hover:bg-secondary group-hover:text-white transition-all duration-300">
-                    {job.department === 'Design' ? <Clock size={28} /> : <Briefcase size={28} />}
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-primary mb-3 group-hover:text-secondary transition-colors">{job.title}</h3>
-                    <div className="flex flex-wrap items-center gap-6 text-xs text-grayText font-bold uppercase tracking-widest">
-                      <span className="flex items-center gap-2"><Clock size={16} className="text-secondary" /> {job.type}</span>
-                      <span className="flex items-center gap-2"><MapPin size={16} className="text-accent" /> {job.location}</span>
-                      {job.department && <span className="px-3 py-1 bg-slate-200/50 rounded-lg">{job.department}</span>}
-                    </div>
-                  </div>
-                </div>
-                
-                <button
-                  onClick={() => setSelectedJob(job)}
-                  className="inline-flex items-center gap-2 px-7 h-12 rounded-full border-2 border-secondary/30 text-secondary font-bold text-sm hover:bg-secondary hover:text-white hover:border-secondary hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,123,255,0.25)] transition-all duration-300 flex-shrink-0"
-                >
-                  Apply Now <ArrowUpRight size={16} />
-                </button>
-              </motion.div>
+              <JobCard key={job._id || i} job={job} i={i} onApply={() => setSelectedJob(job)} />
             ))
           )}
         </div>
@@ -152,12 +124,12 @@ const CareersSection = () => {
                   <form onSubmit={handleApply} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Full Nane <span className="text-red-500">*</span></label>
-                        <input required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-secondary focus:bg-white transition-all text-sm" placeholder="John Doe" value={formData.candidateName} onChange={e => setFormData({...formData, candidateName: e.target.value})} />
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name <span className="text-red-500">*</span></label>
+                        <input required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-secondary focus:bg-white transition-all text-sm" placeholder="Alex Morgan" value={formData.candidateName} onChange={e => setFormData({...formData, candidateName: e.target.value})} />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address <span className="text-red-500">*</span></label>
-                        <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-secondary focus:bg-white transition-all text-sm" placeholder="john@example.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                        <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-secondary focus:bg-white transition-all text-sm" placeholder="alex.morgan@company.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                       </div>
                     </div>
 
@@ -193,4 +165,60 @@ const CareersSection = () => {
   );
 };
 
+const JobCard = ({ job, i, onApply }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 160;
+  const isLong = job.description && job.description.length > maxLength;
+  
+  const displayDescription = isLong && !isExpanded 
+    ? `${job.description.substring(0, maxLength)}...` 
+    : job.description;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: i * 0.05 }}
+      className="group p-8 md:p-10 rounded-[3rem] bg-slate-50 border border-gray-100 flex flex-col md:flex-row md:items-start justify-between gap-8 hover:bg-white hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500"
+    >
+      <div className="flex items-start gap-8 flex-1">
+        <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center shadow-sm group-hover:bg-secondary group-hover:text-white transition-all duration-300 flex-shrink-0 mt-1">
+          {job.department === 'Design' ? <Clock size={28} /> : <Briefcase size={28} />}
+        </div>
+        <div className="flex-1">
+          <h3 className="text-2xl font-bold text-primary mb-3 group-hover:text-secondary transition-colors">{job.title}</h3>
+          <div className="flex flex-wrap items-center gap-6 text-xs text-grayText font-bold uppercase tracking-widest mb-4">
+            <span className="flex items-center gap-2"><Clock size={16} className="text-secondary" /> {job.type}</span>
+            <span className="flex items-center gap-2"><MapPin size={16} className="text-accent" /> {job.location}</span>
+            {job.department && <span className="px-3 py-1 bg-slate-200/50 rounded-lg">{job.department}</span>}
+          </div>
+          
+          <div className="relative">
+            <p className="text-slate-600 text-[15px] leading-relaxed whitespace-pre-line">
+              {displayDescription || "Join our team to work on exciting projects."}
+            </p>
+            {isLong && (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="mt-2 text-secondary font-bold text-sm hover:underline flex items-center gap-1 transition-all"
+              >
+                {isExpanded ? 'Show less' : 'Show more'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <button
+        onClick={onApply}
+        className="inline-flex items-center gap-2 px-7 h-12 rounded-full border-2 border-secondary/30 text-secondary font-bold text-sm hover:bg-secondary hover:text-white hover:border-secondary hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,123,255,0.25)] transition-all duration-300 flex-shrink-0 self-center md:self-start"
+      >
+        Apply Now <ArrowUpRight size={16} />
+      </button>
+    </motion.div>
+  );
+};
+
 export default CareersSection;
+

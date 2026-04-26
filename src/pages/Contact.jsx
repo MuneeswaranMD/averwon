@@ -39,12 +39,32 @@ const ContactPage = () => {
     e.preventDefault();
     setStatus('sending');
     try {
+      // 1. Send Email Notification via EmailJS
       await emailjs.sendForm(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
         formRef.current,
         EMAILJS_PUBLIC_KEY
       );
+
+      // 2. Save to HRMS Database for Admin Dashboard
+      await fetch('/api/client-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName: form.user_name,
+          email: form.user_email,
+          phone: form.user_phone,
+          companyName: form.company,
+          projectType: form.service === 'Web Design & Development' ? 'Website Development' : 
+                       form.service === 'Mobile App Development' ? 'Mobile App' : 
+                       form.service === 'UI/UX Design' ? 'UI/UX Design' : 'Other',
+          budget: form.budget,
+          description: form.message,
+          status: 'New'
+        })
+      });
+
       setStatus('success');
       setForm({ user_name: '', user_email: '', user_phone: '', company: '', budget: '', timeline: '', service: '', message: '' });
     } catch (err) {
@@ -279,7 +299,7 @@ const ContactPage = () => {
                         name="user_name" type="text" required
                         value={form.user_name}
                         onChange={handleChange}
-                        placeholder="John Doe"
+                        placeholder="Alex Morgan"
                         style={inputStyle}
                       />
                     </div>
@@ -289,7 +309,7 @@ const ContactPage = () => {
                         name="user_email" type="email" required
                         value={form.user_email}
                         onChange={handleChange}
-                        placeholder="john@example.com"
+                        placeholder="alex@company.com"
                         style={inputStyle}
                       />
                     </div>

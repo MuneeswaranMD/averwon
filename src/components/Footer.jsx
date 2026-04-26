@@ -17,10 +17,10 @@ const Footer = () => {
   ];
 
   const services = [
-    'Web Design',
-    'Web Development',
-    'Digital Marketing',
-    'Graphic Design',
+    'Enterprise Software',
+    'AI & Data Science',
+    'Cloud Infrastructure',
+    'Managed Security',
   ];
 
   return (

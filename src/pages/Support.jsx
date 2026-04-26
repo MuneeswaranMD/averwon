@@ -134,9 +134,9 @@ const Support = () => {
                             <option>Technical Issue</option><option>HR Support</option><option>Finance Issue</option><option>Login Problem</option><option>Software Bug</option><option>Hardware Request</option><option>General Query</option>
                           </select>
                         </div>
-                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Your Name *</label><input required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={formData.userName} onChange={e => setFormData({...formData, userName: e.target.value})} placeholder="John Doe" /></div>
-                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Your Email *</label><input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={formData.userEmail} onChange={e => setFormData({...formData, userEmail: e.target.value})} placeholder="john@example.com" /></div>
-                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Contact Number</label><input className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})} placeholder="+1 234 567 8900" /></div>
+                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Your Name *</label><input required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={formData.userName} onChange={e => setFormData({...formData, userName: e.target.value})} placeholder="Alex Morgan" /></div>
+                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Your Email *</label><input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={formData.userEmail} onChange={e => setFormData({...formData, userEmail: e.target.value})} placeholder="alex@company.com" /></div>
+                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Contact Number</label><input className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})} placeholder="+91 98765 43210" /></div>
                         
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -202,7 +202,7 @@ const Support = () => {
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Registered Email</label>
-                          <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={trackQuery.email} onChange={e => setTrackQuery({...trackQuery, email: e.target.value})} placeholder="john@example.com" />
+                          <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-secondary" value={trackQuery.email} onChange={e => setTrackQuery({...trackQuery, email: e.target.value})} placeholder="alex@company.com" />
                         </div>
                         <button type="submit" disabled={trackStatus.loading} className="w-full bg-primary hover:bg-secondary transition-colors text-white font-semibold py-3 rounded-lg shadow-md mt-4">
                           {trackStatus.loading ? 'Decrypting...' : 'View Ticket Status'}

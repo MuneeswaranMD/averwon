@@ -4,6 +4,7 @@ import { ComponentLoader } from 'adminjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as Models from '../db/models.js';
+import bcrypt from 'bcrypt';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,13 +23,24 @@ export const Components = {
   GlobalEdit: componentLoader.add('GlobalEdit', path.join(__dirname, 'components/GlobalEdit.jsx')),
   FinanceDashboard: componentLoader.add('FinanceDashboard', path.join(__dirname, 'components/FinanceDashboard.jsx')),
   SalesDashboard: componentLoader.add('SalesDashboard', path.join(__dirname, 'components/SalesDashboard.jsx')),
+  SystemDashboard: componentLoader.add('SystemDashboard', path.join(__dirname, 'components/SystemDashboard.jsx')),
+  RevenuePage: componentLoader.add('RevenuePage', path.join(__dirname, 'components/RevenuePage.jsx')),
+  InvoicePage: componentLoader.add('InvoicePage', path.join(__dirname, 'components/InvoicePage.jsx')),
+  BillPage: componentLoader.add('BillPage', path.join(__dirname, 'components/BillPage.jsx')),
+  LeadsPage: componentLoader.add('LeadsPage', path.join(__dirname, 'components/LeadsPage.jsx')),
+  DealsPage: componentLoader.add('DealsPage', path.join(__dirname, 'components/DealsPage.jsx')),
+  SettingsPage: componentLoader.add('SettingsPage', path.join(__dirname, 'components/SettingsPage.jsx')),
+  AdminAccountPage: componentLoader.add('AdminAccountPage', path.join(__dirname, 'components/AdminAccountPage.jsx')),
   StatusTag: componentLoader.add('StatusTag', path.join(__dirname, 'components/StatusBadge.jsx')),
   ContentToggle: componentLoader.add('ContentToggle', path.join(__dirname, 'components/LongText.jsx')),
 };
 
 const commonActions = {
   show: { component: Components.GlobalShow, showInDrawer: false },
-  edit: { component: Components.GlobalEdit, showInDrawer: false }
+  edit: { 
+    component: Components.GlobalEdit, 
+    showInDrawer: false,
+  }
 };
 
 export const adminOptions = {
@@ -42,9 +54,45 @@ export const adminOptions = {
       properties: {
         status: { components: { list: Components.StatusTag } },
         department: { components: { list: Components.StatusTag } },
+        password: { type: 'password', isVisible: { list: false, filter: false, show: false, edit: true } }
       },
-      listProperties: ['email', 'name', 'employeeId', 'department', 'designation', 'status'],
-      actions: { ...commonActions }
+      listProperties: ['email', 'name', 'employeeId', 'department', 'designation', 'role', 'status'],
+      actions: { 
+        ...commonActions,
+        new: {
+          before: async (request) => {
+            try {
+              console.log('[AdminJS Hook] New Employee Payload:', request.payload);
+              if (request.payload.password) {
+                request.payload.password = await bcrypt.hash(request.payload.password, 10);
+                console.log('[AdminJS Hook] Password hashed');
+              }
+              return request;
+            } catch (err) {
+              console.error('[AdminJS Hook Error]', err);
+              throw err;
+            }
+          }
+        },
+        edit: {
+          ...commonActions.edit,
+          before: async (request) => {
+            try {
+              console.log('[AdminJS Hook] Edit Employee Payload:', request.payload);
+              if (request.payload.password) {
+                request.payload.password = await bcrypt.hash(request.payload.password, 10);
+                console.log('[AdminJS Hook] Password hashed');
+              } else {
+                delete request.payload.password;
+              }
+              return request;
+            } catch (err) {
+              console.error('[AdminJS Hook Error]', err);
+              throw err;
+            }
+          }
+        }
+      }
     } },
     { resource: Models.Intern, options: { 
       parent: { name: 'HR Management', icon: 'UserCheck' },
@@ -67,8 +115,17 @@ export const adminOptions = {
     // --- Recruitment ---
     { resource: Models.JobPosting, options: { 
       parent: { name: 'Recruitment', icon: 'Search' },
-      actions: { ...commonActions }
+      properties: {
+        description: { type: 'textarea', components: { list: Components.ContentToggle } },
+        isActive: { components: { list: Components.StatusTag } }
+      },
+      listProperties: ['title', 'type', 'location', 'department', 'description', 'isActive'],
+      actions: { 
+        ...commonActions,
+        show: { component: Components.JobShow }
+      }
     } },
+
     { resource: Models.JobApplication, options: { 
       parent: { name: 'Recruitment', icon: 'FileUser' },
       actions: { ...commonActions }
@@ -121,7 +178,7 @@ export const adminOptions = {
         parent: { name: 'Finance', icon: 'DollarSign' },
         actions: { 
           ...commonActions,
-          list: { component: Components.FinanceDashboard }
+          list: { component: Components.RevenuePage }
         },
         listProperties: ['revenueId', 'clientName', 'amount', 'status'],
         properties: { status: { components: { list: Components.StatusTag } } }
@@ -130,14 +187,14 @@ export const adminOptions = {
     { resource: Models.Invoice, options: { 
       id: 'Invoice',
       parent: { name: 'Finance', icon: 'FileText' },
-      actions: { ...commonActions },
+      actions: { ...commonActions, list: { component: Components.InvoicePage } },
       listProperties: ['invoiceId', 'clientName', 'totalAmount', 'status'],
       properties: { status: { components: { list: Components.StatusTag } } }
     } },
     { resource: Models.Bill, options: { 
       id: 'Bill',
       parent: { name: 'Finance', icon: 'CreditCard' },
-      actions: { ...commonActions },
+      actions: { ...commonActions, list: { component: Components.BillPage } },
       listProperties: ['vendorName', 'category', 'amount', 'status'],
       properties: { status: { components: { list: Components.StatusTag } } }
     } },
@@ -154,7 +211,7 @@ export const adminOptions = {
         parent: { name: 'Sales', icon: 'Target' },
         actions: { 
           ...commonActions,
-          list: { component: Components.SalesDashboard }
+          list: { component: Components.DealsPage }
         },
         listProperties: ['dealId', 'dealName', 'clientName', 'dealValue', 'status'],
         properties: { status: { components: { list: Components.StatusTag } } }
@@ -162,7 +219,7 @@ export const adminOptions = {
     },
     { resource: Models.Lead, options: { 
       parent: { name: 'Sales', icon: 'UserPlus' },
-      actions: { ...commonActions },
+      actions: { ...commonActions, list: { component: Components.LeadsPage } },
       properties: { status: { components: { list: Components.StatusTag } } }
     } },
     { resource: Models.Client, options: { 
@@ -177,11 +234,37 @@ export const adminOptions = {
     // --- System ---
     { resource: Models.Setting, options: { 
       parent: { name: 'System', icon: 'Settings' },
-      actions: { ...commonActions }
+      actions: { 
+        ...commonActions,
+        list: { component: Components.SettingsPage }
+      }
     } },
     { resource: Models.Manager, options: { 
       parent: { name: 'System', icon: 'Shield' },
-      actions: { ...commonActions }
+      properties: {
+        password: { type: 'password', isVisible: { list: false, filter: false, show: false, edit: true } }
+      },
+      actions: { 
+        ...commonActions,
+        list: { component: Components.AdminAccountPage },
+        new: {
+          before: async (request) => {
+            if (request.payload.password) request.payload.password = await bcrypt.hash(request.payload.password, 10);
+            return request;
+          }
+        },
+        edit: {
+          ...commonActions.edit,
+          before: async (request) => {
+            if (request.payload.password) {
+              request.payload.password = await bcrypt.hash(request.payload.password, 10);
+            } else {
+              delete request.payload.password;
+            }
+            return request;
+          }
+        }
+      }
     } },
   ],
   branding: {
@@ -190,8 +273,8 @@ export const adminOptions = {
     theme: {
       colors: {
         primary100: '#2563EB',
-        accent: '#2563EB',
-        bg: '#F5F7FA',
+        accent: '#10B981',
+        bg: '#F8FAFC',
       },
     },
   },

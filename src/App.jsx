@@ -9,7 +9,7 @@ import Footer from './components/Footer';
 import FloatingWidgets from './components/Common/FloatingWidgets';
 import Preloader from './components/Common/Preloader';
 
-// Pages
+// Website Pages
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
@@ -17,6 +17,20 @@ import Projects from './pages/Projects';
 import Careers from './pages/Careers';
 import Contact from './pages/Contact';
 import Support from './pages/Support';
+
+// Employee Portal Pages
+import EmployeeLogin from './employee/Login';
+import EmployeeLayout from './employee/EmployeeLayout';
+import EmployeeDashboard from './employee/Dashboard';
+import EmployeeProfile from './employee/Profile';
+import EmployeeTasks from './employee/Tasks';
+import EmployeeAttendance from './employee/Attendance';
+import EmployeeLeaves from './employee/Leaves';
+import EmployeeMeetings from './employee/Meetings';
+import EmployeeCalendar from './employee/Calendar';
+import EmployeeNotifications from './employee/Notifications';
+import EmployeeDocuments from './employee/Documents';
+import EmployeeSettings from './employee/Settings';
 
 // Page transition wrapper
 const PageTransition = ({ children }) => (
@@ -33,6 +47,7 @@ const PageTransition = ({ children }) => (
 // Inner app (needs useLocation inside Router)
 const AppInner = () => {
   const location = useLocation();
+  const isEmployeeRoute = location.pathname.startsWith('/employee');
 
   // Scroll to top on route change
   useEffect(() => {
@@ -41,10 +56,11 @@ const AppInner = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {!isEmployeeRoute && <Navbar />}
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
+            {/* Public Website Routes */}
             <Route path="/" element={<PageTransition><Home /></PageTransition>} />
             <Route path="/about" element={<PageTransition><About /></PageTransition>} />
             <Route path="/services" element={<PageTransition><Services /></PageTransition>} />
@@ -52,21 +68,37 @@ const AppInner = () => {
             <Route path="/careers" element={<PageTransition><Careers /></PageTransition>} />
             <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
             <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+
+            {/* Employee Portal Routes */}
+            <Route path="/employee/login" element={<EmployeeLogin />} />
+            <Route path="/employee" element={<EmployeeLayout />}>
+              <Route path="dashboard" element={<EmployeeDashboard />} />
+              <Route path="profile" element={<EmployeeProfile />} />
+              <Route path="tasks" element={<EmployeeTasks />} />
+              <Route path="attendance" element={<EmployeeAttendance />} />
+              <Route path="leaves" element={<EmployeeLeaves />} />
+              <Route path="meetings" element={<EmployeeMeetings />} />
+              <Route path="calendar" element={<EmployeeCalendar />} />
+              <Route path="notifications" element={<EmployeeNotifications />} />
+              <Route path="documents" element={<EmployeeDocuments />} />
+              <Route path="settings" element={<EmployeeSettings />} />
+              <Route index element={<EmployeeDashboard />} />
+            </Route>
           </Routes>
         </AnimatePresence>
       </main>
-      <FloatingWidgets />
-      <Footer />
+      {!isEmployeeRoute && <Footer />}
     </div>
   );
 };
 
 function App() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
+    // Disabled preloader for better UX during development/portal testing
+    // const timer = setTimeout(() => setLoading(false), 2000);
+    // return () => clearTimeout(timer);
   }, []);
 
   return (

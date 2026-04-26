@@ -115,7 +115,7 @@ const ContactSection = () => {
                     <label className="text-sm font-bold text-primary uppercase tracking-wider px-2">Your Name</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. John Doe" 
+                      placeholder="e.g. Alex Morgan" 
                       className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm"
                     />
                   </div>
@@ -123,7 +123,7 @@ const ContactSection = () => {
                     <label className="text-sm font-bold text-primary uppercase tracking-wider px-2">Email Address</label>
                     <input 
                       type="email" 
-                      placeholder="e.g. john@company.com" 
+                      placeholder="e.g. alex@company.com" 
                       className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm"
                     />
                   </div>

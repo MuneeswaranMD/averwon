@@ -52,8 +52,13 @@ const JobShow = (props) => {
   const handleDuplicate = () => alert('Duplicate Job fired! Connecting to API hook...');
   const handlePrint = () => window.print();
 
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const desc = p.description || "No description provided for this job listing.";
+  const shouldTruncate = desc.length > 500;
+  const displayDesc = (shouldTruncate && !isExpanded) ? desc.slice(0, 500) + '...' : desc;
+
   return (
-    <div style={{ padding: '0', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ padding: '32px', background: C.bg, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
       
       {/* HEADER SECTION */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
@@ -172,8 +177,25 @@ const JobShow = (props) => {
           
           <div style={{ background: C.white, borderRadius: '12px', border: `1px solid ${C.border}`, boxShadow: C.cardShadow, padding: '24px', flexGrow: 1 }}>
             <h3 style={{ fontSize: '18px', fontWeight: 600, color: C.textBase, margin: '0 0 24px 0' }}>Job Description</h3>
-            <div style={{ fontSize: '14.5px', color: '#4B5563', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
-              {p.description || "No description provided for this job listing."}
+            <div style={{ fontSize: '14.5px', color: '#4B5563', lineHeight: '1.7', whiteSpace: 'pre-wrap', position: 'relative' }}>
+              {displayDesc}
+              {shouldTruncate && (
+                <button 
+                  onClick={() => setIsExpanded(!isExpanded)} 
+                  style={{ 
+                    border: 'none', 
+                    background: 'none', 
+                    color: C.primary, 
+                    fontWeight: 600, 
+                    cursor: 'pointer',
+                    padding: '0 4px',
+                    marginLeft: '4px',
+                    fontSize: '14px'
+                  }}
+                >
+                  {isExpanded ? 'Show Less' : 'Read More'}
+                </button>
+              )}
             </div>
           </div>
 

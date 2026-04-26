@@ -2,17 +2,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap');
 
 @theme {
-  --color-primary: #003366;
-  --color-secondary: #003366;
-  --color-accent: #00C2FF;
-  --color-light: #EAF4FF;
-  --color-dark: #0A192F;
-  --color-grayText: #666666;
+  --color-primary: #2563EB;
+  --color-secondary: #1E293B;
+  --color-accent: #0EA5E9;
+  --color-light: #F8FAFC;
+  --color-dark: #0F172A;
+  --color-grayText: #64748B;
   
   --font-poppins: "Poppins", sans-serif;
   --font-inter: "Inter", sans-serif;
   
-  --background-image-hero-gradient: linear-gradient(to right, #003366, #004080, #003366);
+  --background-image-hero-gradient: linear-gradient(to right, #1E293B, #2563EB, #1E293B);
 }
 
 :root {

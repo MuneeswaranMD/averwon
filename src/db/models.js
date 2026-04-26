@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 const EmployeeSchema = new mongoose.Schema({
   employeeId: { type: String, unique: true },
   name: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String }, // For portal login
+  role: { type: String, enum: ['Employee', 'Manager', 'HR'], default: 'Employee' },
   phone: { type: String },
   department: { type: String, enum: ['IT', 'HR', 'Design', 'Finance', 'Marketing', 'Sales', 'Operations'], default: 'IT' },
   designation: { type: String },
@@ -297,8 +299,9 @@ const JobApplication = mongoose.model('JobApplication', JobApplicationSchema);
 const ManagerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  role: { type: String, enum: ['Super Admin', 'Admin', 'HR Manager', 'Finance Manager', 'Sales Manager', 'Viewer'], default: 'Admin' },
   loginHistory: [Date],
-});
+}, { timestamps: true });
 const Manager = mongoose.model('Manager', ManagerSchema);
 
 const ClientSchema = new mongoose.Schema({
