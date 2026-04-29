@@ -119,18 +119,20 @@ const Sidebar = () => {
 
   const sidebarStyle = {
     width: isCollapsed ? COLLAPSED_W : EXPANDED_W,
+    minWidth: isCollapsed ? COLLAPSED_W : EXPANDED_W,
     height: '100vh',
     background: C.bg,
     borderRight: `1px solid ${C.border}`,
     display: 'flex',
     flexDirection: 'column',
-    position: 'fixed',
-    left: 0,
+    position: 'sticky',
     top: 0,
+    alignSelf: 'flex-start',
+    flexShrink: 0,
     zIndex: 50,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    boxShadow: '1px 0 4px rgba(0,0,0,0.06)',
     fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-    transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+    transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1), min-width 0.25s cubic-bezier(0.4,0,0.2,1)',
     overflowX: 'hidden',
   };
 
