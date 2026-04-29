@@ -4,7 +4,7 @@ import {
   Target, Shield, ChevronDown, ChevronLeft, ChevronRight, LogOut,
   BadgeCheck, GraduationCap, Clock, Palmtree, CreditCard, UserCheck,
   FolderOpen, CheckSquare, Video, Ticket, TrendingUp, ReceiptText,
-  Settings, ShieldAlert, Activity, FileText
+  Settings, ShieldAlert, Activity, FileText, MessageSquare, MessagesSquare
 } from 'lucide-react';
 
 const averqonLogo = '/logo.png';
@@ -64,8 +64,17 @@ const navConfig = [
     icon: <Briefcase size={22} />,
     items: [
       { name: 'Projects', path: '/admin/resources/Project', icon: <FolderOpen size={18} /> },
+      { name: 'Assign Projects', path: '/admin/pages/project-assignment', icon: <Briefcase size={18} /> },
       { name: 'Tasks', path: '/admin/resources/Task', icon: <CheckSquare size={18} /> },
       { name: 'Meetings', path: '/admin/resources/Meeting', icon: <Video size={18} /> },
+    ],
+  },
+  {
+    name: 'Communication',
+    icon: <MessageSquare size={22} />,
+    items: [
+      { name: 'Live Chat', path: '/admin/pages/admin-chat', icon: <MessagesSquare size={18} /> },
+      { name: 'Chat Rooms', path: '/admin/resources/ChatRoom', icon: <MessageSquare size={18} /> },
     ],
   },
   {
