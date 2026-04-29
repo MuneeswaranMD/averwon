@@ -67,6 +67,7 @@ const navConfig = [
       { name: 'Assign Projects', path: '/admin/pages/project-assignment', icon: <Briefcase size={18} /> },
       { name: 'Tasks', path: '/admin/resources/Task', icon: <CheckSquare size={18} /> },
       { name: 'Meetings', path: '/admin/resources/Meeting', icon: <Video size={18} /> },
+      { name: 'Activity Logs', path: '/admin/resources/TeamActivity', icon: <Activity size={18} /> },
     ],
   },
   {
@@ -99,7 +100,7 @@ const navConfig = [
     items: [
       { name: 'Dashboard', path: '/admin/pages/sales-dashboard', icon: <LayoutDashboard size={18} /> },
       { name: 'Leads', path: '/admin/resources/Lead', icon: <UserCheck size={18} /> },
-      { name: 'Deals', path: '/admin/resources/Project', icon: <Briefcase size={18} /> },
+      { name: 'Deals', path: '/admin/resources/Sales', icon: <Briefcase size={18} /> },
     ],
   },
   {
@@ -107,6 +108,7 @@ const navConfig = [
     icon: <Shield size={22} />,
     items: [
       { name: 'Admins', path: '/admin/system/admins', icon: <ShieldAlert size={18} /> },
+      { name: 'Tools', path: '/admin/resources/Tool', icon: <Settings size={18} /> },
       { name: 'Settings', path: '/admin/system/settings', icon: <Settings size={18} /> },
     ],
   },

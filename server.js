@@ -1178,9 +1178,25 @@ const start = async () => {
   // Get Rooms
   app.get('/api/chat/rooms', async (req, res) => {
     try {
-      const rooms = await Models.ChatRoom.find({ isActive: true });
+      const rooms = await Models.ChatRoom.find().sort({ updatedAt: -1 });
       res.json(rooms);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/chat/rooms', async (req, res) => {
+    const { name, participants, isPrivate } = req.body;
+    try {
+      const room = await Models.ChatRoom.create({ 
+        name, 
+        participants: participants || [], 
+        isPrivate: isPrivate || false 
+      });
+      res.json(room);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   // Get Recent Chats for a user

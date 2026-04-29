@@ -10,6 +10,10 @@ const AdminChat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [showGroupCreate, setShowGroupCreate] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  
   const scrollRef = useRef(null);
   const api = new ApiClient();
 
@@ -36,9 +40,13 @@ const AdminChat = () => {
         fetch('/api/admin/tracking/employees').then(r => r.json())
       ]);
       setRooms(roomsRes);
-      setEmployees(eRes.filter(e => e && e.employee).map(e => e.employee.name));
+      // Filter out any null/undefined entries and map to names
+      const empList = employeesRes && Array.isArray(employeesRes) 
+        ? employeesRes.filter(e => e && e.employee).map(e => e.employee.name)
+        : [];
+      setEmployees(empList);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching chat data:', err);
     } finally {
       setLoading(false);
     }
@@ -55,10 +63,39 @@ const AdminChat = () => {
       const data = await res.json();
       setMessages(data);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching history:', err);
     } finally {
       setHistoryLoading(false);
     }
+  };
+
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim() || selectedMembers.length === 0) return;
+    try {
+      const res = await fetch('/api/chat/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newGroupName,
+          participants: ['Admin', ...selectedMembers],
+          isPrivate: false
+        })
+      });
+      if (res.ok) {
+        setNewGroupName('');
+        setSelectedMembers([]);
+        setShowGroupCreate(false);
+        fetchInitialData();
+      }
+    } catch (err) {
+      console.error('Error creating group:', err);
+    }
+  };
+
+  const toggleMember = (name) => {
+    setSelectedMembers(prev => 
+      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
+    );
   };
 
   const handleSendMessage = async (e) => {
@@ -67,9 +104,9 @@ const AdminChat = () => {
 
     const msgData = {
       sender: 'Admin',
-      content: newMessage,
+      message: newMessage,
       isGroup: selectedChat.isGroup,
-      time: new Date()
+      timestamp: new Date()
     };
 
     if (selectedChat.isGroup) msgData.roomId = selectedChat.id;
@@ -85,7 +122,7 @@ const AdminChat = () => {
         body: JSON.stringify(msgData)
       });
     } catch (err) {
-      console.error(err);
+      console.error('Error sending message:', err);
     }
   };
 
@@ -94,13 +131,46 @@ const AdminChat = () => {
   return (
     <Box flex flexDirection="row" height="calc(100vh - 120px)" bg="white" m="lg" borderRadius="lg" variant="card" overflow="hidden">
       {/* Sidebar */}
-      <Box width="300px" borderRight="1px solid #eee" flexShrink={0} display="flex" flexDirection="column">
-        <Box p="lg" borderBottom="1px solid #eee">
-          <Text fontWeight="bold" fontSize="h4">Admin Chat</Text>
+      <Box width="320px" borderRight="1px solid #eee" flexShrink={0} display="flex" flexDirection="column">
+        <Box p="lg" borderBottom="1px solid #eee" display="flex" justifyContent="space-between" alignItems="center">
+          <Text fontWeight="bold" fontSize="h4">Live Chat</Text>
+          <Button size="icon" onClick={() => setShowGroupCreate(!showGroupCreate)}>
+            <Icon icon="Plus" />
+          </Button>
         </Box>
+
         <Box flex={1} overflowY="auto">
+          {showGroupCreate && (
+            <Box p="md" bg="grey10" borderBottom="1px solid #eee">
+              <Text fontWeight="bold" mb="sm">Create Group</Text>
+              <Input 
+                placeholder="Group Name" 
+                value={newGroupName} 
+                onChange={e => setNewGroupName(e.target.value)}
+                mb="sm"
+              />
+              <Text variant="xs" color="grey60" mb="xs">Select Members:</Text>
+              <Box maxHeight="150px" overflowY="auto" mb="md" bg="white" p="xs" borderRadius="sm">
+                {employees.map(emp => (
+                  <Box key={emp} display="flex" alignItems="center" py="xs" px="sm" cursor="pointer" onClick={() => toggleMember(emp)}>
+                    <Box 
+                      width="16px" height="16px" border="1px solid #ccc" borderRadius="sm" mr="sm" 
+                      bg={selectedMembers.includes(emp) ? 'primary100' : 'transparent'}
+                    />
+                    <Text variant="sm">{emp}</Text>
+                  </Box>
+                ))}
+              </Box>
+              <Box display="flex" gap="sm">
+                <Button size="sm" flex={1} onClick={handleCreateGroup} variant="contained">Create</Button>
+                <Button size="sm" onClick={() => setShowGroupCreate(false)}>Cancel</Button>
+              </Box>
+            </Box>
+          )}
+
           <Box p="md">
             <Text variant="sm" color="grey60" mb="sm" fontWeight="bold">GROUPS</Text>
+            {rooms.length === 0 && <Text variant="xs" color="grey40">No groups created</Text>}
             {rooms.map(room => (
               <Box 
                 key={room._id} p="md" borderRadius="md" cursor="pointer"
@@ -110,11 +180,12 @@ const AdminChat = () => {
                 mb="xs"
               >
                 <Text fontWeight="bold">{room.name}</Text>
+                <Text variant="xs" color="grey60">{room.participants?.length || 0} members</Text>
               </Box>
             ))}
           </Box>
           <Box p="md">
-            <Text variant="sm" color="grey60" mb="sm" fontWeight="bold">EMPLOYEES</Text>
+            <Text variant="sm" color="grey60" mb="sm" fontWeight="bold">EMPLOYEES (Direct Messages)</Text>
             {employees.map(emp => (
               <Box 
                 key={emp} p="md" borderRadius="md" cursor="pointer"
@@ -136,6 +207,9 @@ const AdminChat = () => {
           <>
             <Box p="lg" bg="white" borderBottom="1px solid #eee">
               <Text fontWeight="bold">{selectedChat.name}</Text>
+              <Text variant="xs" color="grey60">
+                {selectedChat.isGroup ? 'Group Chat' : 'Direct Message'}
+              </Text>
             </Box>
             <Box flex={1} p="lg" overflowY="auto" display="flex" flexDirection="column" ref={scrollRef}>
               {historyLoading ? <Loader /> : messages.map((msg, i) => {
@@ -150,9 +224,9 @@ const AdminChat = () => {
                     boxShadow="sm"
                   >
                     {!isMe && <Text variant="sm" fontWeight="bold" mb="xs" color="primary60">{msg.sender}</Text>}
-                    <Text>{msg.content}</Text>
+                    <Text>{msg.message || msg.content}</Text>
                     <Text variant="xs" textAlign="right" opacity={0.6} mt="xs">
-                      {new Date(msg.time).toLocaleTimeString()}
+                      {new Date(msg.timestamp || msg.time).toLocaleTimeString()}
                     </Text>
                   </Box>
                 );
