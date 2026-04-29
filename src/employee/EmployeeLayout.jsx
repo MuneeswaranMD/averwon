@@ -16,7 +16,8 @@ import {
   ChevronDown,
   Briefcase,
   History,
-  Wrench
+  Wrench,
+  MessageSquare
 } from 'lucide-react';
 
 const Z = {
