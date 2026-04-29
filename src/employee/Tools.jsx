@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Wrench, ExternalLink, Mail, MessageSquare, 
   Globe, Shield, Cpu, Cloud, FileText, 
-  Terminal, Layout, Zap 
+  Terminal, Layout, Zap, Loader2
 } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   primary: '#2563EB',
@@ -15,7 +16,11 @@ const Z = {
   border: '#E2E8F0',
 };
 
-const TOOLS = [
+const ICON_MAP = {
+  Mail, MessageSquare, Globe, Shield, Cpu, Cloud, FileText, Terminal, Layout, Zap, Wrench
+};
+
+const DEFAULT_TOOLS = [
   {
     category: 'Communication',
     items: [
@@ -46,7 +51,52 @@ const TOOLS = [
   }
 ];
 
+const getToken = () => localStorage.getItem('employeeToken');
+
 const Tools = () => {
+  const [tools, setTools] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setTools(DEFAULT_TOOLS);
+      setLoading(false);
+      return;
+    }
+
+    fetch(API_ENDPOINTS.EMPLOYEE_DASHBOARD, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.tools && d.tools.length > 0) {
+          const groups = d.tools.reduce((acc, tool) => {
+            const cat = tool.category || 'Other';
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push({
+              name: tool.name,
+              desc: tool.description,
+              link: tool.link,
+              icon: ICON_MAP[tool.icon] || Wrench
+            });
+            return acc;
+          }, {});
+          setTools(Object.entries(groups).map(([category, items]) => ({ category, items })));
+        } else {
+          setTools(DEFAULT_TOOLS);
+        }
+      })
+      .catch(() => setTools(DEFAULT_TOOLS))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <Loader2 size={32} color={Z.primary} className="animate-spin" />
+    </div>
+  );
+
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ marginBottom: 32 }}>
@@ -55,7 +105,7 @@ const Tools = () => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
-        {TOOLS.map((group) => (
+        {tools.map((group) => (
           <section key={group.category}>
             <h2 style={{ fontSize: 14, fontWeight: 700, color: Z.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 20, height: 2, background: Z.primary }} /> {group.category}
@@ -109,6 +159,10 @@ const Tools = () => {
           </section>
         ))}
       </div>
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+      `}</style>
     </div>
   );
 };

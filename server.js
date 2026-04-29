@@ -807,7 +807,7 @@ const start = async () => {
       const employee = await Models.Employee.findById(req.employee.id).select('-password');
       if (!employee) return res.status(404).json({ error: 'Employee not found' });
 
-      const [tasks, leaves, meetings, payroll, attendance, recentActivities, projects] = await Promise.all([
+      const [tasks, leaves, meetings, payroll, attendance, recentActivities, projects, tools] = await Promise.all([
         Models.Task.find({ assignedTo: employee.name }),
         Models.LeaveRequest.find({ employeeName: employee.name }).sort({ startDate: -1 }).limit(5),
         Models.Meeting.find({
@@ -819,6 +819,7 @@ const start = async () => {
         Models.Attendance.find({ employeeName: employee.name }).sort({ date: -1 }).limit(30),
         Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(10),
         Models.Project.find({ teamMembers: { $in: [employee.name] } }),
+        Models.Tool.find({ isActive: true }),
       ]);
 
       const completedTasks = tasks.filter(t => t.status === 'Done').length;
@@ -864,6 +865,7 @@ const start = async () => {
         recentActivities,
         projects: projects.slice(0, 3),
         todayAttendance: todayRecord,
+        tools,
       });
     } catch (err) {
       console.error('[EMPLOYEE DASHBOARD]', err);
@@ -1001,7 +1003,20 @@ const start = async () => {
       if (task.assignedTo !== employee.name) return res.status(403).json({ error: 'Not your task' });
 
       const updated = await Models.Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-      await Models.Activity.create({ user: employee.name, action: `Updated task: ${task.title} → ${req.body.status || task.status}`, target: 'Task', time: new Date() });
+      
+      let actionStr = `Updated task: ${task.title}`;
+      const changes = [];
+      if (req.body.status && req.body.status !== task.status) {
+        changes.push(`status to ${req.body.status}`);
+      }
+      if (req.body.progress !== undefined && req.body.progress !== task.progress) {
+        changes.push(`progress to ${req.body.progress}%`);
+      }
+      if (changes.length > 0) {
+        actionStr = `Changed ${task.title} ${changes.join(' and ')}`;
+      }
+
+      await Models.Activity.create({ user: employee.name, action: actionStr, target: 'Task', time: new Date() });
       res.json(updated);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
@@ -1116,6 +1131,73 @@ const start = async () => {
       return next();
     }
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+
+  // ===================== CHAT APIS =====================
+
+  // Send Message
+  app.post('/api/chat/message', async (req, res) => {
+    try {
+      const { sender, receiver, content, roomId, isGroup } = req.body;
+      const message = await Models.LiveChat.create({
+        sender,
+        receiver,
+        content,
+        roomId,
+        isGroup: !!isGroup,
+        time: new Date()
+      });
+      res.json(message);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Get Chat History
+  app.get('/api/chat/history/:roomId', async (req, res) => {
+    try {
+      const messages = await Models.LiveChat.find({ roomId: req.params.roomId })
+        .sort({ time: 1 })
+        .limit(100);
+      res.json(messages);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Get Private Chat History
+  app.get('/api/chat/private/:user1/:user2', async (req, res) => {
+    try {
+      const messages = await Models.LiveChat.find({
+        isGroup: false,
+        $or: [
+          { sender: req.params.user1, receiver: req.params.user2 },
+          { sender: req.params.user2, receiver: req.params.user1 }
+        ]
+      }).sort({ time: 1 }).limit(100);
+      res.json(messages);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Get Rooms
+  app.get('/api/chat/rooms', async (req, res) => {
+    try {
+      const rooms = await Models.ChatRoom.find({ isActive: true });
+      res.json(rooms);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Get Recent Chats for a user
+  app.get('/api/chat/recent/:username', async (req, res) => {
+    try {
+      const messages = await Models.LiveChat.find({
+        $or: [{ sender: req.params.username }, { receiver: req.params.username }]
+      }).sort({ time: -1 }).limit(50);
+      
+      const contacts = new Set();
+      messages.forEach(m => {
+        if (!m.isGroup) {
+          contacts.add(m.sender === req.params.username ? m.receiver : m.sender);
+        }
+      });
+      res.json(Array.from(contacts));
+    } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
   // Global Error Handler

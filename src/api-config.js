@@ -27,6 +27,13 @@ export const API_ENDPOINTS = {
   EMPLOYEE_MEETINGS: `${API_BASE_URL}/api/employee/meetings`,
   EMPLOYEE_PAYROLL: `${API_BASE_URL}/api/employee/payroll`,
   EMPLOYEE_ACTIVITY_LOG: `${API_BASE_URL}/api/employee/activity`,
+  
+  // Chat
+  CHAT_MESSAGE: `${API_BASE_URL}/api/chat/message`,
+  CHAT_HISTORY: (roomId) => `${API_BASE_URL}/api/chat/history/${roomId}`,
+  CHAT_PRIVATE: (u1, u2) => `${API_BASE_URL}/api/chat/private/${u1}/${u2}`,
+  CHAT_ROOMS: `${API_BASE_URL}/api/chat/rooms`,
+  CHAT_RECENT: (username) => `${API_BASE_URL}/api/chat/recent/${username}`,
 };
 
 export default API_BASE_URL;

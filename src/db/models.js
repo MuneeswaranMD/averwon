@@ -258,12 +258,33 @@ const Deal = mongoose.model('Deal', DealSchema);
 
 const LiveChatSchema = new mongoose.Schema({
   sender: { type: String, required: true },
-  receiver: { type: String, required: true },
+  receiver: { type: String }, // Optional for room-based chat
+  roomId: { type: String },    // For group chats or specific threads
   message: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
-  status: { type: String, enum: ['Sent', 'Delivered', 'Read'], default: 'Sent' }
+  status: { type: String, enum: ['Sent', 'Delivered', 'Read'], default: 'Sent' },
+  isGroup: { type: Boolean, default: false }
 });
 const LiveChat = mongoose.model('LiveChat', LiveChatSchema);
+
+const ChatRoomSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  participants: [String], // Names or IDs
+  isPrivate: { type: Boolean, default: false },
+  lastMessage: { type: String },
+  updatedAt: { type: Date, default: Date.now }
+});
+const ChatRoom = mongoose.model('ChatRoom', ChatRoomSchema);
+
+const ToolSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  url: { type: String, required: true },
+  category: { type: String, default: 'General' },
+  icon: { type: String }, // Icon name from Lucide
+  description: { type: String },
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
+const Tool = mongoose.model('Tool', ToolSchema);
 
 const SettingSchema = new mongoose.Schema({
   companyName: { type: String, default: 'Averon HRMS' },
@@ -370,5 +391,6 @@ const Document = mongoose.model('Document', DocumentSchema);
 export {
   Employee, Intern, Project, Task, Ticket, Attendance, LeaveRequest, Payroll, 
   Meeting, Activity, Revenue, Invoice, Bill, Lead, Deal, LiveChat, Setting,
-  JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest, Document
+  JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest, Document,
+  Tool, ChatRoom
 };

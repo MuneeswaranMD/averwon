@@ -34,6 +34,7 @@ import EmployeeSettings from './employee/Settings';
 import EmployeeProjects from './employee/Projects';
 import EmployeeActivities from './employee/ActivityLogs';
 import EmployeeTools from './employee/Tools';
+import EmployeeChat from './employee/Chat';
 
 // Page transition wrapper
 const PageTransition = ({ children }) => (
@@ -84,6 +85,7 @@ const AppInner = () => {
               <Route path="meetings" element={<EmployeeMeetings />} />
               <Route path="activities" element={<EmployeeActivities />} />
               <Route path="tools" element={<EmployeeTools />} />
+              <Route path="chat" element={<EmployeeChat />} />
               <Route path="calendar" element={<EmployeeCalendar />} />
               <Route path="notifications" element={<EmployeeNotifications />} />
               <Route path="documents" element={<EmployeeDocuments />} />

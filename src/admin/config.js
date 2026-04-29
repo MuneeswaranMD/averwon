@@ -34,6 +34,7 @@ export const Components = {
   StatusTag: componentLoader.add('StatusTag', path.join(__dirname, 'components/StatusBadge.jsx')),
   ContentToggle: componentLoader.add('ContentToggle', path.join(__dirname, 'components/LongText.jsx')),
   EmployeeTracking: componentLoader.add('EmployeeTracking', path.join(__dirname, 'components/EmployeeTracking.jsx')),
+  AdminChat: componentLoader.add('AdminChat', path.join(__dirname, 'components/AdminChat.jsx')),
 };
 
 const commonActions = {
@@ -53,6 +54,11 @@ export const adminOptions = {
       label: 'Employee Tracking',
       component: Components.EmployeeTracking,
       icon: 'Activity'
+    },
+    'admin-chat': {
+      label: 'Live Chat',
+      component: Components.AdminChat,
+      icon: 'MessageSquare'
     },
     'sales-dashboard': {
       label: 'Sales Dashboard',
@@ -152,7 +158,24 @@ export const adminOptions = {
     { resource: Models.Project, options: { 
       parent: { name: 'Operations', icon: 'Briefcase' },
       properties: { status: { components: { list: Components.StatusTag } } },
-      actions: { ...commonActions }
+      actions: { 
+        ...commonActions,
+        edit: {
+          ...commonActions.edit,
+          after: async (response, request, context) => {
+            if (request.method === 'post' && response.record) {
+              const { record } = response;
+              await Models.Activity.create({
+                user: 'Admin',
+                action: `Updated project: ${record.params.name} (Progress: ${record.params.progress}%)`,
+                target: 'Project',
+                time: new Date()
+              });
+            }
+            return response;
+          }
+        }
+      }
     } },
     { resource: Models.Task, options: { 
       parent: { name: 'Operations', icon: 'CheckSquare' },
@@ -160,7 +183,24 @@ export const adminOptions = {
         status: { components: { list: Components.StatusTag } },
         priority: { components: { list: Components.StatusTag } }
       },
-      actions: { ...commonActions }
+      actions: { 
+        ...commonActions,
+        edit: {
+          ...commonActions.edit,
+          after: async (response, request, context) => {
+            if (request.method === 'post' && response.record) {
+              const { record } = response;
+              await Models.Activity.create({
+                user: record.params.assignedTo || 'Admin',
+                action: `Admin updated task: ${record.params.title} to ${record.params.status}`,
+                target: 'Task',
+                time: new Date()
+              });
+            }
+            return response;
+          }
+        }
+      }
     } },
     { resource: Models.Meeting, options: { 
       parent: { name: 'Operations', icon: 'Video' },
@@ -248,7 +288,21 @@ export const adminOptions = {
       actions: { ...commonActions }
     } },
 
+    // --- Communication ---
+    { resource: Models.ChatRoom, options: {
+      parent: { name: 'Communication', icon: 'MessageSquare' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.LiveChat, options: {
+      parent: { name: 'Communication', icon: 'MessagesSquare' },
+      actions: { ...commonActions }
+    } },
+
     // --- System ---
+    { resource: Models.Tool, options: {
+      parent: { name: 'System', icon: 'Wrench' },
+      actions: { ...commonActions }
+    } },
     { resource: Models.Setting, options: { 
       parent: { name: 'System', icon: 'Settings' },
       actions: { 

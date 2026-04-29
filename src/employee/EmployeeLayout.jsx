@@ -47,6 +47,7 @@ const NAV = [
   { label: 'Leave Requests', path: '/employee/leaves',         icon: Calendar },
   { label: 'Meetings',       path: '/employee/meetings',       icon: Video },
   { label: 'Activity Logs',  path: '/employee/activities',     icon: History },
+  { label: 'Live Chat',      path: '/employee/chat',           icon: MessageSquare },
   { label: 'Tools',          path: '/employee/tools',          icon: Wrench },
   { label: 'Calendar',       path: '/employee/calendar',       icon: CalendarDays },
   { label: 'Notifications',  path: '/employee/notifications',  icon: Bell },
