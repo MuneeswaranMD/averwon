@@ -1247,7 +1247,8 @@ app.post('/api/admin/leads/import', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     
-    const content = req.file.buffer.toString();
+    // Multer with 'dest' provides 'path', not 'buffer'
+    const content = fs.readFileSync(req.file.path).toString();
     let leads = [];
     
     if (req.file.originalname.endsWith('.json')) {
@@ -1259,14 +1260,21 @@ app.post('/api/admin/leads/import', upload.single('file'), async (req, res) => {
       leads = lines.slice(1).filter(l => l.trim()).map(line => {
         const values = line.split(',').map(v => v.trim());
         const lead = {};
-        headers.forEach((h, i) => lead[h] = values[i]);
+        headers.forEach((h, i) => {
+          if (values[i] !== undefined) lead[h] = values[i];
+        });
         return lead;
       });
     }
     
     const results = await Models.Lead.insertMany(leads);
+    
+    // Clean up temp file
+    fs.unlinkSync(req.file.path);
+    
     res.json({ success: true, count: results.length });
   } catch (err) {
+    if (req.file) fs.unlinkSync(req.file.path);
     res.status(500).json({ error: err.message });
   }
 });
