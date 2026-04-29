@@ -807,7 +807,7 @@ const start = async () => {
       const employee = await Models.Employee.findById(req.employee.id).select('-password');
       if (!employee) return res.status(404).json({ error: 'Employee not found' });
 
-      const [tasks, leaves, meetings, payroll, attendance, recentActivities] = await Promise.all([
+      const [tasks, leaves, meetings, payroll, attendance, recentActivities, projects] = await Promise.all([
         Models.Task.find({ assignedTo: employee.name }),
         Models.LeaveRequest.find({ employeeName: employee.name }).sort({ startDate: -1 }).limit(5),
         Models.Meeting.find({
@@ -818,6 +818,7 @@ const start = async () => {
         Models.Payroll.findOne({ employeeName: employee.name }).sort({ paymentDate: -1 }),
         Models.Attendance.find({ employeeName: employee.name }).sort({ date: -1 }).limit(30),
         Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(10),
+        Models.Project.find({ teamMembers: { $in: [employee.name] } }),
       ]);
 
       const completedTasks = tasks.filter(t => t.status === 'Done').length;
@@ -850,6 +851,7 @@ const start = async () => {
           totalTasks: tasks.length,
           completedTasks,
           pendingTasks,
+          activeProjects: projects.filter(p => p.status === 'Active').length,
           attendanceRate,
           leaveBalance: Math.max(0, 20 - usedLeaveDays),
           approvedLeaves,
@@ -860,6 +862,7 @@ const start = async () => {
         recentLeaves: leaves,
         payroll,
         recentActivities,
+        projects: projects.slice(0, 3),
         todayAttendance: todayRecord,
       });
     } catch (err) {
@@ -1021,8 +1024,21 @@ const start = async () => {
   app.get('/api/employee/activity', authenticateEmployee, async (req, res) => {
     try {
       const employee = await Models.Employee.findById(req.employee.id);
-      const activities = await Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(20);
+      if (!employee) return res.status(404).json({ error: 'Employee not found' });
+      const activities = await Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(30);
       res.json(activities);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Projects (where employee is in teamMembers)
+  app.get('/api/employee/projects', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      if (!employee) return res.status(404).json({ error: 'Employee not found' });
+      const projects = await Models.Project.find({ 
+        teamMembers: { $in: [employee.name] } 
+      }).sort({ deadline: 1 });
+      res.json(projects);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 

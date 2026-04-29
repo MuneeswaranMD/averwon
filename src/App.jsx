@@ -31,6 +31,9 @@ import EmployeeCalendar from './employee/Calendar';
 import EmployeeNotifications from './employee/Notifications';
 import EmployeeDocuments from './employee/Documents';
 import EmployeeSettings from './employee/Settings';
+import EmployeeProjects from './employee/Projects';
+import EmployeeActivities from './employee/ActivityLogs';
+import EmployeeTools from './employee/Tools';
 
 // Page transition wrapper
 const PageTransition = ({ children }) => (
@@ -74,10 +77,13 @@ const AppInner = () => {
             <Route path="/employee" element={<EmployeeLayout />}>
               <Route path="dashboard" element={<EmployeeDashboard />} />
               <Route path="profile" element={<EmployeeProfile />} />
+              <Route path="projects" element={<EmployeeProjects />} />
               <Route path="tasks" element={<EmployeeTasks />} />
               <Route path="attendance" element={<EmployeeAttendance />} />
               <Route path="leaves" element={<EmployeeLeaves />} />
               <Route path="meetings" element={<EmployeeMeetings />} />
+              <Route path="activities" element={<EmployeeActivities />} />
+              <Route path="tools" element={<EmployeeTools />} />
               <Route path="calendar" element={<EmployeeCalendar />} />
               <Route path="notifications" element={<EmployeeNotifications />} />
               <Route path="documents" element={<EmployeeDocuments />} />

@@ -13,7 +13,10 @@ import {
   Settings, 
   LogOut, 
   Menu, 
-  ChevronDown 
+  ChevronDown,
+  Briefcase,
+  History,
+  Wrench
 } from 'lucide-react';
 
 const Z = {
@@ -38,10 +41,13 @@ const Z = {
 const NAV = [
   { label: 'Dashboard',      path: '/employee/dashboard',     icon: LayoutDashboard },
   { label: 'My Profile',     path: '/employee/profile',        icon: User },
+  { label: 'My Projects',    path: '/employee/projects',       icon: Briefcase },
   { label: 'My Tasks',       path: '/employee/tasks',          icon: CheckSquare },
   { label: 'Attendance',     path: '/employee/attendance',     icon: Clock },
   { label: 'Leave Requests', path: '/employee/leaves',         icon: Calendar },
   { label: 'Meetings',       path: '/employee/meetings',       icon: Video },
+  { label: 'Activity Logs',  path: '/employee/activities',     icon: History },
+  { label: 'Tools',          path: '/employee/tools',          icon: Wrench },
   { label: 'Calendar',       path: '/employee/calendar',       icon: CalendarDays },
   { label: 'Notifications',  path: '/employee/notifications',  icon: Bell },
   { label: 'Documents',      path: '/employee/documents',      icon: File },

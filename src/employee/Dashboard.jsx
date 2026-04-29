@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Clock, CheckSquare, ClipboardList, CheckCircle, Timer,
   Calendar, Video, ArrowRight, TrendingUp, Activity,
-  Check, AlertCircle, Loader2
+  Check, AlertCircle, Loader2, Briefcase, Wrench, History
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../api-config';
 
@@ -166,30 +166,59 @@ const Dashboard = () => {
 
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18, marginBottom: 28 }}>
-        <StatCard title="Total Tasks"  value={stats?.totalTasks ?? '—'}   sub={`${stats?.completedTasks ?? 0} completed`} color={Z.accent}   icon={ClipboardList} />
-        <StatCard title="Completed"    value={stats?.completedTasks ?? '—'} sub={`${stats?.pendingTasks ?? 0} still pending`} color={Z.success}  icon={CheckCircle} />
-        <StatCard title="Pending"      value={stats?.pendingTasks ?? '—'}  sub="Due soon"             color={Z.warning}  icon={Timer} />
-        <StatCard title="Attendance"   value={`${stats?.attendanceRate ?? 0}%`} sub="Last 30 days"   color={Z.purple}   icon={Calendar} />
+        <StatCard title="Active Projects" value={stats?.activeProjects ?? '—'} sub="Assigned to you" color={Z.purple} icon={Briefcase} />
+        <StatCard title="Total Tasks"     value={stats?.totalTasks ?? '—'}   sub={`${stats?.completedTasks ?? 0} completed`} color={Z.accent} icon={ClipboardList} />
+        <StatCard title="Pending Tasks"   value={stats?.pendingTasks ?? '—'}  sub="Requires action" color={Z.warning} icon={Timer} />
+        <StatCard title="Attendance"      value={`${stats?.attendanceRate ?? 0}%`} sub="Current month" color={Z.success} icon={Activity} />
       </div>
 
       {/* Bottom section */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 340px', gap: 20, alignItems: 'start' }}>
 
-        {/* Task progress */}
-        <Card style={{ padding: '22px 24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>My Tasks</div>
-            <button onClick={() => navigate('/employee/tasks')}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: Z.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-              View All <ArrowRight size={14} />
-            </button>
-          </div>
-          {tasks?.length > 0 ? tasks.map(t => (
-            <ProgressBar key={t._id} label={`${t.title} — ${t.project || 'General'}`} pct={t.progress || 0} color={priBadge[t.priority] || Z.muted} />
-          )) : (
-            <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No tasks assigned yet</div>
-          )}
-        </Card>
+        {/* Projects & Tasks */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <Card style={{ padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Recent Projects</div>
+              <button onClick={() => navigate('/employee/projects')}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: Z.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                View All <ArrowRight size={14} />
+              </button>
+            </div>
+            {data?.projects?.length > 0 ? data.projects.map((p, i) => (
+              <div key={p._id} style={{ 
+                padding: '12px 0', 
+                borderBottom: i < data.projects.length - 1 ? `1px solid ${Z.border}` : 'none',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{p.name}</div>
+                  <div style={{ fontSize: 11, color: Z.muted }}>Deadline: {new Date(p.deadline).toLocaleDateString()}</div>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: Z.accent, background: `${Z.accent}15`, padding: '2px 8px', borderRadius: 4 }}>
+                  {p.status}
+                </div>
+              </div>
+            )) : (
+              <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No active projects</div>
+            )}
+          </Card>
+
+          <Card style={{ padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Task Progress</div>
+              <button onClick={() => navigate('/employee/tasks')}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: Z.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                View All <ArrowRight size={14} />
+              </button>
+            </div>
+            {tasks?.length > 0 ? tasks.slice(0, 3).map(t => (
+              <ProgressBar key={t._id} label={t.title} pct={t.progress || 0} color={priBadge[t.priority] || Z.muted} />
+            )) : (
+              <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No tasks assigned yet</div>
+            )}
+          </Card>
+        </div>
 
         {/* Leave Balance + Working Hours */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -238,6 +267,20 @@ const Dashboard = () => {
                 Not checked in today
               </div>
             )}
+          </Card>
+
+          <Card style={{ padding: '20px 24px' }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Quick Access</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <button onClick={() => navigate('/employee/tools')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '10px', borderRadius: 8, border: `1px solid ${Z.border}`, background: 'none', cursor: 'pointer' }}>
+                <Wrench size={18} color={Z.muted} />
+                <span style={{ fontSize: 11, fontWeight: 600 }}>Tools</span>
+              </button>
+              <button onClick={() => navigate('/employee/activities')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '10px', borderRadius: 8, border: `1px solid ${Z.border}`, background: 'none', cursor: 'pointer' }}>
+                <History size={18} color={Z.muted} />
+                <span style={{ fontSize: 11, fontWeight: 600 }}>Logs</span>
+              </button>
+            </div>
           </Card>
         </div>
 
