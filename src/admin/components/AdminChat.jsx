@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Button, Text, Input, Icon, Illustration, Loader } from '@adminjs/design-system';
+import { Box, Button, Text, Input, Icon, Loader } from '@adminjs/design-system';
 import { ApiClient } from 'adminjs';
 
 const AdminChat = () => {
@@ -36,7 +36,7 @@ const AdminChat = () => {
         fetch('/api/admin/tracking/employees').then(r => r.json())
       ]);
       setRooms(roomsRes);
-      setEmployees(employeesRes.map(e => e.employee.name));
+      setEmployees(eRes.filter(e => e && e.employee).map(e => e.employee.name));
     } catch (err) {
       console.error(err);
     } finally {
@@ -174,7 +174,7 @@ const AdminChat = () => {
           </>
         ) : (
           <Box flex={1} display="flex" alignItems="center" justifyContent="center" flexDirection="column">
-            <Illustration name="Message" width="200px" />
+            <Icon icon="MessageSquare" size={64} color="grey40" />
             <Text mt="lg" color="grey60">Select a chat to start messaging</Text>
           </Box>
         )}

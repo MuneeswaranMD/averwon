@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Text, Input, Icon, Loader, Table, TableHead, TableBody, TableRow, TableCell, Label, Select } from '@adminjs/design-system';
+import { Box, Button, Text, Input, Icon, Loader, Table, TableHead, TableBody, TableRow, TableCell, Label } from '@adminjs/design-system';
 import { ApiClient } from 'adminjs';
 
 const AdminProjectAssign = () => {
@@ -23,7 +23,7 @@ const AdminProjectAssign = () => {
         fetch('/api/admin/tracking/employees').then(r => r.json())
       ]);
       setProjects(pRes);
-      setEmployees(eRes.map(e => e.employee.name));
+      setEmployees(eRes.filter(e => e && e.employee).map(e => e.employee.name));
     } catch (err) {
       console.error(err);
     } finally {

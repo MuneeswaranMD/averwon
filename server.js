@@ -1242,6 +1242,35 @@ app.post('/api/admin/projects/assign', async (req, res) => {
   }
 });
 
+// Lead Import API
+app.post('/api/admin/leads/import', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    
+    const content = req.file.buffer.toString();
+    let leads = [];
+    
+    if (req.file.originalname.endsWith('.json')) {
+      leads = JSON.parse(content);
+    } else {
+      // Basic CSV parsing
+      const lines = content.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      leads = lines.slice(1).filter(l => l.trim()).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const lead = {};
+        headers.forEach((h, i) => lead[h] = values[i]);
+        return lead;
+      });
+    }
+    
+    const results = await Models.Lead.insertMany(leads);
+    res.json({ success: true, count: results.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);

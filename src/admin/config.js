@@ -36,6 +36,7 @@ export const Components = {
   EmployeeTracking: componentLoader.add('EmployeeTracking', path.join(__dirname, 'components/EmployeeTracking.jsx')),
   AdminChat: componentLoader.add('AdminChat', path.join(__dirname, 'components/AdminChat.jsx')),
   AdminProjectAssign: componentLoader.add('AdminProjectAssign', path.join(__dirname, 'components/AdminProjectAssign.jsx')),
+  LeadImport: componentLoader.add('LeadImport', path.join(__dirname, 'components/LeadImport.jsx')),
 };
 
 const commonActions = {
@@ -282,7 +283,16 @@ export const adminOptions = {
     },
     { resource: Models.Lead, options: { 
       parent: { name: 'Sales', icon: 'UserPlus' },
-      actions: { ...commonActions, list: { component: Components.LeadsPage } },
+      actions: { 
+        ...commonActions, 
+        list: { component: Components.LeadsPage },
+        import: {
+          actionType: 'resource',
+          component: Components.LeadImport,
+          icon: 'Upload',
+          label: 'Import Leads'
+        }
+      },
       properties: { status: { components: { list: Components.StatusTag } } }
     } },
     { resource: Models.Client, options: { 
