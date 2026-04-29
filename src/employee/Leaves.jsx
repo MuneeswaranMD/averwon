@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Calendar, Thermometer, Sun, TreePalm, Home, Plus, X, Paperclip, Info } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Thermometer, Sun, TreePalm, Home, Plus, X, Paperclip, Info, Loader2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   accent:  '#2563EB', 
@@ -58,22 +60,16 @@ const StatusBadge = ({ status }) => {
   return <span style={{ display:'inline-block', padding:'4px 12px', background:bg, color:fg, borderRadius:20, fontSize:11, fontWeight:700 }}>{status}</span>;
 };
 
-const leaveSummary = [
-  { type: 'Sick Leave',    total: 5,  used: 2,  remaining: 3,  color: Z.danger,   icon: Thermometer },
-  { type: 'Casual Leave',  total: 12, used: 4,  remaining: 8,  color: Z.accent,   icon: Sun },
-  { type: 'Paid Leave',    total: 15, used: 5,  remaining: 10, color: Z.success,  icon: TreePalm },
-  { type: 'WFH Balance',   total: 24, used: 10, remaining: 14, color: Z.purple,   icon: Home },
-];
-
-const leaveHistory = [
-  { id: 1, type: 'Sick Leave',    start: '2024-04-10', end: '2024-04-11', days: 2, reason: 'Fever and flu',        status: 'Approved'  },
-  { id: 2, type: 'Casual Leave',  start: '2024-05-15', end: '2024-05-16', days: 2, reason: 'Family function',      status: 'Pending'   },
-  { id: 3, type: 'Work From Home',start: '2024-03-20', end: '2024-03-20', days: 1, reason: 'Home delivery',        status: 'Approved'  },
-  { id: 4, type: 'Paid Leave',    start: '2024-01-05', end: '2024-01-10', days: 5, reason: 'Vacation',             status: 'Approved'  },
-  { id: 5, type: 'Sick Leave',    start: '2023-12-12', end: '2023-12-12', days: 1, reason: 'Doctor appointment',   status: 'Rejected'  },
-];
-
 const LEAVE_TYPES = ['Sick Leave', 'Casual Leave', 'Paid Leave', 'Work From Home', 'Emergency Leave'];
+
+const LEAVE_META = [
+  { type: 'Sick Leave',   total: 5,  color: Z.danger,  icon: Thermometer },
+  { type: 'Casual Leave', total: 12, color: Z.accent,  icon: Sun },
+  { type: 'Paid Leave',   total: 15, color: Z.success, icon: TreePalm },
+  { type: 'WFH',          total: 24, color: '#8B5CF6', icon: Home },
+];
+
+const getToken = () => localStorage.getItem('employeeToken');
 
 const inp = {
   width: '100%', boxSizing: 'border-box',
@@ -83,9 +79,57 @@ const inp = {
 
 const Leaves = () => {
   const [modal, setModal] = useState(false);
-  const [form, setForm]   = useState({ type: 'Sick Leave', start: '', end: '', reason: '' });
+  const [form, setForm] = useState({ leaveType: 'Sick Leave', startDate: '', endDate: '', reason: '' });
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const navigate = useNavigate();
+
+  const fetchLeaves = () => {
+    const token = getToken();
+    if (!token) { navigate('/employee/login'); return; }
+    fetch(API_ENDPOINTS.EMPLOYEE_LEAVES, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => setHistory(Array.isArray(d) ? d : []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchLeaves(); }, []);
 
   const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const submitLeave = async () => {
+    if (!form.startDate || !form.endDate || !form.reason) {
+      setMsg({ type: 'error', text: 'Please fill all required fields.' });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const r = await fetch(API_ENDPOINTS.EMPLOYEE_LEAVES, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const d = await r.json();
+      if (!r.ok) { setMsg({ type: 'error', text: d.error || 'Failed to apply' }); return; }
+      setMsg({ type: 'success', text: '✅ Leave request submitted!' });
+      setModal(false);
+      fetchLeaves();
+    } catch (e) { setMsg({ type: 'error', text: e.message }); }
+    finally { setSubmitting(false); }
+  };
+
+  // Compute leave balances from real data
+  const leaveSummary = LEAVE_META.map(l => {
+    const used = history.filter(h => h.leaveType === l.type && h.status === 'Approved')
+      .reduce((sum, h) => {
+        const days = Math.ceil((new Date(h.endDate) - new Date(h.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+        return sum + days;
+      }, 0);
+    return { ...l, used, remaining: Math.max(0, l.total - used) };
+  });
 
   return (
     <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", color: Z.text }}>
@@ -110,10 +154,17 @@ const Leaves = () => {
         ))}
       </div>
 
+      {/* Message */}
+      {msg && (
+        <div style={{ padding: '10px 16px', borderRadius: 8, marginBottom: 14, fontSize: 13, fontWeight: 600, background: msg.type === 'success' ? '#F0FDF4' : '#FEF2F2', color: msg.type === 'success' ? Z.success : Z.danger, border: `1px solid ${msg.type === 'success' ? '#BBF7D0' : '#FECACA'}` }}>
+          {msg.text}
+        </div>
+      )}
+
       {/* Header row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontWeight: 800, fontSize: 15 }}>Leave History</div>
-        <button onClick={() => setModal(true)} style={{
+        <div style={{ fontWeight: 800, fontSize: 15 }}>Leave History ({history.length} records)</div>
+        <button onClick={() => { setModal(true); setMsg(null); }} style={{
           padding: '9px 18px', background: Z.accent, color: '#fff',
           border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 8,
@@ -124,37 +175,33 @@ const Leaves = () => {
 
       {/* Table */}
       <Card>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr><Th>Type</Th><Th>Start</Th><Th>End</Th><Th>Days</Th><Th>Reason</Th><Th>Status</Th><Th>Action</Th></tr>
-          </thead>
-          <tbody>
-            {leaveHistory.map(row => (
-              <tr key={row.id}
-                onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
-                onMouseLeave={e => e.currentTarget.style.background = ''}
-              >
-                <Td bold>{row.type}</Td>
-                <Td>{new Date(row.start).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}</Td>
-                <Td>{new Date(row.end).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}</Td>
-                <Td>{row.days}</Td>
-                <Td><span style={{ display:'block', maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{row.reason}</span></Td>
-                <Td><StatusBadge status={row.status} /></Td>
-                <Td>
-                  <button
-                    disabled={row.status !== 'Pending'}
-                    style={{
-                      padding: '5px 12px', borderRadius: 6,
-                      border: `1px solid ${row.status === 'Pending' ? Z.danger : Z.border}`,
-                      background: '#fff', fontSize: 12, cursor: row.status === 'Pending' ? 'pointer' : 'default',
-                      color: row.status === 'Pending' ? Z.danger : Z.muted, fontWeight: 600,
-                    }}
-                  >Cancel</button>
-                </Td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {loading ? (
+          <div style={{ padding: 40, textAlign: 'center', color: Z.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <Loader2 size={20} color={Z.accent} /> Loading leave history...
+          </div>
+        ) : history.length === 0 ? (
+          <div style={{ padding: 40, textAlign: 'center', color: Z.muted }}>No leave records found. Apply for your first leave above.</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr><Th>Type</Th><Th>Start</Th><Th>End</Th><Th>Reason</Th><Th>Status</Th></tr>
+            </thead>
+            <tbody>
+              {history.map(row => (
+                <tr key={row._id}
+                  onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={e => e.currentTarget.style.background = ''}
+                >
+                  <Td bold>{row.leaveType}</Td>
+                  <Td>{row.startDate ? new Date(row.startDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—'}</Td>
+                  <Td>{row.endDate ? new Date(row.endDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—'}</Td>
+                  <Td><span style={{ display:'block', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{row.reason}</span></Td>
+                  <Td><StatusBadge status={row.status} /></Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Card>
 
       {/* Apply modal */}
@@ -170,7 +217,7 @@ const Leaves = () => {
 
             <div style={{ marginBottom:14 }}>
               <label style={{ display:'block', fontSize:12, fontWeight:700, color:Z.text, marginBottom:6 }}>Leave Type</label>
-              <select value={form.type} onChange={set('type')} style={inp}>
+              <select value={form.leaveType} onChange={set('leaveType')} style={inp}>
                 {LEAVE_TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
@@ -178,13 +225,13 @@ const Leaves = () => {
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
               <div>
                 <label style={{ display:'block', fontSize:12, fontWeight:700, color:Z.text, marginBottom:6 }}>Start Date</label>
-                <input type="date" value={form.start} onChange={set('start')} style={inp}
+                <input type="date" value={form.startDate} onChange={set('startDate')} style={inp}
                   onFocus={e => e.target.style.borderColor = Z.accent}
                   onBlur={e => e.target.style.borderColor = Z.border} />
               </div>
               <div>
                 <label style={{ display:'block', fontSize:12, fontWeight:700, color:Z.text, marginBottom:6 }}>End Date</label>
-                <input type="date" value={form.end} onChange={set('end')} style={inp}
+                <input type="date" value={form.endDate} onChange={set('endDate')} style={inp}
                   onFocus={e => e.target.style.borderColor = Z.accent}
                   onBlur={e => e.target.style.borderColor = Z.border} />
               </div>
@@ -221,7 +268,9 @@ const Leaves = () => {
 
             <div style={{ display:'flex', gap:10 }}>
               <button onClick={() => setModal(false)} style={{ flex:1, padding:'11px', border:`1.5px solid ${Z.border}`, borderRadius:8, background:'#fff', cursor:'pointer', fontSize:14, color:Z.muted, fontWeight:600 }}>Cancel</button>
-              <button onClick={() => setModal(false)} style={{ flex:2, padding:'11px', background:Z.accent, color:'#fff', border:'none', borderRadius:8, fontSize:14, fontWeight:700, cursor:'pointer' }}>Submit Request</button>
+              <button onClick={submitLeave} disabled={submitting} style={{ flex:2, padding:'11px', background: submitting ? Z.muted : Z.accent, color:'#fff', border:'none', borderRadius:8, fontSize:14, fontWeight:700, cursor: submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                {submitting && <Loader2 size={16} />} Submit Request
+              </button>
             </div>
           </div>
         </div>

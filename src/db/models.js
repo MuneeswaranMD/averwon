@@ -356,8 +356,19 @@ const ClientRequestSchema = new mongoose.Schema(
 );
 const ClientRequest = mongoose.model('ClientRequest', ClientRequestSchema);
 
+const DocumentSchema = new mongoose.Schema({
+  employeeName: { type: String, required: true },
+  title: { type: String, required: true },
+  type: { type: String, enum: ['Offer Letter', 'Contract', 'Payslip', 'Policy', 'Other'], default: 'Other' },
+  uploadDate: { type: Date, default: Date.now },
+  status: { type: String, enum: ['Verified', 'Pending', 'Rejected'], default: 'Pending' },
+  fileUrl: { type: String },
+  size: { type: String }
+}, { timestamps: true });
+const Document = mongoose.model('Document', DocumentSchema);
+
 export {
   Employee, Intern, Project, Task, Ticket, Attendance, LeaveRequest, Payroll, 
   Meeting, Activity, Revenue, Invoice, Bill, Lead, Deal, LiveChat, Setting,
-  JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest
+  JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest, Document
 };

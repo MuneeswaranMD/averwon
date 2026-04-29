@@ -798,7 +798,298 @@ const start = async () => {
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
+
+  // ===================== EXTENDED EMPLOYEE PORTAL APIS =====================
+
+  // Employee Dashboard — aggregated stats for the logged-in employee
+  app.get('/api/employee/dashboard', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id).select('-password');
+      if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+      const [tasks, leaves, meetings, payroll, attendance, recentActivities] = await Promise.all([
+        Models.Task.find({ assignedTo: employee.name }),
+        Models.LeaveRequest.find({ employeeName: employee.name }).sort({ startDate: -1 }).limit(5),
+        Models.Meeting.find({
+          participants: employee.name,
+          status: 'Scheduled',
+          date: { $gte: new Date() }
+        }).sort({ date: 1 }).limit(5),
+        Models.Payroll.findOne({ employeeName: employee.name }).sort({ paymentDate: -1 }),
+        Models.Attendance.find({ employeeName: employee.name }).sort({ date: -1 }).limit(30),
+        Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(10),
+      ]);
+
+      const completedTasks = tasks.filter(t => t.status === 'Done').length;
+      const pendingTasks = tasks.filter(t => t.status !== 'Done').length;
+      const presentDays = attendance.filter(a => a.status === 'Present' || a.status === 'Late').length;
+      const attendanceRate = attendance.length > 0 ? Math.round((presentDays / attendance.length) * 100) : 0;
+      const approvedLeaves = leaves.filter(l => l.status === 'Approved').length;
+      const pendingLeaves = leaves.filter(l => l.status === 'Pending').length;
+
+      // Calculate leave balance (20 days per year - approved leaves)
+      const thisYearLeaves = leaves.filter(l => {
+        return l.status === 'Approved' && new Date(l.startDate).getFullYear() === new Date().getFullYear();
+      });
+      const usedLeaveDays = thisYearLeaves.reduce((sum, l) => {
+        const days = Math.ceil((new Date(l.endDate) - new Date(l.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+        return sum + days;
+      }, 0);
+
+      // Today's attendance record
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+      const todayRecord = await Models.Attendance.findOne({
+        employeeName: employee.name,
+        date: { $gte: todayStart, $lte: todayEnd }
+      });
+
+      res.json({
+        employee,
+        stats: {
+          totalTasks: tasks.length,
+          completedTasks,
+          pendingTasks,
+          attendanceRate,
+          leaveBalance: Math.max(0, 20 - usedLeaveDays),
+          approvedLeaves,
+          pendingLeaves,
+        },
+        tasks: tasks.slice(0, 5),
+        meetings,
+        recentLeaves: leaves,
+        payroll,
+        recentActivities,
+        todayAttendance: todayRecord,
+      });
+    } catch (err) {
+      console.error('[EMPLOYEE DASHBOARD]', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Employee Attendance — history
+  app.get('/api/employee/attendance', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const { month, year } = req.query;
+      const query = { employeeName: employee.name };
+      if (month && year) {
+        const start = new Date(year, month - 1, 1);
+        const end = new Date(year, month, 0, 23, 59, 59);
+        query.date = { $gte: start, $lte: end };
+      } else {
+        // Default: last 30 days
+        const ago = new Date(); ago.setDate(ago.getDate() - 30);
+        query.date = { $gte: ago };
+      }
+      const records = await Models.Attendance.find(query).sort({ date: -1 });
+      const present = records.filter(r => r.status === 'Present').length;
+      const late = records.filter(r => r.status === 'Late').length;
+      const absent = records.filter(r => r.status === 'Absent').length;
+      const totalHours = records.reduce((sum, r) => {
+        if (r.checkInTime && r.checkOutTime) {
+          try {
+            const [inH, inM] = r.checkInTime.split(':').map(Number);
+            const [outH, outM] = r.checkOutTime.split(':').map(Number);
+            return sum + (outH * 60 + outM - inH * 60 - inM) / 60;
+          } catch { return sum; }
+        }
+        return sum;
+      }, 0);
+
+      // Today's record
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+      const todayRecord = await Models.Attendance.findOne({
+        employeeName: employee.name,
+        date: { $gte: todayStart, $lte: todayEnd }
+      });
+
+      res.json({
+        records,
+        stats: { present, late, absent, totalHours: Math.round(totalHours * 10) / 10 },
+        todayRecord,
+      });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Check-in (already exists, enhance with activity log)
+  app.post('/api/employee/attendance/check-in', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      
+      // Prevent duplicate check-in
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const existing = await Models.Attendance.findOne({ employeeName: employee.name, date: { $gte: todayStart } });
+      if (existing && existing.checkInTime) {
+        return res.status(409).json({ error: 'Already checked in today', record: existing });
+      }
+
+      const now = new Date();
+      const checkInStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const isLate = now.getHours() > 9 || (now.getHours() === 9 && now.getMinutes() > 30);
+
+      const attendance = existing
+        ? await Models.Attendance.findByIdAndUpdate(existing._id, { checkInTime: checkInStr, workMode: req.body.workMode || 'Office', status: isLate ? 'Late' : 'Present' }, { new: true })
+        : await Models.Attendance.create({
+            employeeName: employee.name,
+            checkInTime: checkInStr,
+            workMode: req.body.workMode || 'Office',
+            status: isLate ? 'Late' : 'Present',
+            date: now,
+          });
+
+      // Log activity
+      await Models.Activity.create({ user: employee.name, action: `Checked in (${req.body.workMode || 'Office'})`, target: 'Attendance', time: now });
+
+      res.json({ success: true, attendance });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Check-out
+  app.post('/api/employee/attendance/check-out', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const record = await Models.Attendance.findOne({ employeeName: employee.name, date: { $gte: todayStart } });
+      if (!record) return res.status(404).json({ error: 'No check-in found for today' });
+      if (record.checkOutTime) return res.status(409).json({ error: 'Already checked out today', record });
+
+      const now = new Date();
+      const checkOutStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      record.checkOutTime = checkOutStr;
+      await record.save();
+
+      await Models.Activity.create({ user: employee.name, action: 'Checked out', target: 'Attendance', time: now });
+      res.json({ success: true, attendance: record });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Meetings
+  app.get('/api/employee/meetings', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const meetings = await Models.Meeting.find({
+        $or: [
+          { participants: employee.name },
+          { participants: employee.department },
+        ]
+      }).sort({ date: 1 });
+      res.json(meetings);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Payroll history
+  app.get('/api/employee/payroll', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const payroll = await Models.Payroll.find({ employeeName: employee.name }).sort({ paymentDate: -1 });
+      res.json(payroll);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Tasks update (progress / status)
+  app.patch('/api/employee/tasks/:id', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const task = await Models.Task.findById(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+      if (task.assignedTo !== employee.name) return res.status(403).json({ error: 'Not your task' });
+
+      const updated = await Models.Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      await Models.Activity.create({ user: employee.name, action: `Updated task: ${task.title} → ${req.body.status || task.status}`, target: 'Task', time: new Date() });
+      res.json(updated);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Leave apply (enhance existing with activity log)
+  app.post('/api/employee/leaves', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const leave = await Models.LeaveRequest.create({
+        ...req.body,
+        employeeName: employee.name,
+        status: 'Pending'
+      });
+      await Models.Activity.create({ user: employee.name, action: `Applied for ${req.body.leaveType}`, target: 'Leave', time: new Date() });
+      res.json(leave);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Activity Log
+  app.get('/api/employee/activity', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const activities = await Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(20);
+      res.json(activities);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Employee Documents
+  app.get('/api/employee/documents', authenticateEmployee, async (req, res) => {
+    try {
+      const employee = await Models.Employee.findById(req.employee.id);
+      const docs = await Models.Document.find({ employeeName: employee.name }).sort({ createdAt: -1 });
+      res.json(docs);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ===================== ADMIN — EMPLOYEE TRACKING =====================
+
+  app.get('/api/admin/tracking/employees', async (req, res) => {
+    try {
+      const employees = await Models.Employee.find({ status: 'Active' }).select('-password');
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+
+      const trackingData = await Promise.all(employees.map(async (emp) => {
+        const todayRecord = await Models.Attendance.findOne({
+          employeeName: emp.name,
+          date: { $gte: today }
+        });
+        const recentActivities = await Models.Activity.find({ user: emp.name }).sort({ time: -1 }).limit(5);
+        const pendingTasks = await Models.Task.countDocuments({ assignedTo: emp.name, status: { $ne: 'Done' } });
+        const completedTasks = await Models.Task.countDocuments({ assignedTo: emp.name, status: 'Done' });
+        const pendingLeave = await Models.LeaveRequest.findOne({ employeeName: emp.name, status: 'Pending' });
+
+        return {
+          employee: emp,
+          todayAttendance: todayRecord,
+          status: todayRecord?.checkInTime ? (todayRecord.checkOutTime ? 'Checked Out' : 'Online') : 'Absent',
+          lastSeen: recentActivities[0]?.time || null,
+          pendingTasks,
+          completedTasks,
+          recentActivities,
+          hasPendingLeave: !!pendingLeave,
+        };
+      }));
+
+      res.json(trackingData);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Admin leave approval
+  app.patch('/api/admin/leaves/:id', async (req, res) => {
+    try {
+      const { status, adminNote } = req.body;
+      const leave = await Models.LeaveRequest.findByIdAndUpdate(req.params.id, { status }, { new: true });
+      if (leave) {
+        await Models.Activity.create({ user: 'Admin', action: `${status} leave for ${leave.employeeName}`, target: 'Leave', time: new Date() });
+      }
+      res.json(leave);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Admin — all pending leaves
+  app.get('/api/admin/leaves/pending', async (req, res) => {
+    try {
+      const leaves = await Models.LeaveRequest.find({ status: 'Pending' }).sort({ createdAt: -1 });
+      res.json(leaves);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
   // --- Corporate Website & SPA Fallback ---
+
 
   app.use(express.static(path.join(__dirname, 'dist')));
   

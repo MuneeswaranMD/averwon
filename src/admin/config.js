@@ -33,6 +33,7 @@ export const Components = {
   AdminAccountPage: componentLoader.add('AdminAccountPage', path.join(__dirname, 'components/AdminAccountPage.jsx')),
   StatusTag: componentLoader.add('StatusTag', path.join(__dirname, 'components/StatusBadge.jsx')),
   ContentToggle: componentLoader.add('ContentToggle', path.join(__dirname, 'components/LongText.jsx')),
+  EmployeeTracking: componentLoader.add('EmployeeTracking', path.join(__dirname, 'components/EmployeeTracking.jsx')),
 };
 
 const commonActions = {
@@ -47,6 +48,18 @@ export const adminOptions = {
   rootPath: '/admin',
   componentLoader,
   dashboard: { component: Components.Dashboard },
+  pages: {
+    'employee-tracking': {
+      label: 'Employee Tracking',
+      component: Components.EmployeeTracking,
+      icon: 'Activity'
+    },
+    'sales-dashboard': {
+      label: 'Sales Dashboard',
+      component: Components.SalesDashboard,
+      icon: 'TrendingUp'
+    }
+  },
   resources: [
     // --- HR Management ---
     { resource: Models.Employee, options: { 
@@ -105,6 +118,10 @@ export const adminOptions = {
     } },
     { resource: Models.LeaveRequest, options: { 
       parent: { name: 'HR Management', icon: 'Calendar' },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.Document, options: {
+      parent: { name: 'HR Management', icon: 'FileText' },
       actions: { ...commonActions }
     } },
     { resource: Models.Payroll, options: { 

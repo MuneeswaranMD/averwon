@@ -4,7 +4,7 @@ import {
   Target, Shield, ChevronDown, ChevronLeft, ChevronRight, LogOut,
   BadgeCheck, GraduationCap, Clock, Palmtree, CreditCard, UserCheck,
   FolderOpen, CheckSquare, Video, Ticket, TrendingUp, ReceiptText,
-  Settings, ShieldAlert
+  Settings, ShieldAlert, Activity, FileText
 } from 'lucide-react';
 
 const averqonLogo = '/logo.png';
@@ -48,6 +48,7 @@ const navConfig = [
       { name: 'Attendance', path: '/admin/resources/Attendance', icon: <Clock size={18} /> },
       { name: 'Leave Requests', path: '/admin/resources/LeaveRequest', icon: <Palmtree size={18} /> },
       { name: 'Payroll', path: '/admin/resources/Payroll', icon: <CreditCard size={18} /> },
+      { name: 'Documents', path: '/admin/resources/Document', icon: <FileText size={18} /> },
     ],
   },
   {
@@ -87,9 +88,9 @@ const navConfig = [
     name: 'Sales & CRM',
     icon: <Target size={22} />,
     items: [
-      { name: 'Dashboard', path: '/admin/sales-dashboard', icon: <LayoutDashboard size={18} /> },
-      { name: 'Leads', path: '/admin/sales/leads', icon: <UserCheck size={18} /> },
-      { name: 'Deals', path: '/admin/sales/deals', icon: <Briefcase size={18} /> },
+      { name: 'Dashboard', path: '/admin/pages/sales-dashboard', icon: <LayoutDashboard size={18} /> },
+      { name: 'Leads', path: '/admin/resources/Lead', icon: <UserCheck size={18} /> },
+      { name: 'Deals', path: '/admin/resources/Project', icon: <Briefcase size={18} /> },
     ],
   },
   {
@@ -100,7 +101,13 @@ const navConfig = [
       { name: 'Settings', path: '/admin/system/settings', icon: <Settings size={18} /> },
     ],
   },
+  {
+    name: 'Employee Tracking',
+    icon: <Activity size={22} />,
+    path: '/admin/pages/employee-tracking',
+  },
 ];
+
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);

@@ -1,60 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { 
-  Clock, 
-  CheckSquare, 
-  ClipboardList, 
-  CheckCircle, 
-  Timer, 
-  Calendar, 
-  Video, 
-  ArrowRight,
-  TrendingUp,
-  Activity,
-  Check
+import {
+  Clock, CheckSquare, ClipboardList, CheckCircle, Timer,
+  Calendar, Video, ArrowRight, TrendingUp, Activity,
+  Check, AlertCircle, Loader2
 } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
-  accent:   '#2563EB',
-  success:  '#10B981',
-  warning:  '#F59E0B',
-  danger:   '#EF4444',
-  purple:   '#8B5CF6',
-  text:     '#1E293B',
-  muted:    '#64748B',
-  border:   '#E2E8F0',
-  cardBg:   '#FFFFFF',
-  pageBg:   '#F8FAFC',
-  inputBg:  '#F1F5F9',
+  accent: '#2563EB', success: '#10B981', warning: '#F59E0B',
+  danger: '#EF4444', purple: '#8B5CF6', text: '#1E293B',
+  muted: '#64748B', border: '#E2E8F0', cardBg: '#FFFFFF',
+  pageBg: '#F8FAFC', inputBg: '#F1F5F9',
 };
 
 const Card = ({ children, style = {} }) => (
-  <div style={{
-    background: Z.cardBg,
-    borderRadius: 12,
-    border: `1px solid ${Z.border}`,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-    ...style,
-  }}>{children}</div>
+  <div style={{ background: Z.cardBg, borderRadius: 12, border: `1px solid ${Z.border}`, boxShadow: '0 1px 4px rgba(0,0,0,0.05)', ...style }}>
+    {children}
+  </div>
 );
 
-const StatCard = ({ title, value, sub, color, icon: Icon }) => (
+const StatCard = ({ title, value, sub, color, icon: Icon, loading }) => (
   <Card style={{ padding: '20px 22px' }}>
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
       <div>
         <div style={{ fontSize: 12, fontWeight: 600, color: Z.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{title}</div>
-        <div style={{ fontSize: 30, fontWeight: 800, color: Z.text, lineHeight: 1 }}>{value}</div>
-          <div style={{ fontSize: 12, color: Z.muted, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-             {sub}
-          </div>
+        <div style={{ fontSize: 30, fontWeight: 800, color: Z.text, lineHeight: 1 }}>
+          {loading ? <Loader2 size={24} className="animate-spin" style={{ color: Z.muted }} /> : value}
+        </div>
+        <div style={{ fontSize: 12, color: Z.muted, marginTop: 6 }}>{sub}</div>
       </div>
-      <div style={{
-        width: 48, height: 48, borderRadius: 12,
-        background: `${color}18`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}><Icon size={24} color={color} /></div>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Icon size={24} color={color} />
+      </div>
     </div>
   </Card>
 );
@@ -62,7 +40,7 @@ const StatCard = ({ title, value, sub, color, icon: Icon }) => (
 const ProgressBar = ({ label, pct, color }) => (
   <div style={{ marginBottom: 18 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-      <span style={{ fontSize: 13, color: Z.text }}>{label}</span>
+      <span style={{ fontSize: 13, color: Z.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{label}</span>
       <span style={{ fontSize: 13, fontWeight: 700, color }}>{pct}%</span>
     </div>
     <div style={{ height: 7, background: '#EEF0F5', borderRadius: 8, overflow: 'hidden' }}>
@@ -71,29 +49,56 @@ const ProgressBar = ({ label, pct, color }) => (
   </div>
 );
 
+const getToken = () => localStorage.getItem('employeeToken');
+
 const Dashboard = () => {
-  const [employee, setEmployee] = useState(null);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const data = localStorage.getItem('employeeData');
-    if (data) setEmployee(JSON.parse(data));
+    const token = getToken();
+    if (!token) { navigate('/employee/login'); return; }
+
+    fetch(API_ENDPOINTS.EMPLOYEE_DASHBOARD, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) throw new Error(d.error);
+        setData(d);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
-  const meetings = [
-    { title: 'Project Sync — AverLink', time: 'Today, 2:00 PM', live: true },
-    { title: 'Weekly Team Catch-up', time: 'Tomorrow, 10:00 AM', live: false },
-    { title: 'Design Review — Pulse Health', time: '24 Apr, 3:30 PM', live: false },
-  ];
-
-  const activity = [
-    { action: 'Completed task', detail: 'API Integration Audit', ago: '2h ago' },
-    { action: 'Updated progress', detail: 'NeoRetail UI Revamp', ago: '5h ago' },
-    { action: 'Submitted leave', detail: 'Sick Leave (2 days)', ago: 'Yesterday' },
-    { action: 'Clocked out', detail: 'Daily Attendance', ago: 'Yesterday 6:30 PM' },
-  ];
-
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const greet = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const priBadge = { Urgent: Z.danger, High: Z.warning, Medium: Z.accent, Low: Z.success };
+  const statusColor = { 'Done': Z.success, 'In Progress': Z.accent, 'Review': Z.purple, 'To Do': Z.muted };
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, flexDirection: 'column', gap: 12 }}>
+      <Loader2 size={36} color={Z.accent} style={{ animation: 'spin 1s linear infinite' }} />
+      <div style={{ color: Z.muted, fontSize: 14 }}>Loading your dashboard...</div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 24, background: '#FEF2F2', borderRadius: 12, border: '1px solid #FECACA', color: Z.danger }}>
+      <AlertCircle size={20} /> Error loading dashboard: {error}
+    </div>
+  );
+
+  const { employee, stats, tasks, meetings, recentLeaves, recentActivities, todayAttendance } = data || {};
 
   return (
     <div style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", color: Z.text }}>
@@ -101,27 +106,19 @@ const Dashboard = () => {
       {/* Welcome banner */}
       <div style={{
         background: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)',
-        borderRadius: 20,
-        padding: '40px',
-        marginBottom: 32,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 24,
-        flexWrap: 'wrap',
-        boxShadow: '0 12px 24px -6px rgba(15, 23, 42, 0.4)',
-        position: 'relative',
-        overflow: 'hidden'
+        borderRadius: 20, padding: '40px', marginBottom: 32,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 24, flexWrap: 'wrap',
+        boxShadow: '0 12px 24px -6px rgba(15,23,42,0.4)',
+        position: 'relative', overflow: 'hidden'
       }}>
-        {/* Subtle background logo */}
         <div style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.05, transform: 'rotate(-15deg)' }}>
           <img src="/logo.png" alt="" style={{ height: 180 }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.15)',
-            border: '3px solid rgba(255,255,255,0.25)',
+            background: 'rgba(255,255,255,0.15)', border: '3px solid rgba(255,255,255,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 26, fontWeight: 800, color: '#fff', flexShrink: 0,
           }}>
@@ -129,11 +126,17 @@ const Dashboard = () => {
           </div>
           <div>
             <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>
-              Good morning, {employee?.name?.split(' ')[0] || 'Employee'}
+              {greet()}, {employee?.name?.split(' ')[0] || 'Employee'} 👋
             </div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>
               {today} · {employee?.designation || 'Staff'} · {employee?.department || 'Department'}
             </div>
+            {todayAttendance?.checkInTime && (
+              <div style={{ fontSize: 12, color: '#86EFAC', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Check size={14} strokeWidth={3} />
+                Checked in at {todayAttendance.checkInTime} · {todayAttendance.workMode}
+              </div>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -142,20 +145,18 @@ const Dashboard = () => {
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '10px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)',
-              background: 'transparent', color: '#fff',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              background: 'transparent', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
             }}
           >
-            <Clock size={16} /> Mark Attendance
+            <Clock size={16} /> {todayAttendance?.checkInTime ? 'View Attendance' : 'Mark Attendance'}
           </button>
           <button
             onClick={() => navigate('/employee/tasks')}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '10px 20px', borderRadius: 8, border: 'none',
-              background: '#FFFFFF', color: '#1E293B',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              background: '#FFFFFF', color: '#1E293B', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
             }}
           >
             <CheckSquare size={16} /> My Tasks
@@ -165,10 +166,10 @@ const Dashboard = () => {
 
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18, marginBottom: 28 }}>
-        <StatCard title="Total Tasks"   value="12"   sub="2 assigned this week" color={Z.accent}   icon={ClipboardList} />
-        <StatCard title="Completed"     value="8"    sub="+15% from last month" color={Z.success}  icon={CheckCircle} />
-        <StatCard title="Pending"       value="4"    sub="Due soon"             color={Z.warning}  icon={Timer} />
-        <StatCard title="Attendance"    value="95%"  sub="This month"           color={Z.purple}   icon={Calendar} />
+        <StatCard title="Total Tasks"  value={stats?.totalTasks ?? '—'}   sub={`${stats?.completedTasks ?? 0} completed`} color={Z.accent}   icon={ClipboardList} />
+        <StatCard title="Completed"    value={stats?.completedTasks ?? '—'} sub={`${stats?.pendingTasks ?? 0} still pending`} color={Z.success}  icon={CheckCircle} />
+        <StatCard title="Pending"      value={stats?.pendingTasks ?? '—'}  sub="Due soon"             color={Z.warning}  icon={Timer} />
+        <StatCard title="Attendance"   value={`${stats?.attendanceRate ?? 0}%`} sub="Last 30 days"   color={Z.purple}   icon={Calendar} />
       </div>
 
       {/* Bottom section */}
@@ -177,19 +178,20 @@ const Dashboard = () => {
         {/* Task progress */}
         <Card style={{ padding: '22px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>Task Progress</div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>My Tasks</div>
             <button onClick={() => navigate('/employee/tasks')}
               style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: Z.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
               View All <ArrowRight size={14} />
             </button>
           </div>
-          <ProgressBar label="AverLink Logistics — API"        pct={75} color={Z.accent} />
-          <ProgressBar label="NeoRetail Core — Database"       pct={40} color={Z.warning} />
-          <ProgressBar label="Pulse Health Suite — Security"   pct={95} color={Z.success} />
-          <ProgressBar label="CloudMap Dashboard — Frontend"   pct={60} color={Z.purple} />
+          {tasks?.length > 0 ? tasks.map(t => (
+            <ProgressBar key={t._id} label={`${t.title} — ${t.project || 'General'}`} pct={t.progress || 0} color={priBadge[t.priority] || Z.muted} />
+          )) : (
+            <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No tasks assigned yet</div>
+          )}
         </Card>
 
-        {/* Leave & Hours */}
+        {/* Leave Balance + Working Hours */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <Card style={{ padding: '22px 24px', textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, textAlign: 'left' }}>Leave Balance</div>
@@ -198,30 +200,44 @@ const Dashboard = () => {
               border: `8px solid ${Z.accent}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 26, fontWeight: 800, color: Z.accent }}>14</span>
+              <span style={{ fontSize: 26, fontWeight: 800, color: Z.accent }}>{stats?.leaveBalance ?? '—'}</span>
             </div>
-            <div style={{ fontSize: 12, color: Z.muted, marginBottom: 14 }}>Days remaining this year</div>
+            <div style={{ fontSize: 12, color: Z.muted, marginBottom: 6 }}>Days remaining this year</div>
+            {stats?.pendingLeaves > 0 && (
+              <div style={{ fontSize: 12, color: Z.warning, marginBottom: 10, fontWeight: 600 }}>
+                {stats.pendingLeaves} leave request(s) pending approval
+              </div>
+            )}
             <button
               onClick={() => navigate('/employee/leaves')}
-              style={{
-                width: '100%', padding: '9px', borderRadius: 8,
-                border: `1.5px solid ${Z.accent}`, background: 'none',
-                color: Z.accent, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              }}
+              style={{ width: '100%', padding: '9px', borderRadius: 8, border: `1.5px solid ${Z.accent}`, background: 'none', color: Z.accent, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
             >Apply Leave</button>
           </Card>
 
           <Card style={{ padding: '22px 24px' }}>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10 }}>Working Hours</div>
-            <div style={{ fontSize: 36, fontWeight: 800, color: Z.accent, lineHeight: 1 }}>168h</div>
-            <div style={{ fontSize: 12, color: Z.muted, marginTop: 4, marginBottom: 12 }}>Total this month</div>
-            <div style={{
-              display: 'flex', justifyContent: 'space-between',
-              background: Z.inputBg, borderRadius: 8, padding: '10px 14px', fontSize: 12,
-            }}>
-              <span style={{ color: Z.muted }}>Avg: <strong style={{ color: Z.text }}>8.5h/day</strong></span>
-              <span style={{ color: Z.success, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>Target: 160h <Check size={14} strokeWidth={3} /></span>
-            </div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10 }}>Today's Status</div>
+            {todayAttendance ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, color: Z.muted }}>Check-in</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: Z.success }}>{todayAttendance.checkInTime || '—'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, color: Z.muted }}>Check-out</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: todayAttendance.checkOutTime ? Z.text : Z.muted }}>
+                    {todayAttendance.checkOutTime || 'Not yet'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, color: Z.muted }}>Mode</span>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>{todayAttendance.workMode}</span>
+                </div>
+              </>
+            ) : (
+              <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '10px 0' }}>
+                Not checked in today
+              </div>
+            )}
           </Card>
         </div>
 
@@ -229,31 +245,30 @@ const Dashboard = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <Card style={{ padding: '22px 24px' }}>
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Upcoming Meetings</div>
-            {meetings.map((m, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '10px 0',
+            {meetings?.length > 0 ? meetings.map((m, i) => (
+              <div key={m._id} style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0',
                 borderBottom: i < meetings.length - 1 ? `1px solid ${Z.border}` : 'none',
               }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-                  background: '#F3F4F6',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {m.live ? <Activity size={16} color={Z.accent} /> : <Video size={16} color={Z.muted} />}
+                <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Video size={16} color={Z.accent} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: Z.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
-                  <div style={{ fontSize: 11, color: Z.muted }}>{m.time}</div>
+                  <div style={{ fontSize: 11, color: Z.muted }}>
+                    {new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {m.time}
+                  </div>
                 </div>
-                {m.live && (
-                  <span style={{
-                    fontSize: 10, fontWeight: 700, color: Z.accent,
-                    background: `${Z.accent}15`, borderRadius: 4, padding: '2px 6px',
-                  }}>LIVE</span>
+                {m.meetingLink && (
+                  <a href={m.meetingLink} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 10, fontWeight: 700, color: Z.accent, background: `${Z.accent}15`, borderRadius: 4, padding: '2px 6px', textDecoration: 'none' }}>
+                    JOIN
+                  </a>
                 )}
               </div>
-            ))}
+            )) : (
+              <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '12px 0' }}>No upcoming meetings</div>
+            )}
             <button onClick={() => navigate('/employee/calendar')}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 12, width: '100%', padding: '8px', borderRadius: 8, border: `1px solid ${Z.border}`, background: 'none', fontSize: 13, color: Z.muted, cursor: 'pointer' }}>
               View Calendar <ArrowRight size={14} />
@@ -262,21 +277,23 @@ const Dashboard = () => {
 
           <Card style={{ padding: '22px 24px' }}>
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>Recent Activity</div>
-            {activity.map((a, i) => (
-              <div key={i} style={{
+            {recentActivities?.length > 0 ? recentActivities.map((a, i) => (
+              <div key={a._id} style={{
                 display: 'flex', gap: 10, paddingBottom: 10,
-                borderBottom: i < activity.length - 1 ? `1px solid ${Z.border}` : 'none',
+                borderBottom: i < recentActivities.length - 1 ? `1px solid ${Z.border}` : 'none',
                 marginBottom: 10,
               }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: Z.accent, marginTop: 6, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 13, color: Z.text }}>
-                    <strong>{a.action}</strong> - {a.detail}
+                  <div style={{ fontSize: 13, color: Z.text }}><strong>{a.action}</strong></div>
+                  <div style={{ fontSize: 11, color: Z.muted }}>
+                    {new Date(a.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
-                  <div style={{ fontSize: 11, color: Z.muted }}>{a.ago}</div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div style={{ color: Z.muted, fontSize: 13, textAlign: 'center', padding: '12px 0' }}>No recent activity</div>
+            )}
           </Card>
         </div>
       </div>

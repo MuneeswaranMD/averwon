@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+    <html lang=en>
+    <head>
+      <script>
+        window.REDUX_STATE = {"assets":{"styles":[],"scripts":[]},"branding":{"companyName":"averqon HRMS","withMadeWithLove":true,"softwareBrothers":false,"theme":{"colors":{"primary100":"#2563EB","accent":"#10B981","bg":"#F8FAFC"}},"logo":"/admin/frontend/assets/logo.svg"},"dashboard":{},"drawer":{"previousRoute":null},"filterDrawer":{"isVisible":false},"locale":{"language":"en","translations":{"en":{"labels":{"Employee":"Employee","Payroll":"Payroll","Attendance":"Attendance","LeaveRequest":"Leave Request","JobPosting":"Job Posting","HR Management":"HR Management","Operations":"Operations","Support":"Support","Sales":"Sales","Finance":"Finance","System":"System"}}},"availableLanguages":["en"]},"modal":{"show":false},"notices":[],"pages":[],"paths":{"rootPath":"/admin","logoutPath":"/admin/logout","loginPath":"/admin/login","refreshTokenPath":"/admin/refresh-token"},"resources":[],"router":{"from":{},"to":{}},"session":null,"theme":null,"versions":{}};
+        window.THEME = {"ColorVariants":{"primary":"primary100","secondary":"accent","danger":"error","success":"success","info":"info","warning":"warning","text":"text"},"borderWidths":{"default":"0px"},"borders":{"input":"1px solid #EEEEEF","filterInput":" 1px rgba(255,255,255, 0.15)","bg":"1px solid #F8F9F9","default":"1px solid #EEEEEF"},"breakpoints":["577px","769px","1024px","1324px"],"colors":{"border":"#EEEEEF","text":"#0C1E29","primary100":"#2563EB","primary80":"#6483F8","primary60":"#99A9EE","primary40":"#BBC5F4","primary20":"#DDE2F9","accent":"#10B981","grey100":"#0C1E29","grey80":"#454655","grey60":"#898A9A","grey40":"#BBC3CB","grey20":"#F2F2F2","white":"#fff","black":"#000","errorDark":"#9d0616","error":"#C20012","errorLight":"#F9E5E7","successDark":"#007D7F","success":"#007D7F","successLight":"#E5F2F2","warningDark":"#A14F17","warning":"#A14F17","warningLight":"#F6EDE8","infoDark":"#4268F6","info":"#3040D6","infoLight":"#CBD5FD","bg":"#F8FAFC","filterBg":"#FBFBFB","container":"#FFFFFF","sidebar":"#FFFFFF","inputBorder":"#BBC3CB","separator":"#BBC3CB","highlight":"#F2F2F2","love":"#4D70EB"},"defaultProps":{},"font":"'Roboto', sans-serif","fontSizes":{"xs":"10px","sm":"12px","default":"14px","md":"14px","lg":"16px","xl":"18px","h4":"24px","h3":"28px","h2":"32px","h1":"40px"},"fontWeights":{"lighter":200,"light":300,"normal":400,"bold":700,"bolder":900},"lineHeights":{"xs":"10px","sm":"12px","default":"16px","md":"16px","lg":"24px","xl":"32px","xxl":"40px"},"shadows":{"login":"0 15px 24px 0 rgba(137,138,154,0.15)","cardHover":"0 4px 12px 0 rgba(137,138,154,0.4)","drawer":"-2px 0 8px 0 rgba(137,138,154,0.2)","card":"0rem 0.25rem 0.5rem rgba(0, 0, 0, 0.1)","inputFocus":"0 2px 4px 0 rgba(135,159,250,0.4)","buttonFocus":"0 4px 6px 0 rgba(56,202,241,0.3)"},"sizes":{"navbarHeight":"64px","sidebarWidth":"300px","maxFormWidth":"740px"},"space":{"xs":"2px","sm":"4px","default":"8px","md":"8px","lg":"16px","xl":"24px","xxl":"32px","x3":"48px","x4":"64px","x5":"80px","x6":"128px"}};
+        window.AdminJS = { Components: {} };
+      </script>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title>averqon HRMS</title>
+      
+
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+
+      <script src="/admin/frontend/assets/global.bundle.js"></script>
+      <script src="/admin/frontend/assets/design-system.bundle.js"></script>
+      <script src="/admin/frontend/assets/app.bundle.js"></script>
+      <script src="/admin/frontend/assets/components.bundle.js"></script>
+      <script>
+        try {
+          window.__APP_STATE__ = JSON.parse('{"action":"/admin/login","errorMessage":null}');
+        } catch (e) {
+          console.log(e)
+          window.__APP_STATE__ = {};
+        }
+      </script>
+      
+      <style>
+      /* http://meyerweb.com/eric/tools/css/reset/
+      v4.0 | 20180602
+      License: none (public domain)
+      */
+      html, body, div, span, applet, object, iframe,
+      h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+      a, abbr, acronym, address, big, cite, code,
+      del, dfn, em, img, ins, kbd, q, s, samp,
+      small, strike, strong, sub, sup, tt, var,
+      b, u, i, center,
+      dl, dt, dd, ol, ul, li,
+      fieldset, form, label, legend,
+      table, caption, tbody, tfoot, thead, tr, th, td,
+      article, aside, canvas, details, embed,
+      figure, figcaption, footer, header, hgroup,
+      main, menu, nav, output, ruby, section, summary,
+      time, mark, audio, video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+      }
+      /* HTML5 display-role reset for older browsers */
+      article, aside, details, figcaption, figure,
+      footer, header, hgroup, main, menu, nav, section {
+        display: block;
+      }
+      /* HTML5 hidden-attribute fix for newer browsers */
+      *[hidden] {
+          display: none;
+      }
+      body {
+        line-height: 1;
+      }
+      ol, ul {
+        list-style: none;
+      }
+      blockquote, q {
+        quotes: none;
+      }
+      blockquote:before, blockquote:after,
+      q:before, q:after {
+        content: '';
+        content: none;
+      }
+      table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      html, body, #app {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        color: '#0C1E29';
+      }
+      #app {
+        isolation: isolate;
+      }
+      :root {
+        color-scheme: light;
+      }
+      </style>
+    </head>
+    <body>
+      <div id="app" />
+      <script>
+        var app = document.getElementById('app');
+        var root = createRoot(app);
+        const CustomLoginApplication = AdminJS.UserComponents && AdminJS.UserComponents.LoginApplication;
+        const LoginApplication = AdminJS.LoginApplication;
+        root.render(LoginApplication);
+      </script>
+      
+    </body>
+    </html>
+  

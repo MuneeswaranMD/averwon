@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 const Z = {
   accent:  '#2563EB', 
@@ -33,27 +33,88 @@ const PageBand = ({ icon: Icon, title, sub }) => (
   </div>
 );
 
-const events = [
-  { day:5,  label:'Leave: Sick',         color:Z.danger  },
-  { day:10, label:'Meeting: Team Sync',  color:Z.accent  },
-  { day:15, label:'Task Due: API Audit', color:Z.warning },
-  { day:18, label:'Meeting: Design Rev', color:Z.purple  },
-  { day:22, label:'Holiday: Earth Day',  color:Z.success },
-  { day:25, label:'Leave: Casual',       color:Z.danger  },
-];
-
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 const Calendar = () => {
-  const now   = new Date();
-  const [year,  setYear]  = useState(now.getFullYear());
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const today = now.getDate();
   const isCurrentMonth = month === now.getMonth() && year === now.getFullYear();
 
-  const firstDay    = new Date(year, month, 1).getDay();
+  const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('employeeToken');
+      if (!token) return;
+
+      const [leaves, tasks, meetings] = await Promise.all([
+        fetch('/api/employee/leaves', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/employee/tasks', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+        fetch('/api/employee/meetings', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+      ]);
+
+      const allEvents = [];
+
+      // Process Leaves
+      if (Array.isArray(leaves)) {
+        leaves.forEach(l => {
+          if (l.status === 'Rejected') return;
+          const start = new Date(l.startDate);
+          const end = new Date(l.endDate);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            allEvents.push({
+              date: new Date(d),
+              label: `Leave: ${l.leaveType}`,
+              color: Z.danger,
+              type: 'leave'
+            });
+          }
+        });
+      }
+
+      // Process Tasks
+      if (Array.isArray(tasks)) {
+        tasks.forEach(t => {
+          if (!t.dueDate) return;
+          allEvents.push({
+            date: new Date(t.dueDate),
+            label: `Task: ${t.title}`,
+            color: Z.warning,
+            type: 'task'
+          });
+        });
+      }
+
+      // Process Meetings
+      if (Array.isArray(meetings)) {
+        meetings.forEach(m => {
+          allEvents.push({
+            date: new Date(m.date),
+            label: `Meeting: ${m.title}`,
+            color: Z.purple,
+            type: 'meeting'
+          });
+        });
+      }
+
+      setEvents(allEvents);
+    } catch (err) {
+      console.error('Failed to fetch calendar data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const prev = () => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); };
   const next = () => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); };
@@ -62,7 +123,27 @@ const Calendar = () => {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-  const upcoming = events.slice(0, 4);
+  const getEventsForDay = (day) => {
+    if (!day) return [];
+    return events.filter(e => 
+      e.date.getDate() === day && 
+      e.date.getMonth() === month && 
+      e.date.getFullYear() === year
+    );
+  };
+
+  const upcoming = events
+    .filter(e => e.date >= new Date().setHours(0,0,0,0))
+    .sort((a,b) => a.date - b.date)
+    .slice(0, 5);
+
+  if (loading) {
+    return (
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'60vh', color:Z.accent }}>
+        <Loader2 className="animate-spin" size={40} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ fontFamily:"'Inter','Segoe UI',sans-serif", color:Z.text }}>
@@ -93,11 +174,11 @@ const Calendar = () => {
           {/* Date cells */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
             {cells.map((day, i) => {
-              const ev = day && events.find(e => e.day === day);
+              const dayEvents = getEventsForDay(day);
               const isToday = isCurrentMonth && day === today;
               return (
                 <div key={i} style={{
-                  minHeight:80, padding:'8px', borderRight: (i+1)%7===0 ? 'none' : `1px solid ${Z.border}`,
+                  minHeight:100, padding:'8px', borderRight: (i+1)%7===0 ? 'none' : `1px solid ${Z.border}`,
                   borderBottom:`1px solid ${Z.border}`,
                   background: isToday ? '#F9FAFB' : '#fff',
                 }}>
@@ -111,14 +192,17 @@ const Calendar = () => {
                         fontWeight: isToday ? 800 : 400,
                         fontSize:13, marginBottom:4,
                       }}>{day}</div>
-                      {ev && (
-                        <div style={{
-                          fontSize:10, fontWeight:600, color:'#fff',
-                          background:ev.color, borderRadius:4,
-                          padding:'2px 5px',
-                          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
-                        }}>{ev.label}</div>
-                      )}
+                      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+                        {dayEvents.map((ev, idx) => (
+                          <div key={idx} style={{
+                            fontSize:10, fontWeight:600, color:'#fff',
+                            background:ev.color, borderRadius:4,
+                            padding:'2px 5px',
+                            whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+                            cursor:'help'
+                          }} title={ev.label}>{ev.label}</div>
+                        ))}
+                      </div>
                     </>
                   )}
                 </div>
@@ -135,7 +219,7 @@ const Calendar = () => {
             <div style={{ fontWeight:700, fontSize:14, marginBottom:12 }}>Legend</div>
             {[
               { label:'Leave Day',    color:Z.danger  },
-              { label:'Meeting',      color:Z.accent  },
+              { label:'Meeting',      color:Z.purple  },
               { label:'Task Due',     color:Z.warning },
               { label:'Holiday',      color:Z.success },
             ].map(l => (
@@ -149,7 +233,9 @@ const Calendar = () => {
           {/* Upcoming */}
           <div style={{ background:Z.cardBg, borderRadius:12, border:`1px solid ${Z.border}`, boxShadow:'0 1px 4px rgba(0,0,0,0.05)', padding:'18px 20px' }}>
             <div style={{ fontWeight:700, fontSize:14, marginBottom:14 }}>Upcoming Events</div>
-            {upcoming.map((ev, i) => (
+            {upcoming.length === 0 ? (
+              <div style={{ fontSize:12, color:Z.muted, textAlign:'center', padding:'20px 0' }}>No upcoming events</div>
+            ) : upcoming.map((ev, i) => (
               <div key={i} style={{
                 display:'flex', alignItems:'center', gap:12,
                 padding:'9px 0',
@@ -160,10 +246,10 @@ const Calendar = () => {
                   background:`${ev.color}18`,
                   display:'flex', alignItems:'center', justifyContent:'center',
                   color:ev.color, fontWeight:800, fontSize:13,
-                }}>{ev.day}</div>
+                }}>{ev.date.getDate()}</div>
                 <div>
                   <div style={{ fontSize:12, fontWeight:600, color:Z.text }}>{ev.label}</div>
-                  <div style={{ fontSize:11, color:Z.muted }}>{MONTHS[month].slice(0,3)} {ev.day}, {year}</div>
+                  <div style={{ fontSize:11, color:Z.muted }}>{MONTHS[ev.date.getMonth()].slice(0,3)} {ev.date.getDate()}, {ev.date.getFullYear()}</div>
                 </div>
               </div>
             ))}
