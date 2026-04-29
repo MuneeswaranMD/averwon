@@ -302,6 +302,69 @@ const Dashboard = () => {
 
       <div style={{ height: '28px' }} />
 
+      {/* ── Quick Actions ─────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: '24px' }}>
+        <SectionHeader title="Quick Management" />
+        <div style={layout.grid4}>
+          <div style={{ ...card, cursor: 'pointer', transition: 'all 0.2s' }} 
+               onClick={() => window.location.href = '/admin/pages/admin-chat'}
+               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: C.primaryLight, color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Mail size={20} />
+              </div>
+              <div>
+                <p style={{ ...T.h3, fontSize: '15px' }}>Open Live Chat</p>
+                <p style={T.small}>Message employees</p>
+              </div>
+            </div>
+          </div>
+          <div style={{ ...card, cursor: 'pointer', transition: 'all 0.2s' }} 
+               onClick={() => window.location.href = '/admin/pages/project-assignment'}
+               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: C.indigoLight, color: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FolderOpen size={20} />
+              </div>
+              <div>
+                <p style={{ ...T.h3, fontSize: '15px' }}>Assign Projects</p>
+                <p style={T.small}>Manage team members</p>
+              </div>
+            </div>
+          </div>
+          <div style={{ ...card, cursor: 'pointer', transition: 'all 0.2s' }} 
+               onClick={() => window.location.href = '/admin/pages/employee-tracking'}
+               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: C.emeraldLight, color: C.emerald, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <History size={20} />
+              </div>
+              <div>
+                <p style={{ ...T.h3, fontSize: '15px' }}>Track Employees</p>
+                <p style={T.small}>Live status updates</p>
+              </div>
+            </div>
+          </div>
+          <div style={{ ...card, cursor: 'pointer', transition: 'all 0.2s' }} 
+               onClick={() => window.location.href = '/admin/resources/Tool'}
+               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: C.roseLight, color: C.rose, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle size={20} />
+              </div>
+              <div>
+                <p style={{ ...T.h3, fontSize: '15px' }}>Manage Tools</p>
+                <p style={T.small}>Company resources</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Support Tickets ─────────────────────────────────────────────────── */}
       <div style={{ marginBottom: '24px' }}>
         <SectionHeader title="Ticket Support Center" action="View All Tickets" />

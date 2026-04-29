@@ -35,6 +35,7 @@ export const Components = {
   ContentToggle: componentLoader.add('ContentToggle', path.join(__dirname, 'components/LongText.jsx')),
   EmployeeTracking: componentLoader.add('EmployeeTracking', path.join(__dirname, 'components/EmployeeTracking.jsx')),
   AdminChat: componentLoader.add('AdminChat', path.join(__dirname, 'components/AdminChat.jsx')),
+  AdminProjectAssign: componentLoader.add('AdminProjectAssign', path.join(__dirname, 'components/AdminProjectAssign.jsx')),
 };
 
 const commonActions = {
@@ -59,6 +60,11 @@ export const adminOptions = {
       label: 'Live Chat',
       component: Components.AdminChat,
       icon: 'MessageSquare'
+    },
+    'project-assignment': {
+      label: 'Assign Projects',
+      component: Components.AdminProjectAssign,
+      icon: 'Briefcase'
     },
     'sales-dashboard': {
       label: 'Sales Dashboard',

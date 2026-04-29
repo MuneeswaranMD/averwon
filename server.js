@@ -1208,7 +1208,41 @@ const start = async () => {
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   });
 
-  const PORT = process.env.PORT || 5000;
+  // Admin Project Management
+app.get('/api/admin/projects', async (req, res) => {
+  try {
+    const projects = await Models.Project.find().sort({ createdAt: -1 });
+    res.json(projects);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/projects/assign', async (req, res) => {
+  const { projectId, employeeName } = req.body;
+  try {
+    const project = await Models.Project.findById(projectId);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    
+    if (!project.teamMembers.includes(employeeName)) {
+      project.teamMembers.push(employeeName);
+      await project.save();
+      
+      // Log activity
+      await Models.Activity.create({
+        user: 'Admin',
+        action: `Assigned ${employeeName} to project:`,
+        target: project.name,
+        time: new Date()
+      });
+    }
+    res.json({ success: true, project });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const PORT = process.env.PORT || 5000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
     if (process.env.NODE_ENV !== 'production') {
