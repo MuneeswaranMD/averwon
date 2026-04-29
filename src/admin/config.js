@@ -37,6 +37,7 @@ export const Components = {
   AdminChat: componentLoader.add('AdminChat', path.join(__dirname, 'components/AdminChat.jsx')),
   AdminProjectAssign: componentLoader.add('AdminProjectAssign', path.join(__dirname, 'components/AdminProjectAssign.jsx')),
   LeadImport: componentLoader.add('LeadImport', path.join(__dirname, 'components/LeadImport.jsx')),
+  EmployeeSelect: componentLoader.add('EmployeeSelect', path.join(__dirname, 'components/EmployeeSelect.jsx')),
 };
 
 const commonActions = {
@@ -164,7 +165,10 @@ export const adminOptions = {
     // --- Operations ---
     { resource: Models.Project, options: { 
       parent: { name: 'Operations', icon: 'Briefcase' },
-      properties: { status: { components: { list: Components.StatusTag } } },
+      properties: { 
+        status: { components: { list: Components.StatusTag } },
+        teamMembers: { components: { edit: Components.EmployeeSelect } }
+      },
       actions: { 
         ...commonActions,
         edit: {
@@ -188,7 +192,8 @@ export const adminOptions = {
       parent: { name: 'Operations', icon: 'CheckSquare' },
       properties: { 
         status: { components: { list: Components.StatusTag } },
-        priority: { components: { list: Components.StatusTag } }
+        priority: { components: { list: Components.StatusTag } },
+        assignedTo: { components: { edit: Components.EmployeeSelect } }
       },
       actions: { 
         ...commonActions,
@@ -211,7 +216,10 @@ export const adminOptions = {
     } },
     { resource: Models.Meeting, options: { 
       parent: { name: 'Operations', icon: 'Video' },
-      properties: { status: { components: { list: Components.StatusTag } } },
+      properties: { 
+        status: { components: { list: Components.StatusTag } },
+        participants: { components: { edit: Components.EmployeeSelect } }
+      },
       actions: { ...commonActions }
     } },
     { resource: Models.Activity, options: { 

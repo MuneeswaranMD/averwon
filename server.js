@@ -1040,7 +1040,23 @@ const start = async () => {
     try {
       const employee = await Models.Employee.findById(req.employee.id);
       if (!employee) return res.status(404).json({ error: 'Employee not found' });
-      const activities = await Models.Activity.find({ user: employee.name }).sort({ time: -1 }).limit(30);
+
+      // Find projects the employee is part of
+      const projects = await Models.Project.find({ teamMembers: { $in: [employee.name] } });
+      const projectNames = projects.map(p => p.name);
+
+      // Create a query that finds activities by the user OR activities mentioning their projects
+      const query = {
+        $or: [
+          { user: employee.name },
+          { 
+            target: { $in: ['Project', 'Task'] },
+            action: { $regex: projectNames.length > 0 ? projectNames.join('|') : 'NONE_EXISTENT_PROJECT', $options: 'i' }
+          }
+        ]
+      };
+
+      const activities = await Models.Activity.find(query).sort({ time: -1 }).limit(50);
       res.json(activities);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
@@ -1063,6 +1079,13 @@ const start = async () => {
       const employee = await Models.Employee.findById(req.employee.id);
       const docs = await Models.Document.find({ employeeName: employee.name }).sort({ createdAt: -1 });
       res.json(docs);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.get('/api/admin/employees/all', async (req, res) => {
+    try {
+      const employees = await Models.Employee.find({}).select('name department designation status');
+      res.json(employees);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 

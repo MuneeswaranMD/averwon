@@ -35,18 +35,15 @@ const AdminChat = () => {
 
   const fetchInitialData = async () => {
     try {
-      const [roomsRes, employeesRes] = await Promise.all([
-        fetch('/api/chat/rooms').then(r => r.json()),
-        fetch('/api/admin/tracking/employees').then(r => r.json())
+      const [rRes, eRes] = await Promise.all([
+        fetch('/api/admin/chat/rooms').then(r => r.json()),
+        fetch('/api/admin/employees/all').then(r => r.json())
       ]);
-      setRooms(roomsRes);
-      // Filter out any null/undefined entries and map to names
-      const empList = employeesRes && Array.isArray(employeesRes) 
-        ? employeesRes.filter(e => e && e.employee).map(e => e.employee.name)
-        : [];
-      setEmployees(empList);
+      setRooms(rRes);
+      // Filter out any invalid entries and map names
+      setEmployees(eRes.map(e => ({ name: e.name, status: e.status })));
     } catch (err) {
-      console.error('Error fetching chat data:', err);
+      console.error('Chat data error:', err);
     } finally {
       setLoading(false);
     }
@@ -93,9 +90,11 @@ const AdminChat = () => {
   };
 
   const toggleMember = (name) => {
-    setSelectedMembers(prev => 
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    );
+    if (selectedMembers.includes(name)) {
+      setSelectedMembers(selectedMembers.filter(m => m !== name));
+    } else {
+      setSelectedMembers([...selectedMembers, name]);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -152,12 +151,12 @@ const AdminChat = () => {
               <Text variant="xs" color="grey60" mb="xs">Select Members:</Text>
               <Box maxHeight="150px" overflowY="auto" mb="md" bg="white" p="xs" borderRadius="sm">
                 {employees.map(emp => (
-                  <Box key={emp} display="flex" alignItems="center" py="xs" px="sm" cursor="pointer" onClick={() => toggleMember(emp)}>
+                  <Box key={emp.name} display="flex" alignItems="center" py="xs" px="sm" cursor="pointer" onClick={() => toggleMember(emp.name)}>
                     <Box 
                       width="16px" height="16px" border="1px solid #ccc" borderRadius="sm" mr="sm" 
-                      bg={selectedMembers.includes(emp) ? 'primary100' : 'transparent'}
+                      bg={selectedMembers.includes(emp.name) ? 'primary100' : 'transparent'}
                     />
-                    <Text variant="sm">{emp}</Text>
+                    <Text variant="sm">{emp.name}</Text>
                   </Box>
                 ))}
               </Box>
@@ -188,13 +187,13 @@ const AdminChat = () => {
             <Text variant="sm" color="grey60" mb="sm" fontWeight="bold">EMPLOYEES (Direct Messages)</Text>
             {employees.map(emp => (
               <Box 
-                key={emp} p="md" borderRadius="md" cursor="pointer"
-                bg={selectedChat?.name === emp && !selectedChat.isGroup ? 'primary20' : 'transparent'}
-                onClick={() => setSelectedChat({ id: emp, name: emp, isGroup: false })}
+                key={emp.name} p="md" borderRadius="md" cursor="pointer"
+                bg={selectedChat?.name === emp.name && !selectedChat.isGroup ? 'primary20' : 'transparent'}
+                onClick={() => setSelectedChat({ id: emp.name, name: emp.name, isGroup: false })}
                 _hover={{ bg: 'grey20' }}
                 mb="xs"
               >
-                <Text>{emp}</Text>
+                <Text>{emp.name}</Text>
               </Box>
             ))}
           </Box>
