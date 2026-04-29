@@ -2,19 +2,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2563EB;
-  --color-secondary: #1E293B;
-  --color-accent: #0EA5E9;
-  --color-light: #F8FAFC;
-  --color-dark: #0F172A;
-  --color-grayText: #64748B;
-  
+  /* Brand Colors — single source of truth for Tailwind v4 */
+  --color-primary: #003366;
+  --color-secondary: #003366;
+  --color-accent: #00C2FF;
+  --color-light: #EAF4FF;
+  --color-dark: #0A192F;
+  --color-grayText: #666666;
+
+  /* Font Families */
   --font-poppins: "Poppins", sans-serif;
   --font-inter: "Inter", sans-serif;
-  
-  --background-image-hero-gradient: linear-gradient(to right, #1E293B, #2563EB, #1E293B);
+
+  /* Background Images */
+  --background-image-hero-gradient: linear-gradient(to right, #003366, #004080, #003366);
 }
 
+/* ─── Base ─────────────────────────────────────────── */
 :root {
   font-family: var(--font-inter);
 }
@@ -28,42 +32,87 @@ html {
 }
 
 body {
-  @apply bg-white text-grayText overflow-x-hidden;
+  background-color: white;
+  color: var(--color-grayText);
+  overflow-x: hidden;
 }
 
+/* ─── Utility Classes ───────────────────────────────── */
 .glass {
-  @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl;
+  background-color: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
 
 .section-padding {
-  @apply py-20 px-6 lg:px-24;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-padding {
+    padding-left: 6rem;
+    padding-right: 6rem;
+  }
 }
 
 .btn-primary {
-  @apply bg-white text-primary px-8 py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg;
+  background-color: white;
+  color: var(--color-primary);
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
 }
 
 .btn-outline {
-  @apply border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white hover:text-primary transition-all duration-300;
+  border: 2px solid white;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background-color: white;
+  color: var(--color-primary);
 }
 
 .card-hover {
-  @apply hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl cursor-pointer;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-/* Custom Scrollbar */
+.card-hover:hover {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+/* ─── Custom Scrollbar ──────────────────────────────── */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-light;
+  background-color: var(--color-light);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary rounded-full;
+  background-color: var(--color-primary);
+  border-radius: 9999px;
 }
 
+/* ─── Animations ────────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
@@ -73,19 +122,22 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
-.delay-700 {
-  animation-delay: 0.7s;
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-.delay-500 {
-  animation-delay: 0.5s;
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
 }
 
-.delay-1000 {
-  animation-delay: 1s;
-}
+.delay-500  { animation-delay: 0.5s; }
+.delay-700  { animation-delay: 0.7s; }
+.delay-1000 { animation-delay: 1s; }
 
-/* Mobile Responsiveness Utilities */
+/* ─── Mobile Responsiveness ─────────────────────────── */
 @media (max-width: 1024px) {
   .contact-grid {
     grid-template-columns: 1fr !important;
@@ -98,8 +150,11 @@ body {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
-  
+
   .section-padding {
-    @apply py-12 px-6;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }

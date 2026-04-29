@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, Users, Search, Briefcase, Headset, Wallet, 
+import {
+  LayoutDashboard, Users, Search, Briefcase, Headset, Wallet,
   Target, Shield, ChevronDown, ChevronLeft, ChevronRight, LogOut,
   BadgeCheck, GraduationCap, Clock, Palmtree, CreditCard, UserCheck,
   FolderOpen, CheckSquare, Video, Ticket, TrendingUp, ReceiptText,
@@ -11,6 +11,27 @@ const averqonLogo = '/logo.png';
 
 const COLLAPSED_W = 72;
 const EXPANDED_W = 260;
+
+// ── Color Tokens ──────────────────────────────────────────────────────────────
+const C = {
+  bg: '#FFFFFF',
+  border: '#E2E8F0',
+  borderLight: '#F1F5F9',
+  primary: '#2563EB',
+  primaryLight: '#EFF6FF',
+  text: '#1E293B',
+  textMuted: '#64748B',
+  textSub: '#334155',
+  slate50: '#F8FAFC',
+  slate100: '#F1F5F9',
+  slate400: '#94A3B8',
+  hover: '#F8FAFC',
+  activeMenu: '#EFF6FF',
+  activeText: '#2563EB',
+  footerBg: '#F8FAFC',
+  danger: '#EF4444',
+  dangerLight: '#FEF2F2',
+};
 
 const navConfig = [
   {
@@ -78,12 +99,14 @@ const navConfig = [
       { name: 'Admins', path: '/admin/system/admins', icon: <ShieldAlert size={18} /> },
       { name: 'Settings', path: '/admin/system/settings', icon: <Settings size={18} /> },
     ],
-  }
+  },
 ];
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
+  const [hovered, setHovered] = useState(null);
+  const [hoveredSub, setHoveredSub] = useState(null);
 
   const toggleMenu = (name) => {
     if (isCollapsed) setIsCollapsed(false);
@@ -94,104 +117,245 @@ const Sidebar = () => {
     window.location.href = '/admin/logout';
   };
 
+  const sidebarStyle = {
+    width: isCollapsed ? COLLAPSED_W : EXPANDED_W,
+    height: '100vh',
+    background: C.bg,
+    borderRight: `1px solid ${C.border}`,
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    zIndex: 50,
+    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
+    transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+    overflowX: 'hidden',
+  };
+
+  const headerStyle = {
+    padding: '0 16px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: isCollapsed ? 'center' : 'space-between',
+    borderBottom: `1px solid ${C.borderLight}`,
+    height: '64px',
+    flexShrink: 0,
+  };
+
+  const logoWrapStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    opacity: isCollapsed ? 0 : 1,
+    width: isCollapsed ? 0 : 'auto',
+    overflow: 'hidden',
+    transition: 'opacity 0.2s, width 0.2s',
+  };
+
+  const navStyle = {
+    flex: 1,
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    padding: '12px 8px',
+  };
+
   return (
-    <div 
-      className="h-screen bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out fixed left-0 top-0 z-50 shadow-sm"
-      style={{ width: isCollapsed ? COLLAPSED_W : EXPANDED_W }}
-    >
-      {/* Header */}
-      <div className="p-6 flex items-center justify-between border-b border-slate-100 h-20">
-        <div className={`flex items-center gap-3 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 invisible' : 'opacity-100'}`}>
-          <img src={averqonLogo} alt="Logo" className="w-8 h-8 rounded-lg" />
-          <span className="font-bold text-xl text-slate-800 tracking-tight">Averqon</span>
+    <div style={sidebarStyle}>
+      {/* Inject global keyframes & scrollbar hiding */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .adminjs-sidebar-nav::-webkit-scrollbar { display: none; }
+        .adminjs-sidebar-nav { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div style={headerStyle}>
+        <div style={logoWrapStyle}>
+          <img src={averqonLogo} alt="Logo" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 700, fontSize: 18, color: C.text, whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>Averqon</span>
         </div>
-        <button 
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
+          style={{
+            padding: '6px',
+            background: 'transparent',
+            border: `1px solid ${C.border}`,
+            borderRadius: 8,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: C.textMuted,
+            transition: 'all 0.15s',
+            flexShrink: 0,
+          }}
         >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-6 scrollbar-hide px-3">
-        <nav className="space-y-1">
-          {navConfig.map((group) => (
-            <div key={group.name}>
-              {group.items ? (
-                <>
-                  <button
-                    onClick={() => toggleMenu(group.name)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group
-                      ${openMenus[group.name] ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}
-                    `}
+      {/* ── Navigation ──────────────────────────────────────────────────── */}
+      <div className="adminjs-sidebar-nav" style={navStyle}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {navConfig.map((group) => {
+            const isOpen = openMenus[group.name];
+            const isHov = hovered === group.name;
+            return (
+              <div key={group.name}>
+                {group.items ? (
+                  <>
+                    {/* Group header button */}
+                    <button
+                      onClick={() => toggleMenu(group.name)}
+                      onMouseEnter={() => setHovered(group.name)}
+                      onMouseLeave={() => setHovered(null)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: isCollapsed ? '10px 0' : '9px 12px',
+                        justifyContent: isCollapsed ? 'center' : 'flex-start',
+                        borderRadius: 10,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: isOpen ? C.activeMenu : isHov ? C.slate100 : 'transparent',
+                        color: isOpen ? C.activeText : C.textSub,
+                        fontFamily: 'inherit',
+                        transition: 'background 0.15s, color 0.15s',
+                      }}
+                    >
+                      <span style={{ color: isOpen ? C.primary : isHov ? C.primary : C.slate400, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}>
+                        {group.icon}
+                      </span>
+                      {!isCollapsed && (
+                        <>
+                          <span style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>{group.name}</span>
+                          <ChevronDown
+                            size={15}
+                            style={{
+                              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transition: 'transform 0.2s',
+                              color: C.slate400,
+                            }}
+                          />
+                        </>
+                      )}
+                    </button>
+
+                    {/* Submenu */}
+                    {!isCollapsed && isOpen && (
+                      <div style={{ marginTop: 2, marginLeft: 16, paddingLeft: 10, borderLeft: `2px solid ${C.primaryLight}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {group.items.map((item) => {
+                          const isSubHov = hoveredSub === item.name;
+                          return (
+                            <a
+                              key={item.name}
+                              href={item.path}
+                              onMouseEnter={() => setHoveredSub(item.name)}
+                              onMouseLeave={() => setHoveredSub(null)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                padding: '8px 10px',
+                                borderRadius: 8,
+                                fontSize: 13,
+                                fontWeight: 500,
+                                color: isSubHov ? C.primary : C.textMuted,
+                                background: isSubHov ? C.primaryLight : 'transparent',
+                                textDecoration: 'none',
+                                transition: 'background 0.15s, color 0.15s',
+                              }}
+                            >
+                              <span style={{ color: isSubHov ? C.primary : C.slate400, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}>
+                                {item.icon}
+                              </span>
+                              {item.name}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Direct link (Dashboard) */
+                  <a
+                    href={group.path}
+                    onMouseEnter={() => setHovered(group.name)}
+                    onMouseLeave={() => setHovered(null)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: isCollapsed ? '10px 0' : '9px 12px',
+                      justifyContent: isCollapsed ? 'center' : 'flex-start',
+                      borderRadius: 10,
+                      color: hovered === group.name ? C.primary : C.textSub,
+                      background: hovered === group.name ? C.activeMenu : 'transparent',
+                      textDecoration: 'none',
+                      transition: 'background 0.15s, color 0.15s',
+                      fontWeight: 600,
+                      fontSize: 13,
+                    }}
                   >
-                    <span className={`${openMenus[group.name] ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'} transition-colors`}>
+                    <span style={{ color: hovered === group.name ? C.primary : C.slate400, display: 'flex', alignItems: 'center', transition: 'color 0.15s', flexShrink: 0 }}>
                       {group.icon}
                     </span>
-                    {!isCollapsed && (
-                      <>
-                        <span className="flex-1 text-left text-sm font-semibold">{group.name}</span>
-                        <ChevronDown 
-                          size={16} 
-                          className={`transition-transform duration-200 ${openMenus[group.name] ? 'rotate-180' : ''}`} 
-                        />
-                      </>
-                    )}
-                  </button>
-                  
-                  {!isCollapsed && openMenus[group.name] && (
-                    <div className="mt-1 ml-4 space-y-1 border-l-2 border-blue-100 pl-2">
-                      {group.items.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.path}
-                          className="flex items-center gap-3 p-2.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 transition-all text-sm font-medium"
-                        >
-                          <span className="text-slate-300">{item.icon}</span>
-                          {item.name}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <a
-                  href={group.path}
-                  className="flex items-center gap-3 p-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-all group"
-                >
-                  <span className="text-slate-400 group-hover:text-blue-500 transition-colors">
-                    {group.icon}
-                  </span>
-                  {!isCollapsed && (
-                    <span className="text-sm font-semibold">{group.name}</span>
-                  )}
-                </a>
-              )}
-            </div>
-          ))}
+                    {!isCollapsed && <span>{group.name}</span>}
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </nav>
       </div>
 
-      {/* Footer / User Profile */}
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-3 p-2">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-200">
+      {/* ── Footer / User Profile ────────────────────────────────────────── */}
+      <div style={{ padding: '12px', borderTop: `1px solid ${C.border}`, background: C.footerBg, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px' }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, background: C.primary,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontWeight: 700, fontSize: 15, flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
+          }}>
             M
           </div>
           {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">Munees Waran</p>
-              <p className="text-[11px] text-slate-500 font-medium">Super Admin</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Munees Waran</p>
+              <p style={{ margin: 0, fontSize: 11, color: C.textMuted, fontWeight: 500 }}>Super Admin</p>
             </div>
           )}
         </div>
         {!isCollapsed && (
-          <button 
+          <button
             onClick={handleLogout}
-            className="w-full mt-3 flex items-center justify-center gap-2 p-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-100 hover:bg-red-50 font-bold text-sm transition-all shadow-sm"
+            style={{
+              width: '100%',
+              marginTop: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              borderRadius: 10,
+              background: '#fff',
+              border: `1px solid ${C.border}`,
+              color: C.textSub,
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.danger; e.currentTarget.style.borderColor = '#FECACA'; e.currentTarget.style.background = C.dangerLight; }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.textSub; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = '#fff'; }}
           >
-            <LogOut size={16} /> Logout
+            <LogOut size={15} /> Logout
           </button>
         )}
       </div>
