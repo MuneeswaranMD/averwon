@@ -691,6 +691,78 @@ const start = async () => {
 
   // ===================== SALES APIS =====================
 
+  app.get('/api/admin/sales/overview', async (req, res) => {
+    try {
+      const leadStatuses = ['New','Contacted','Qualified','Proposal Sent','Converted','Closed'];
+      const dealStatuses = ['Open','Negotiation','Proposal Sent','Won','Lost'];
+
+      const [
+        leads,
+        deals,
+        leadCounts,
+        dealCounts,
+        pipelineValueAgg,
+        wonValueAgg,
+        forecastValueAgg,
+        dealValueByStatus
+      ] = await Promise.all([
+        Models.Lead.find().sort({ createdAt: -1 }).limit(8),
+        Models.Deal.find().sort({ createdAt: -1 }).limit(8),
+        Promise.all(leadStatuses.map(async status => [status, await Models.Lead.countDocuments({ status })])),
+        Promise.all(dealStatuses.map(async status => [status, await Models.Deal.countDocuments({ status })])),
+        Models.Deal.aggregate([
+          { $match: { status: { $nin: ['Won', 'Lost'] } } },
+          { $group: { _id: null, total: { $sum: '$dealValue' } } }
+        ]),
+        Models.Deal.aggregate([
+          { $match: { status: 'Won' } },
+          { $group: { _id: null, total: { $sum: '$dealValue' } } }
+        ]),
+        Models.Deal.aggregate([
+          { $match: { status: { $nin: ['Won', 'Lost'] } } },
+          { $group: { _id: null, total: { $sum: { $multiply: ['$dealValue', { $divide: ['$probability', 100] }] } } } }
+        ]),
+        Models.Deal.aggregate([
+          { $group: { _id: '$status', total: { $sum: '$dealValue' } } }
+        ])
+      ]);
+
+      const leadStats = Object.fromEntries(leadCounts);
+      const dealStats = Object.fromEntries(dealCounts);
+      const totalLeads = Object.values(leadStats).reduce((sum, count) => sum + count, 0);
+      const totalDeals = Object.values(dealStats).reduce((sum, count) => sum + count, 0);
+      const convertedLeads = leadStats.Converted || 0;
+      const wonDeals = dealStats.Won || 0;
+      const valuesByStatus = Object.fromEntries(dealValueByStatus.map(item => [item._id, item.total]));
+
+      res.json({
+        stats: {
+          totalLeads,
+          totalDeals,
+          convertedLeads,
+          wonDeals,
+          activeDeals: totalDeals - wonDeals - (dealStats.Lost || 0),
+          pipelineValue: pipelineValueAgg[0]?.total || 0,
+          wonValue: wonValueAgg[0]?.total || 0,
+          forecastValue: forecastValueAgg[0]?.total || 0,
+          leadConversionRate: totalLeads ? Number(((convertedLeads / totalLeads) * 100).toFixed(1)) : 0,
+          dealWinRate: totalDeals ? Number(((wonDeals / totalDeals) * 100).toFixed(1)) : 0
+        },
+        charts: {
+          leadStatuses,
+          leadCounts: leadStatuses.map(status => leadStats[status] || 0),
+          dealStatuses,
+          dealCounts: dealStatuses.map(status => dealStats[status] || 0),
+          dealValues: dealStatuses.map(status => valuesByStatus[status] || 0)
+        },
+        leads,
+        deals
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // --- Leads ---
   app.get('/api/admin/sales/leads', async (req, res) => {
     try {
@@ -1161,15 +1233,28 @@ const start = async () => {
   // Send Message
   app.post('/api/chat/message', async (req, res) => {
     try {
-      const { sender, receiver, content, roomId, isGroup } = req.body;
+      const { sender, receiver, content, message: bodyMessage, roomId, isGroup, time, timestamp } = req.body;
+      const messageText = bodyMessage || content;
+      if (!sender || !messageText) {
+        return res.status(400).json({ error: 'Sender and message are required' });
+      }
+
       const message = await Models.LiveChat.create({
         sender,
         receiver,
-        content,
+        message: messageText,
         roomId,
         isGroup: !!isGroup,
-        time: new Date()
+        timestamp: timestamp || time ? new Date(timestamp || time) : new Date()
       });
+
+      if (roomId) {
+        await Models.ChatRoom.findByIdAndUpdate(roomId, {
+          lastMessage: messageText,
+          updatedAt: new Date()
+        });
+      }
+
       res.json(message);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
@@ -1178,7 +1263,7 @@ const start = async () => {
   app.get('/api/chat/history/:roomId', async (req, res) => {
     try {
       const messages = await Models.LiveChat.find({ roomId: req.params.roomId })
-        .sort({ time: 1 })
+        .sort({ timestamp: 1 })
         .limit(100);
       res.json(messages);
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -1193,7 +1278,7 @@ const start = async () => {
           { sender: req.params.user1, receiver: req.params.user2 },
           { sender: req.params.user2, receiver: req.params.user1 }
         ]
-      }).sort({ time: 1 }).limit(100);
+      }).sort({ timestamp: 1 }).limit(100);
       res.json(messages);
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
@@ -1227,7 +1312,7 @@ const start = async () => {
     try {
       const messages = await Models.LiveChat.find({
         $or: [{ sender: req.params.username }, { receiver: req.params.username }]
-      }).sort({ time: -1 }).limit(50);
+      }).sort({ timestamp: -1 }).limit(50);
       
       const contacts = new Set();
       messages.forEach(m => {

@@ -88,9 +88,9 @@ const Chat = () => {
 
     const msgData = {
       sender: myData.name,
-      content: newMessage,
+      message: newMessage,
       isGroup: selectedChat.isGroup,
-      time: new Date()
+      timestamp: new Date().toISOString()
     };
 
     if (selectedChat.isGroup) {
@@ -266,7 +266,7 @@ const Chat = () => {
                         lineHeight: 1.5,
                         position: 'relative'
                       }}>
-                        {msg.content}
+                        {msg.message || msg.content}
                         <div style={{ 
                           fontSize: 10, 
                           marginTop: 4, 
@@ -274,7 +274,7 @@ const Chat = () => {
                           opacity: 0.7,
                           color: isMe ? '#fff' : Z.muted 
                         }}>
-                          {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(msg.timestamp || msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>

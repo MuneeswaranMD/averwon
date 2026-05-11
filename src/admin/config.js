@@ -280,7 +280,7 @@ export const adminOptions = {
       resource: Models.Deal, 
       options: { 
         id: 'Sales', 
-        parent: { name: 'Sales', icon: 'Target' },
+        parent: { name: 'Sales & CRM', icon: 'Target' },
         actions: { 
           ...commonActions,
           list: { component: Components.DealsPage }
@@ -290,7 +290,7 @@ export const adminOptions = {
       } 
     },
     { resource: Models.Lead, options: { 
-      parent: { name: 'Sales', icon: 'UserPlus' },
+      parent: { name: 'Sales & CRM', icon: 'UserPlus' },
       actions: { 
         ...commonActions, 
         list: { component: Components.LeadsPage },
@@ -304,11 +304,11 @@ export const adminOptions = {
       properties: { status: { components: { list: Components.StatusTag } } }
     } },
     { resource: Models.Client, options: { 
-      parent: { name: 'Sales', icon: 'Contact' },
+      parent: { name: 'Sales & CRM', icon: 'Contact' },
       actions: { ...commonActions }
     } },
     { resource: Models.ClientRequest, options: { 
-      parent: { name: 'Sales', icon: 'Zap' },
+      parent: { name: 'Sales & CRM', icon: 'Zap' },
       actions: { ...commonActions }
     } },
 
@@ -386,7 +386,8 @@ export const adminOptions = {
           'HR Management': 'HR Management',
           Operations: 'Operations',
           Support: 'Support',
-          Sales: 'Sales',
+          Sales: 'Sales & CRM',
+          'Sales & CRM': 'Sales & CRM',
           Finance: 'Finance',
           System: 'System',
         }

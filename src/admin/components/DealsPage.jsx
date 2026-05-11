@@ -111,8 +111,9 @@ export default function DealsPage() {
   };
 
   const exportCSV = () => {
+    const escape = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
     const rows = [['Deal ID', 'Deal Name', 'Client', 'Salesperson', 'Value', 'Closing Date', 'Status', 'Probability'], ...filtered.map(r => [r.dealId, r.dealName, r.clientName, r.assignedSalesperson, r.dealValue, fmtDate(r.expectedClosingDate), r.status, r.probability + '%'])];
-    const csv = rows.map(r => r.join(',')).join('\n');
+    const csv = rows.map(r => r.map(escape).join(',')).join('\n');
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'deals_report.csv'; a.click();
   };
 

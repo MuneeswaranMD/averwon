@@ -36,7 +36,7 @@ const AdminChat = () => {
   const fetchInitialData = async () => {
     try {
       const [rRes, eRes] = await Promise.all([
-        fetch('/api/admin/chat/rooms').then(r => r.json()),
+        fetch('/api/chat/rooms').then(r => r.json()),
         fetch('/api/admin/employees/all').then(r => r.json())
       ]);
       setRooms(rRes);
@@ -105,7 +105,7 @@ const AdminChat = () => {
       sender: 'Admin',
       message: newMessage,
       isGroup: selectedChat.isGroup,
-      timestamp: new Date()
+      timestamp: new Date().toISOString()
     };
 
     if (selectedChat.isGroup) msgData.roomId = selectedChat.id;

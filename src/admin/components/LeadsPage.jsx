@@ -115,6 +115,29 @@ export default function LeadsPage() {
     setShowForm(true);
   };
 
+  const exportCSV = () => {
+    const escape = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const rows = [
+      ['Lead ID', 'Lead Name', 'Company', 'Phone', 'Email', 'Source', 'Assigned To', 'Status', 'Follow-up Date'],
+      ...filtered.map(r => [
+        r.leadId,
+        r.leadName,
+        r.companyName,
+        r.phoneNumber,
+        r.email,
+        r.leadSource,
+        r.assignedTo,
+        r.status,
+        fmtDate(r.followupDate),
+      ]),
+    ];
+    const csv = rows.map(row => row.map(escape).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+    a.download = 'leads_report.csv';
+    a.click();
+  };
+
   const Summary = ({ label, value, sub, color, icon: Icon }) => (
     <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: '20px' }}>
       <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: (color || C.accent) + '12', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -139,7 +162,7 @@ export default function LeadsPage() {
           <p style={{ margin: '6px 0 0', color: C.muted, fontSize: '15px', fontWeight: 500 }}>Capture, qualify and nurture potential customer relationships</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button style={{ ...btn, background: C.white, border: `1px solid ${C.border}`, color: C.text }}> <Download size={16} /> Export </button>
+          <button onClick={exportCSV} style={{ ...btn, background: C.white, border: `1px solid ${C.border}`, color: C.text }}> <Download size={16} /> Export CSV </button>
           <button onClick={() => { setShowForm(true); setEditItem(null); setForm(DEFAULT_FORM); }} style={{ ...btn, background: C.accent, color: '#fff', boxShadow: '0 4px 6px -1px rgba(29, 78, 216, 0.2)' }}> <Plus size={18} /> Add Lead </button>
         </div>
       </div>
