@@ -27,6 +27,19 @@ export const API_ENDPOINTS = {
   EMPLOYEE_MEETINGS: `${API_BASE_URL}/api/employee/meetings`,
   EMPLOYEE_PAYROLL: `${API_BASE_URL}/api/employee/payroll`,
   EMPLOYEE_ACTIVITY_LOG: `${API_BASE_URL}/api/employee/activity`,
+  EMPLOYEE_PROJECTS: `${API_BASE_URL}/api/employee/projects`,
+  EMPLOYEE_DOCUMENTS: `${API_BASE_URL}/api/employee/documents`,
+  
+  // Sales & CRM
+  EMPLOYEE_SALES_OVERVIEW: `${API_BASE_URL}/api/employee/sales/overview`,
+  EMPLOYEE_SALES_LEADS: `${API_BASE_URL}/api/employee/sales/leads`,
+  EMPLOYEE_SALES_DEALS: `${API_BASE_URL}/api/employee/sales/deals`,
+  
+  // System Admin & Settings
+  EMPLOYEE_ADMIN_EMPLOYEES: `${API_BASE_URL}/api/employee/admin/employees`,
+  EMPLOYEE_ADMIN_ACCESS_UPDATE: (id) => `${API_BASE_URL}/api/employee/admin/access/${id}`,
+  EMPLOYEE_ADMIN_SETTINGS: `${API_BASE_URL}/api/employee/admin/settings`,
+  EMPLOYEE_ADMIN_SETTINGS_UPDATE: (id) => `${API_BASE_URL}/api/employee/admin/settings/${id}`,
   
   // Chat
   CHAT_MESSAGE: `${API_BASE_URL}/api/chat/message`,

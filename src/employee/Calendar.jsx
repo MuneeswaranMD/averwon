@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   accent:  '#2563EB', 
@@ -59,9 +60,9 @@ const Calendar = () => {
       if (!token) return;
 
       const [leaves, tasks, meetings] = await Promise.all([
-        fetch('/api/employee/leaves', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-        fetch('/api/employee/tasks', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-        fetch('/api/employee/meetings', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+        fetch(API_ENDPOINTS.EMPLOYEE_LEAVES, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+        fetch(API_ENDPOINTS.EMPLOYEE_TASKS, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+        fetch(API_ENDPOINTS.EMPLOYEE_MEETINGS, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
       ]);
 
       const allEvents = [];

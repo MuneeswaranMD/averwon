@@ -21,9 +21,10 @@ const EmployeeSelect = (props) => {
       });
   }, []);
 
+  const isMulti = property.name === 'participants' || property.name === 'teamMembers' || property.isArray;
+
   const handleChange = (selected) => {
-    if (property.isArray) {
-      // For arrays, AdminJS expects an array of values
+    if (isMulti) {
       onChange(property.name, selected ? selected.map(s => s.value) : []);
     } else {
       onChange(property.name, selected ? selected.value : '');
@@ -32,10 +33,25 @@ const EmployeeSelect = (props) => {
 
   if (loading) return <Loader />;
 
+  // Reconstruct arrays from either direct arrays or AdminJS flattened dotted keys (e.g. key.0, key.1)
+  const getSelectedValue = () => {
+    if (Array.isArray(value)) return value;
+    
+    const vals = [];
+    let i = 0;
+    while (record.params[`${property.name}.${i}`] !== undefined) {
+      vals.push(record.params[`${property.name}.${i}`]);
+      i++;
+    }
+    if (vals.length > 0) return vals;
+    
+    return value ? [value] : [];
+  };
+
   // Transform current value to Select format
   let selectedValue = null;
-  if (property.isArray) {
-    const vals = Array.isArray(value) ? value : (value ? [value] : []);
+  if (isMulti) {
+    const vals = getSelectedValue();
     selectedValue = employees.filter(e => vals.includes(e.value));
   } else {
     selectedValue = employees.find(e => e.value === value) || null;
@@ -45,7 +61,7 @@ const EmployeeSelect = (props) => {
     <Box mb="lg">
       <Label>{property.label}</Label>
       <Select
-        isMulti={property.isArray}
+        isMulti={isMulti}
         value={selectedValue}
         options={employees}
         onChange={handleChange}

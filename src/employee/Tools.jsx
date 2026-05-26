@@ -77,7 +77,7 @@ const Tools = () => {
             acc[cat].push({
               name: tool.name,
               desc: tool.description,
-              link: tool.link,
+              link: tool.url || tool.link || '#',
               icon: ICON_MAP[tool.icon] || Wrench
             });
             return acc;
@@ -115,7 +115,7 @@ const Tools = () => {
                 <a 
                   key={tool.name} 
                   href={tool.link} 
-                  target={tool.link.startsWith('http') ? '_blank' : '_self'}
+                  target={(tool.link || '').startsWith('http') ? '_blank' : '_self'}
                   rel="noopener noreferrer"
                   style={{
                     background: Z.card,

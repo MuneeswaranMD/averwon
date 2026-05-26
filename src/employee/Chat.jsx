@@ -47,8 +47,12 @@ const Chat = () => {
   }, [messages]);
 
   const fetchInitialData = async () => {
+    const token = getToken();
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
-      const token = getToken();
       const [roomsData, recentData] = await Promise.all([
         fetch(API_ENDPOINTS.CHAT_ROOMS, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
         fetch(API_ENDPOINTS.CHAT_RECENT(myData.name), { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())

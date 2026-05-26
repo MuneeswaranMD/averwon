@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, ClipboardList, CreditCard, Calendar, Monitor, Upload, Eye, Download, Loader2 } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   accent:  '#2563EB', 
@@ -65,11 +66,13 @@ const Documents = () => {
   }, []);
 
   const fetchDocs = async () => {
+    const token = localStorage.getItem('employeeToken');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
-      const token = localStorage.getItem('employeeToken');
-      if (!token) return;
-
-      const res = await fetch('/api/employee/documents', {
+      const res = await fetch(API_ENDPOINTS.EMPLOYEE_DOCUMENTS, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();

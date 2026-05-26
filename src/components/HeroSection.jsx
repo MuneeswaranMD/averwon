@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, CheckCircle2, Cloud, Code2, Database, ShieldCheck, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import heroDashboard from '../assets/sentient_analytics.png';
 
 const capabilities = [
   { icon: Code2, label: 'Product Engineering' },
@@ -93,6 +94,16 @@ const HeroSection = () => {
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
+                <img
+                  src={heroDashboard}
+                  alt="Averqon analytics dashboard preview"
+                  className="h-52 w-full object-cover object-center sm:h-64 lg:h-72"
+                  loading="eager"
+                  decoding="async"
+                />
               </div>
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white p-4 text-slate-900">

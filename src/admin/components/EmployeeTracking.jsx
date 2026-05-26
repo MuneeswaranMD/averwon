@@ -117,7 +117,13 @@ const EmployeeTracking = () => {
   );
 
   return (
-    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", color: C.text }}>
+    <div style={{
+      fontFamily: "'Inter','Segoe UI',sans-serif",
+      color: C.text,
+      padding: '24px clamp(16px, 2vw, 28px) 40px',
+      boxSizing: 'border-box',
+      width: '100%',
+    }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
         @keyframes spin  { from{transform:rotate(0)} to{transform:rotate(360deg)} }
@@ -139,7 +145,7 @@ const EmployeeTracking = () => {
       </div>
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 28 }}>
         <StatCard title="Active Now"     value={online}      icon={Activity}    color={C.success}  sub="Checked in today" />
         <StatCard title="Checked Out"    value={checkedOut}  icon={UserCheck}   color={C.muted}    sub="Left for the day" />
         <StatCard title="Absent Today"   value={absent}      icon={XCircle}     color={C.danger}   sub="Not checked in" />
@@ -200,7 +206,7 @@ const EmployeeTracking = () => {
         {data.length === 0 ? (
           <div style={{ padding: 50, textAlign: 'center', color: C.muted }}>No active employees found.</div>
         ) : (
-          <div>
+          <div style={{ overflowX: 'auto' }}>
             {data.map((row, i) => {
               const emp = row.employee;
               const isExpanded = expanded === emp._id;
@@ -213,6 +219,7 @@ const EmployeeTracking = () => {
                     onClick={() => setExpanded(isExpanded ? null : emp._id)}
                     style={{
                       display: 'flex', alignItems: 'center', padding: '14px 22px', cursor: 'pointer',
+                      minWidth: 900,
                       background: isExpanded ? '#F8FAFC' : '#fff',
                       transition: 'background 0.15s',
                     }}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Calendar, Users, ExternalLink, ChevronRight, Clock, Target } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   primary: '#2563EB',
@@ -24,12 +25,17 @@ const Projects = () => {
   }, []);
 
   const fetchProjects = async () => {
+    const token = localStorage.getItem('employeeToken');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/employee/projects', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('employeeToken')}` }
+      const res = await fetch(API_ENDPOINTS.EMPLOYEE_PROJECTS, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setProjects(data);
+      setProjects(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching projects:', err);
     } finally {

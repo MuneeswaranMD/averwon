@@ -36,6 +36,13 @@ import EmployeeActivities from './employee/ActivityLogs';
 import EmployeeTools from './employee/Tools';
 import EmployeeChat from './employee/Chat';
 
+// New Sales & CRM + System Admin Pages
+import SalesDashboard from './employee/SalesDashboard';
+import Leads from './employee/Leads';
+import Deals from './employee/Deals';
+import Admins from './employee/Admins';
+import SystemSettings from './employee/SystemSettings';
+
 // Page transition wrapper
 const PageTransition = ({ children }) => (
   <motion.div
@@ -76,20 +83,30 @@ const AppInner = () => {
             {/* Employee Portal Routes */}
             <Route path="/employee/login" element={<EmployeeLogin />} />
             <Route path="/employee" element={<EmployeeLayout />}>
-              <Route path="dashboard" element={<EmployeeDashboard />} />
-              <Route path="profile" element={<EmployeeProfile />} />
-              <Route path="projects" element={<EmployeeProjects />} />
-              <Route path="tasks" element={<EmployeeTasks />} />
-              <Route path="attendance" element={<EmployeeAttendance />} />
-              <Route path="leaves" element={<EmployeeLeaves />} />
-              <Route path="meetings" element={<EmployeeMeetings />} />
-              <Route path="activities" element={<EmployeeActivities />} />
-              <Route path="tools" element={<EmployeeTools />} />
-              <Route path="chat" element={<EmployeeChat />} />
-              <Route path="calendar" element={<EmployeeCalendar />} />
-              <Route path="notifications" element={<EmployeeNotifications />} />
-              <Route path="documents" element={<EmployeeDocuments />} />
-              <Route path="settings" element={<EmployeeSettings />} />
+              <Route path="dashboard" element={<PageTransition><EmployeeDashboard /></PageTransition>} />
+              <Route path="profile" element={<PageTransition><EmployeeProfile /></PageTransition>} />
+              <Route path="projects" element={<PageTransition><EmployeeProjects /></PageTransition>} />
+              <Route path="tasks" element={<PageTransition><EmployeeTasks /></PageTransition>} />
+              <Route path="attendance" element={<PageTransition><EmployeeAttendance /></PageTransition>} />
+              <Route path="leaves" element={<PageTransition><EmployeeLeaves /></PageTransition>} />
+              <Route path="meetings" element={<PageTransition><EmployeeMeetings /></PageTransition>} />
+              <Route path="activities" element={<PageTransition><EmployeeActivities /></PageTransition>} />
+              <Route path="tools" element={<PageTransition><EmployeeTools /></PageTransition>} />
+              <Route path="chat" element={<PageTransition><EmployeeChat /></PageTransition>} />
+              <Route path="calendar" element={<PageTransition><EmployeeCalendar /></PageTransition>} />
+              <Route path="notifications" element={<PageTransition><EmployeeNotifications /></PageTransition>} />
+              <Route path="documents" element={<PageTransition><EmployeeDocuments /></PageTransition>} />
+              <Route path="settings" element={<PageTransition><EmployeeSettings /></PageTransition>} />
+              
+              {/* Sales & CRM Nested Routes */}
+              <Route path="sales/dashboard" element={<PageTransition><SalesDashboard /></PageTransition>} />
+              <Route path="sales/leads" element={<PageTransition><Leads /></PageTransition>} />
+              <Route path="sales/deals" element={<PageTransition><Deals /></PageTransition>} />
+              
+              {/* Admin Access & Global Settings System Routes */}
+              <Route path="admin/admins" element={<PageTransition><Admins /></PageTransition>} />
+              <Route path="admin/settings" element={<PageTransition><SystemSettings /></PageTransition>} />
+              
               <Route index element={<EmployeeDashboard />} />
             </Route>
           </Routes>

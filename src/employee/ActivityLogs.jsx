@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { History, Clock, Tag, User, Activity as ActivityIcon } from 'lucide-react';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   primary: '#2563EB',
@@ -21,12 +22,17 @@ const ActivityLogs = () => {
   }, []);
 
   const fetchActivities = async () => {
+    const token = localStorage.getItem('employeeToken');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/employee/activity', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('employeeToken')}` }
+      const res = await fetch(API_ENDPOINTS.EMPLOYEE_ACTIVITY_LOG, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setActivities(data);
+      setActivities(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching activities:', err);
     } finally {

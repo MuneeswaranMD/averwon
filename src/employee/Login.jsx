@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../api-config';
 
 const Z = {
   accent: '#2563EB',
@@ -27,7 +28,7 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const res  = await fetch('/api/employee/login', {
+      const res  = await fetch(API_ENDPOINTS.EMPLOYEE_LOGIN, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, rememberMe: remember }),

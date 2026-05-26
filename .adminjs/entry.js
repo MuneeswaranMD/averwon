@@ -35,3 +35,13 @@ import StatusTag from '../src/admin/components/StatusBadge'
 AdminJS.UserComponents.StatusTag = StatusTag
 import ContentToggle from '../src/admin/components/LongText'
 AdminJS.UserComponents.ContentToggle = ContentToggle
+import EmployeeTracking from '../src/admin/components/EmployeeTracking'
+AdminJS.UserComponents.EmployeeTracking = EmployeeTracking
+import AdminChat from '../src/admin/components/AdminChat'
+AdminJS.UserComponents.AdminChat = AdminChat
+import AdminProjectAssign from '../src/admin/components/AdminProjectAssign'
+AdminJS.UserComponents.AdminProjectAssign = AdminProjectAssign
+import LeadImport from '../src/admin/components/LeadImport'
+AdminJS.UserComponents.LeadImport = LeadImport
+import EmployeeSelect from '../src/admin/components/EmployeeSelect'
+AdminJS.UserComponents.EmployeeSelect = EmployeeSelect

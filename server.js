@@ -1,4 +1,5 @@
 import 'dotenv/config';
+process.env.TZ = 'Asia/Kolkata';
 import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
@@ -268,6 +269,14 @@ const start = async () => {
 
       // Serve pre-bundled AdminJS assets explicitly
       app.use('/admin/frontend/assets', express.static(path.join(__dirname, '.adminjs')));
+
+      // Redirects for legacy hardcoded system links
+      app.get('/admin/system/admins', (req, res) => {
+        res.redirect('/admin/resources/Manager');
+      });
+      app.get('/admin/system/settings', (req, res) => {
+        res.redirect('/admin/resources/Setting');
+      });
 
       // Mount AdminJS
       app.use(admin.options.rootPath, adminRouter);
@@ -1152,6 +1161,165 @@ const start = async () => {
       const docs = await Models.Document.find({ employeeName: employee.name }).sort({ createdAt: -1 });
       res.json(docs);
     } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // --- Dynamic RBAC Helper Middleware ---
+  const checkPagePermission = (pageName) => {
+    return async (req, res, next) => {
+      try {
+        const employee = await Models.Employee.findById(req.employee.id);
+        if (!employee) return res.status(404).json({ error: 'Employee not found' });
+        
+        const allowed = employee.allowedPages || [];
+        if (allowed.includes(pageName)) {
+          req.employeeDoc = employee;
+          return next();
+        }
+        return res.status(403).json({ error: `Forbidden: Access to '${pageName}' is disabled` });
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
+    };
+  };
+
+  // --- Admin Access Endpoints in Employee Portal ---
+  app.get('/api/employee/admin/employees', authenticateEmployee, checkPagePermission('Admins'), async (req, res) => {
+    try {
+      const employees = await Models.Employee.find().select('-password').sort({ name: 1 });
+      res.json(employees);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put('/api/employee/admin/access/:id', authenticateEmployee, checkPagePermission('Admins'), async (req, res) => {
+    try {
+      const { allowedPages } = req.body;
+      if (!Array.isArray(allowedPages)) {
+        return res.status(400).json({ error: 'allowedPages must be an array of strings' });
+      }
+      const employee = await Models.Employee.findByIdAndUpdate(
+        req.params.id,
+        { allowedPages },
+        { new: true }
+      ).select('-password');
+      
+      await Models.Activity.create({
+        user: req.employeeDoc.name,
+        action: `Updated access permissions for ${employee.name}`,
+        target: 'System',
+        time: new Date()
+      });
+
+      res.json(employee);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // --- System Settings Endpoints in Employee Portal ---
+  app.get('/api/employee/admin/settings', authenticateEmployee, async (req, res) => {
+    try {
+      let setting = await Models.Setting.findOne();
+      if (!setting) {
+        setting = await Models.Setting.create({
+          companyName: 'Averqon',
+          theme: 'Light',
+          language: 'English',
+          timeZone: 'Asia/Kolkata'
+        });
+      }
+      res.json(setting);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put('/api/employee/admin/settings/:id', authenticateEmployee, checkPagePermission('Settings'), async (req, res) => {
+    try {
+      const setting = await Models.Setting.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+      
+      await Models.Activity.create({
+        user: req.employeeDoc.name,
+        action: 'Updated global system settings',
+        target: 'System',
+        time: new Date()
+      });
+
+      res.json(setting);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // --- Sales & CRM Employee Endpoints ---
+  app.get('/api/employee/sales/overview', authenticateEmployee, checkPagePermission('Sales Dashboard'), async (req, res) => {
+    try {
+      const [leadsCount, dealsCount, dealsPipeline, wonDeals] = await Promise.all([
+        Models.Lead.countDocuments(),
+        Models.Deal.countDocuments(),
+        Models.Deal.aggregate([
+          { $match: { status: { $nin: ['Won', 'Lost'] } } },
+          { $group: { _id: null, total: { $sum: '$dealValue' } } }
+        ]),
+        Models.Deal.aggregate([
+          { $match: { status: 'Won' } },
+          { $group: { _id: null, total: { $sum: '$dealValue' } } }
+        ])
+      ]);
+
+      const leadStatuses = ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Converted', 'Closed'];
+      const leadCounts = await Promise.all(leadStatuses.map(status => Models.Lead.countDocuments({ status })));
+
+      const dealStatuses = ['Open', 'Negotiation', 'Proposal Sent', 'Won', 'Lost'];
+      const dealCounts = await Promise.all(dealStatuses.map(status => Models.Deal.countDocuments({ status })));
+      
+      const [recentLeads, recentDeals] = await Promise.all([
+        Models.Lead.find().sort({ createdAt: -1 }).limit(5),
+        Models.Deal.find().sort({ createdAt: -1 }).limit(5)
+      ]);
+
+      res.json({
+        stats: {
+          totalLeads: leadsCount,
+          totalDeals: dealsCount,
+          pipelineValue: dealsPipeline[0]?.total || 0,
+          wonValue: wonDeals[0]?.total || 0,
+        },
+        charts: {
+          leadStatuses,
+          leadCounts,
+          dealStatuses,
+          dealCounts
+        },
+        recentLeads,
+        recentDeals
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/employee/sales/leads', authenticateEmployee, checkPagePermission('Leads'), async (req, res) => {
+    try {
+      const leads = await Models.Lead.find().sort({ createdAt: -1 });
+      res.json(leads);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/employee/sales/deals', authenticateEmployee, checkPagePermission('Deals'), async (req, res) => {
+    try {
+      const deals = await Models.Deal.find().sort({ createdAt: -1 });
+      res.json(deals);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   app.get('/api/admin/employees/all', async (req, res) => {

@@ -30,6 +30,40 @@ const PageBand = ({ icon: Icon, title, sub }) => (
 
 const platformColor = { 'Google Meet': '#2563EB', 'Zoom': '#0E4491', 'Teams': '#6264A7' };
 
+// Robust timezone-agnostic date-time compiler combining date string and time string
+const getMeetingDateTime = (dateStr, timeStr) => {
+  if (!dateStr) return new Date();
+  const utcDate = new Date(dateStr);
+  
+  // Extract UTC calendar values to prevent timezone offset shifts
+  const year = utcDate.getUTCFullYear();
+  const month = utcDate.getUTCMonth();
+  const day = utcDate.getUTCDate();
+
+  const dt = new Date(year, month, day);
+
+  if (!timeStr) return dt;
+
+  let hours = 0;
+  let minutes = 0;
+  
+  const cleaned = timeStr.trim();
+  const isPM = /PM$/i.test(cleaned);
+  const isAM = /AM$/i.test(cleaned);
+  
+  const timePart = cleaned.replace(/\s*(AM|PM)$/i, '');
+  const parts = timePart.split(':');
+  if (parts.length >= 2) {
+    hours = parseInt(parts[0], 10);
+    minutes = parseInt(parts[1], 10);
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+  }
+  
+  dt.setHours(hours, minutes, 0, 0);
+  return dt;
+};
+
 const Meetings = () => {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,9 +82,16 @@ const Meetings = () => {
 
   const tabs = ['All', 'Upcoming', 'Completed'];
   const now = new Date();
-  const shown = filter === 'All' ? meetings
-    : filter === 'Upcoming' ? meetings.filter(m => new Date(m.date) >= now)
-    : meetings.filter(m => new Date(m.date) < now);
+
+  // Combine dates and times for accurate comparisons
+  const parsedMeetings = meetings.map(m => ({
+    ...m,
+    parsedDate: getMeetingDateTime(m.date, m.time)
+  })).sort((a, b) => a.parsedDate - b.parsedDate);
+
+  const shown = filter === 'All' ? parsedMeetings
+    : filter === 'Upcoming' ? parsedMeetings.filter(m => m.parsedDate >= now)
+    : parsedMeetings.filter(m => m.parsedDate < now);
 
   return (
     <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", color: Z.text }}>
@@ -81,7 +122,7 @@ const Meetings = () => {
             </div>
           )}
           {shown.map(m => {
-            const mDate = new Date(m.date);
+            const mDate = m.parsedDate;
             const isUpcoming = mDate >= now;
             const isPast = mDate < now;
             return (

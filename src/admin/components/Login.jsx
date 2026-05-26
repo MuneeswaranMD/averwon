@@ -54,14 +54,7 @@ const Login = (props) => {
     }
   };
 
-  const handleDemoLogin = (e) => {
-    const form = e.currentTarget.closest('form');
-    setEmail('admin@averqon.ai');
-    setPassword('admin123');
-    setTimeout(() => {
-      form.submit();
-    }, 50);
-  };
+
 
   return (
     <div style={{
@@ -225,32 +218,7 @@ const Login = (props) => {
             </button>
           </div>
 
-          <div style={{ marginTop: '12px' }}>
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '8px',
-                background: `${C.primary}10`,
-                border: `1px solid ${C.primary}30`,
-                color: C.primary,
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = `${C.primary}20`;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = `${C.primary}10`;
-              }}
-            >
-              🚀 One-Click Demo Login
-            </button>
-          </div>
+
         </form>
 
         <div style={{ marginTop: '24px' }}>

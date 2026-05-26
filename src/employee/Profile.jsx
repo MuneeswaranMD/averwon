@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../api-config';
 
 import { 
   Camera, 
@@ -79,7 +80,7 @@ const Profile = () => {
       const token = localStorage.getItem('employeeToken');
       if (!token) return;
 
-      const res = await fetch('/api/employee/dashboard', {
+      const res = await fetch(API_ENDPOINTS.EMPLOYEE_DASHBOARD, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();

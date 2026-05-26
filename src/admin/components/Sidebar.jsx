@@ -107,9 +107,9 @@ const navConfig = [
     name: 'System',
     icon: <Shield size={22} />,
     items: [
-      { name: 'Admins', path: '/admin/system/admins', icon: <ShieldAlert size={18} /> },
+      { name: 'Admins', path: '/admin/resources/Manager', icon: <ShieldAlert size={18} /> },
       { name: 'Tools', path: '/admin/resources/Tool', icon: <Settings size={18} /> },
-      { name: 'Settings', path: '/admin/system/settings', icon: <Settings size={18} /> },
+      { name: 'Settings', path: '/admin/resources/Setting', icon: <Settings size={18} /> },
     ],
   },
   {

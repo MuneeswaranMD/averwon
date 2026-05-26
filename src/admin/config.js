@@ -40,6 +40,43 @@ export const Components = {
   EmployeeSelect: componentLoader.add('EmployeeSelect', path.join(__dirname, 'components/EmployeeSelect.jsx')),
 };
 
+const transformDottedArray = (request, fieldName) => {
+  if (request && request.payload) {
+    let vals = request.payload[fieldName];
+    const existingDotted = [];
+    let i = 0;
+    while (request.payload[`${fieldName}.${i}`] !== undefined) {
+      existingDotted.push(request.payload[`${fieldName}.${i}`]);
+      delete request.payload[`${fieldName}.${i}`];
+      i++;
+    }
+
+    if (existingDotted.length > 0) {
+      vals = existingDotted;
+    }
+
+    if (typeof vals === 'string') {
+      vals = vals ? [vals] : [];
+    } else if (!Array.isArray(vals)) {
+      vals = [];
+    }
+
+    delete request.payload[fieldName];
+    vals.forEach((v, idx) => {
+      request.payload[`${fieldName}.${idx}`] = v;
+    });
+  }
+  return request;
+};
+
+const projectBeforeHook = async (request) => {
+  return transformDottedArray(request, 'teamMembers');
+};
+
+const meetingBeforeHook = async (request) => {
+  return transformDottedArray(request, 'participants');
+};
+
 const commonActions = {
   show: { component: Components.GlobalShow, showInDrawer: false },
   edit: { 
@@ -167,12 +204,19 @@ export const adminOptions = {
       parent: { name: 'Operations', icon: 'Briefcase' },
       properties: { 
         status: { components: { list: Components.StatusTag } },
-        teamMembers: { components: { edit: Components.EmployeeSelect } }
+        teamMembers: { 
+          type: 'string',
+          components: { edit: Components.EmployeeSelect }
+        }
       },
       actions: { 
         ...commonActions,
+        new: {
+          before: projectBeforeHook
+        },
         edit: {
           ...commonActions.edit,
+          before: projectBeforeHook,
           after: async (response, request, context) => {
             if (request.method === 'post' && response.record) {
               const { record } = response;
@@ -217,10 +261,23 @@ export const adminOptions = {
     { resource: Models.Meeting, options: { 
       parent: { name: 'Operations', icon: 'Video' },
       properties: { 
+        date: { type: 'date' },
         status: { components: { list: Components.StatusTag } },
-        participants: { components: { edit: Components.EmployeeSelect } }
+        participants: { 
+          type: 'string',
+          components: { edit: Components.EmployeeSelect }
+        }
       },
-      actions: { ...commonActions }
+      actions: { 
+        ...commonActions,
+        new: {
+          before: meetingBeforeHook
+        },
+        edit: {
+          ...commonActions.edit,
+          before: meetingBeforeHook
+        }
+      }
     } },
     { resource: Models.Activity, options: { 
       id: 'TeamActivity',

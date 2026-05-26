@@ -14,6 +14,25 @@ const EmployeeSchema = new mongoose.Schema({
   address: { type: String },
   profileImage: { type: String },
   status: { type: String, enum: ['Active', 'Inactive', 'On Leave'], default: 'Active' },
+  allowedPages: { 
+    type: [String], 
+    default: [
+      'Dashboard', 
+      'My Profile', 
+      'My Projects', 
+      'My Tasks', 
+      'Attendance', 
+      'Leave Requests', 
+      'Meetings', 
+      'Activity Logs', 
+      'Live Chat', 
+      'Tools', 
+      'Calendar', 
+      'Notifications', 
+      'Documents', 
+      'Settings'
+    ] 
+  },
 });
 EmployeeSchema.pre('save', async function(next) {
   if (!this.employeeId) {
