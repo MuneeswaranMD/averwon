@@ -15,12 +15,91 @@ const C = {
   inputBg: '#F8FAFC',
 };
 
+const ALL_PERMISSIONS = [
+  { group: 'Core Portal', permission: 'Dashboard', label: 'Dashboard Control' },
+  { group: 'Core Portal', permission: 'My Profile', label: 'My Profile Page' },
+  { group: 'Core Portal', permission: 'My Projects', label: 'Project Management' },
+  { group: 'Core Portal', permission: 'My Tasks', label: 'Task Checklist' },
+  { group: 'Core Portal', permission: 'Attendance', label: 'Check-in & Clock' },
+  { group: 'Core Portal', permission: 'Leave Requests', label: 'Leaves Panel' },
+  { group: 'Core Portal', permission: 'Meetings', label: 'Video Meetings' },
+  { group: 'Core Portal', permission: 'Activity Logs', label: 'Activity Logs' },
+  { group: 'Core Portal', permission: 'Live Chat', label: 'Employee Live Chat' },
+  { group: 'Core Portal', permission: 'Tools', label: 'Internal Developer Tools' },
+  { group: 'Core Portal', permission: 'Calendar', label: 'Corporate Calendar' },
+  { group: 'Core Portal', permission: 'Notifications', label: 'Notification Alerts' },
+  { group: 'Core Portal', permission: 'Documents', label: 'Vault Documents' },
+  
+  { group: 'Sales & CRM', permission: 'Sales Dashboard', label: 'Sales Performance Dashboard' },
+  { group: 'Sales & CRM', permission: 'Leads', label: 'Qualified Leads Manager' },
+  { group: 'Sales & CRM', permission: 'Deals', label: 'Deals & Pipeline Grid' },
+  
+  { group: 'System Operations', permission: 'Admins', label: 'Employee Access Panel (Admins)' },
+  { group: 'System Operations', permission: 'Settings', label: 'Global Settings Adjustment' },
+];
+
 const GlobalEdit = (props) => {
   const { record: initialRecord, resource } = props;
   const [params, setParams] = useState(initialRecord.params);
   const [loading, setLoading] = useState(false);
   const sendNotice = useNotice();
   const api = new ApiClient();
+
+  const getSelectedPages = () => {
+    if (Array.isArray(params.allowedPages)) return params.allowedPages;
+    const list = [];
+    let i = 0;
+    while (params[`allowedPages.${i}`] !== undefined) {
+      list.push(params[`allowedPages.${i}`]);
+      i++;
+    }
+    if (list.length > 0) return list;
+    if (params.allowedPages) {
+      if (typeof params.allowedPages === 'string') return [params.allowedPages];
+    }
+    return [];
+  };
+
+  const handleAllowedPagesChange = (perm, checked) => {
+    const current = getSelectedPages();
+    let updated;
+    if (checked) {
+      updated = [...current, perm];
+    } else {
+      updated = current.filter(p => p !== perm);
+    }
+    
+    setParams(prev => {
+      const nextParams = { ...prev, allowedPages: updated };
+      let i = 0;
+      while (nextParams[`allowedPages.${i}`] !== undefined) {
+        delete nextParams[`allowedPages.${i}`];
+        i++;
+      }
+      return nextParams;
+    });
+  };
+
+  const handleToggleGroup = (groupName, checked) => {
+    const current = getSelectedPages();
+    const groupPerms = ALL_PERMISSIONS.filter(p => p.group === groupName).map(p => p.permission);
+    let updated;
+    if (checked) {
+      updated = Array.from(new Set([...current, ...groupPerms]));
+    } else {
+      updated = current.filter(p => !groupPerms.includes(p));
+    }
+    
+    setParams(prev => {
+      const nextParams = { ...prev, allowedPages: updated };
+      let i = 0;
+      while (nextParams[`allowedPages.${i}`] !== undefined) {
+        delete nextParams[`allowedPages.${i}`];
+        i++;
+      }
+      return nextParams;
+    });
+  };
 
   const properties = resource.editProperties;
   
@@ -160,6 +239,114 @@ const GlobalEdit = (props) => {
               {properties.map(prop => {
                 const name = prop.name;
                 if (['_id', 'createdAt', 'updatedAt', '__v', 'id'].includes(name)) return null;
+
+                if (name === 'allowedPages') {
+                  const selectedPages = getSelectedPages();
+                  return (
+                    <div key={name} style={{ gridColumn: 'span 2', marginTop: '16px', marginBottom: '16px' }}>
+                      <label style={{ 
+                        display: 'block', 
+                        fontSize: '14px', 
+                        fontWeight: 700, 
+                        color: C.textHeading, 
+                        marginBottom: '16px' 
+                      }}>
+                        {prop.label} / System Menu Authorization Matrix
+                      </label>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {['Core Portal', 'Sales & CRM', 'System Operations'].map(group => {
+                          const groupPerms = ALL_PERMISSIONS.filter(p => p.group === group);
+                          const allGroupChecked = groupPerms.every(p => selectedPages.includes(p.permission));
+                          
+                          return (
+                            <div key={group} style={{ 
+                              border: `1px solid ${C.border}`, 
+                              borderRadius: '12px', 
+                              padding: '16px 20px', 
+                              background: '#F8FAFC' 
+                            }}>
+                              <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center', 
+                                marginBottom: '16px', 
+                                borderBottom: `1.5px solid ${C.border}`, 
+                                paddingBottom: '8px' 
+                              }}>
+                                <span style={{ 
+                                  fontSize: '12.5px', 
+                                  fontWeight: 800, 
+                                  color: C.textHeading, 
+                                  textTransform: 'uppercase', 
+                                  letterSpacing: '0.5px' 
+                                }}>
+                                  {group} Pages
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleGroup(group, !allGroupChecked)}
+                                  style={{ 
+                                    border: 'none', 
+                                    background: 'transparent', 
+                                    color: C.primary, 
+                                    fontSize: '12px', 
+                                    fontWeight: 700, 
+                                    cursor: 'pointer' 
+                                  }}
+                                >
+                                  {allGroupChecked ? 'Deselect All' : 'Select All'}
+                                </button>
+                              </div>
+                              
+                              <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', 
+                                gap: '12px' 
+                              }}>
+                                {groupPerms.map(p => {
+                                  const isChecked = selectedPages.includes(p.permission);
+                                  return (
+                                    <label 
+                                      key={p.permission}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '10px 14px',
+                                        borderRadius: '8px',
+                                        background: '#FFFFFF',
+                                        border: `1.5px solid ${isChecked ? C.primary : C.border}`,
+                                        cursor: 'pointer',
+                                        transition: 'all 0.15s ease',
+                                        userSelect: 'none'
+                                      }}
+                                    >
+                                      <input 
+                                        type="checkbox" 
+                                        checked={isChecked}
+                                        onChange={(e) => handleAllowedPagesChange(p.permission, e.target.checked)}
+                                        style={{
+                                          width: '16px',
+                                          height: '16px',
+                                          cursor: 'pointer',
+                                          accentColor: C.primary
+                                        }}
+                                      />
+                                      <span style={{ fontSize: '13px', fontWeight: 600, color: C.textBase }}>
+                                        {p.label}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
                 
                 const isTextArea = prop.type === 'textarea' || name.toLowerCase().includes('description') || name.toLowerCase().includes('notes');
                 const isSelect = !!prop.availableValues;

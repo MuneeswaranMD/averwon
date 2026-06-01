@@ -22,9 +22,31 @@ const GlobalShow = (props) => {
   console.log('GlobalShow rendering with props:', props);
   const { record, resource } = props;
   const p = record.params;
+  const reconstructedParams = {};
+  
+  Object.keys(p).forEach(key => {
+    if (key.includes('.')) {
+      const [baseKey, index] = key.split('.');
+      if (!isNaN(index)) {
+        if (!reconstructedParams[baseKey]) {
+          reconstructedParams[baseKey] = [];
+        }
+        reconstructedParams[baseKey][parseInt(index, 10)] = p[key];
+        return;
+      }
+    }
+    reconstructedParams[key] = p[key];
+  });
+
+  // Filter out any undefined or null slots in reconstructed arrays
+  Object.keys(reconstructedParams).forEach(k => {
+    if (Array.isArray(reconstructedParams[k])) {
+      reconstructedParams[k] = reconstructedParams[k].filter(item => item !== undefined && item !== null);
+    }
+  });
 
   // Helper to get formatted value
-  const val = (k) => p[k] || '---';
+  const val = (k) => reconstructedParams[k] || '---';
   const label = (k) => resource.properties[k]?.label || k;
 
   // Auto-detect status color
@@ -37,7 +59,7 @@ const GlobalShow = (props) => {
   };
 
   // Group fields
-  const allKeys = Object.keys(p).filter(k => !k.startsWith('_') && !['id', 'createdAt', 'updatedAt', '__v'].includes(k));
+  const allKeys = Object.keys(reconstructedParams).filter(k => !k.startsWith('_') && !['id', 'createdAt', 'updatedAt', '__v'].includes(k));
   const contactKeys = allKeys.filter(k => k.toLowerCase().includes('email') || k.toLowerCase().includes('phone') || k.toLowerCase().includes('name'));
   const categoryKeys = allKeys.filter(k => k.toLowerCase().includes('category') || k.toLowerCase().includes('type') || k.toLowerCase().includes('priority') || k.toLowerCase().includes('status'));
   const dataKeys = allKeys.filter(k => !contactKeys.includes(k) && !categoryKeys.includes(k));
@@ -158,17 +180,35 @@ const GlobalShow = (props) => {
             <div style={{ padding: '24px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                 {dataKeys.map(k => (
-                  <div key={k} style={{ gridColumn: (typeof p[k] === 'string' && p[k].length > 100) ? 'span 2' : 'span 1' }}>
+                  <div key={k} style={{ gridColumn: (typeof reconstructedParams[k] === 'string' && reconstructedParams[k].length > 100) ? 'span 2' : 'span 1' }}>
                     <div style={{ fontSize: '12px', color: S.textMuted, fontWeight: 600, marginBottom: '6px' }}>{label(k)}</div>
                     <div style={{ 
                       fontSize: '14px', 
                       color: S.textMain, 
                       lineHeight: '1.6', 
-                      padding: (typeof p[k] === 'string' && p[k].length > 100) ? '12px' : '0',
-                      background: (typeof p[k] === 'string' && p[k].length > 100) ? S.bg : 'transparent',
+                      padding: (typeof reconstructedParams[k] === 'string' && reconstructedParams[k].length > 100) ? '12px' : '0',
+                      background: (typeof reconstructedParams[k] === 'string' && reconstructedParams[k].length > 100) ? S.bg : 'transparent',
                       borderRadius: '8px'
                     }}>
-                      {val(k)}
+                      {Array.isArray(reconstructedParams[k]) ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                          {reconstructedParams[k].map((item, idx) => (
+                            <span key={idx} style={{
+                              padding: '4px 10px',
+                              borderRadius: '16px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              background: S.primaryLight,
+                              color: S.primaryText,
+                              border: `1px solid ${S.border}`
+                            }}>
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        val(k)
+                      )}
                     </div>
                   </div>
                 ))}

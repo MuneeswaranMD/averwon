@@ -127,6 +127,7 @@ export const adminOptions = {
           before: async (request) => {
             try {
               console.log('[AdminJS Hook] New Employee Payload:', request.payload);
+              request = transformDottedArray(request, 'allowedPages');
               if (request.payload.password) {
                 request.payload.password = await bcrypt.hash(request.payload.password, 10);
                 console.log('[AdminJS Hook] Password hashed');
@@ -143,6 +144,7 @@ export const adminOptions = {
           before: async (request) => {
             try {
               console.log('[AdminJS Hook] Edit Employee Payload:', request.payload);
+              request = transformDottedArray(request, 'allowedPages');
               if (request.payload.password) {
                 request.payload.password = await bcrypt.hash(request.payload.password, 10);
                 console.log('[AdminJS Hook] Password hashed');
