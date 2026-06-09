@@ -1,3 +1,8 @@
+import averlinkLogistics from '../assets/averlink_logistics.png';
+import neoretailCore from '../assets/neoretail_core.png';
+import pulseHealth from '../assets/pulse_health.png';
+import sentientAnalytics from '../assets/sentient_analytics.png';
+
 export const heroImages = {
   main: '/src/assets/hero.png',
 };
@@ -71,28 +76,28 @@ export const projects = [
     id: 1,
     title: 'AverLink Logistics',
     description: 'A NEXT-GEN logistics platform optimizing fleet management with real-time tracking and predictive maintenance.',
-    image: '/src/assets/averlink_logistics.png',
+    image: averlinkLogistics,
     technologies: ['React', 'Node.js', 'AWS IoT', 'Python']
   },
   {
     id: 2,
     title: 'NeoRetail Core',
     description: 'Multi-tenant e-commerce engine serving 1M+ monthly users with integrated AI-driven inventory forecasting.',
-    image: '/src/assets/neoretail_core.png',
+    image: neoretailCore,
     technologies: ['Next.js', 'PostgreSQL', 'Redis', 'TensorFlow']
   },
   {
     id: 3,
     title: 'Pulse Health App',
     description: 'HIPAA-compliant telemedicine suite featuring real-time video consultation and encrypted patient records.',
-    image: '/src/assets/pulse_health.png',
+    image: pulseHealth,
     technologies: ['React Native', 'Firebase', 'WebRTC', 'Go']
   },
   {
     id: 4,
     title: 'Sentient Analytics',
     description: 'Real-time sentiment analysis platform for hedge funds, processing millions of financial news feeds hourly.',
-    image: '/src/assets/sentient_analytics.png',
+    image: sentientAnalytics,
     technologies: ['PyTorch', 'Rust', 'Apache Kafka', 'Next.js']
   }
 ];
