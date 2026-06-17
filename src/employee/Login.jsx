@@ -23,7 +23,36 @@ const Login = () => {
   const [loading, setLoading]     = useState(false);
   const navigate = useNavigate();
 
+  const handleDemoLogin = async () => {
+    setError('');
+    setLoading(true);
+    const demoEmail = 'sarah.c@averqon.ai';
+    const demoPassword = 'employee123';
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    try {
+      const res  = await fetch(API_ENDPOINTS.EMPLOYEE_LOGIN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: demoEmail, password: demoPassword, rememberMe: remember }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('employeeToken', data.token);
+        localStorage.setItem('employeeData', JSON.stringify(data.employee));
+        navigate('/employee/dashboard');
+      } else {
+        setError(data.error || 'Invalid credentials. Please try again.');
+      }
+    } catch {
+      setError('Network error. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e) => {
+
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -179,15 +208,35 @@ const Login = () => {
               onMouseEnter={e => { if (!loading) e.currentTarget.style.background = Z.accentHover; }}
               onMouseLeave={e => { if (!loading) e.currentTarget.style.background = Z.accent; }}
             >
-              {loading ? (
-                <>
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  Sign In
-                </>
-              )}
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+
+            {/* Demo Employee Login */}
+            <button
+              type="button"
+              disabled={loading}
+              onClick={handleDemoLogin}
+              style={{
+                width: '100%', padding: '12px',
+                marginTop: 12,
+                background: '#F0FDF4',
+                color: '#166534',
+                border: '1px solid #BBF7D0',
+                borderRadius: 8, fontSize: 14, fontWeight: 700,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#DCFCE7'; }}
+              onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#F0FDF4'; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#166534' }}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Demo Employee Login
             </button>
           </form>
 

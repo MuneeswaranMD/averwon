@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
@@ -19,8 +20,21 @@ const Login = (props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const formRef = useRef(null);
+
+  const handleDemoLogin = (e) => {
+    e.preventDefault();
+    setEmail('admin@averqon.ai');
+    setPassword('admin123');
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.submit();
+      }
+    }, 150);
+  };
 
   const handleGoogleLogin = async () => {
+
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -112,7 +126,7 @@ const Login = (props) => {
         )}
 
         {/* Form */}
-        <form action={action} method="POST" style={{ textAlign: 'left' }}>
+        <form ref={formRef} action={action} method="POST" style={{ textAlign: 'left' }}>
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: C.text }}>
               Email Address
@@ -187,6 +201,43 @@ const Login = (props) => {
           </button>
 
           <div style={{ marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                background: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                color: '#166534',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#DCFCE7';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#F0FDF4';
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#166534' }}>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Demo Admin Login
+            </button>
+          </div>
+
+          <div style={{ marginTop: '12px' }}>
             <button
               type="button"
               onClick={handleGoogleLogin}
