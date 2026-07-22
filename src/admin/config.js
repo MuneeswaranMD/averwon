@@ -120,7 +120,7 @@ export const adminOptions = {
         department: { components: { list: Components.StatusTag } },
         password: { type: 'password', isVisible: { list: false, filter: false, show: false, edit: true } }
       },
-      listProperties: ['email', 'name', 'employeeId', 'department', 'designation', 'role', 'status'],
+      listProperties: ['email', 'name', 'employeeId', 'department', 'designation', 'reportingManager', 'role', 'status'],
       actions: { 
         ...commonActions,
         new: {

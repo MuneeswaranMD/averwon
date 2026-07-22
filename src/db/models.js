@@ -14,6 +14,18 @@ const EmployeeSchema = new mongoose.Schema({
   address: { type: String },
   profileImage: { type: String },
   status: { type: String, enum: ['Active', 'Inactive', 'On Leave'], default: 'Active' },
+  reportingManager: { type: String, default: 'Sarah Chen' },
+  emergencyContacts: {
+    type: [{
+      name: String,
+      rel: String,
+      phone: String
+    }],
+    default: [
+      { name: 'Muneeswaran', rel: 'Primary Contact', phone: '+91 8300864083' },
+      { name: 'Mary Jane', rel: 'Mother', phone: '+91 98765 12345' }
+    ]
+  },
   allowedPages: { 
     type: [String], 
     default: [

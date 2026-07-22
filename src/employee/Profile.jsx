@@ -96,17 +96,41 @@ const Profile = () => {
   };
 
   const handlePasswordChange = async () => {
-    if (!passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match or are empty');
+    if (!passwordData.newPassword || passwordData.newPassword.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('Passwords do not match');
       return;
     }
     setUpdating(true);
-    // Simulation of password change
-    setTimeout(() => {
-      setUpdating(false);
+    try {
+      const token = localStorage.getItem('employeeToken');
+      if (!token) {
+        alert('Session expired. Please login again.');
+        return;
+      }
+
+      const res = await fetch(API_ENDPOINTS.EMPLOYEE_CHANGE_PASSWORD, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ newPassword: passwordData.newPassword })
+      });
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
       alert('Password updated successfully!');
       setPasswordData({ newPassword: '', confirmPassword: '' });
-    }, 1500);
+    } catch (err) {
+      alert(err.message || 'Failed to update password');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   if (loading) {
@@ -203,7 +227,7 @@ const Profile = () => {
               <InfoRow icon={User} label="Role"             value={employee?.role} />
               <InfoRow icon={Calendar} label="Joining Date"     value={employee?.joinDate ? new Date(employee.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : null} />
               <InfoRow icon={CreditCard} label="Salary"           value={employee?.salary ? `₹${Number(employee.salary).toLocaleString()}` : null} />
-              <InfoRow icon={Users} label="Reporting Manager" value="Sarah Chen" />
+              <InfoRow icon={Users} label="Reporting Manager" value={employee?.reportingManager || 'Sarah Chen'} />
             </div>
           </Card>
 
@@ -269,10 +293,10 @@ const Profile = () => {
           <Card style={{ padding: '24px 26px' }}>
             <SectionHeader title="Emergency Contacts" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              {[
-                { name: 'John Doe', rel: 'Brother', phone: '+91 98765 43210' },
+              {(employee?.emergencyContacts?.length > 0 ? employee.emergencyContacts : [
+                { name: 'Muneeswaran', rel: 'Primary Contact', phone: '+91 8300864083' },
                 { name: 'Mary Jane', rel: 'Mother', phone: '+91 98765 12345' },
-              ].map((c, i) => (
+              ]).map((c, i) => (
                 <div key={i} style={{ background: Z.inputBg, borderRadius: 10, padding: '14px 16px', border: `1px solid ${Z.border}` }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{c.name}</div>
                   <div style={{ fontSize: 12, color: Z.muted, marginBottom: 8 }}>{c.rel}</div>

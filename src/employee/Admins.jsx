@@ -73,6 +73,7 @@ const Admins = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedEmployee, setExpandedEmployee] = useState(null);
   const [selectedPermissions, setSelectedPermissions] = useState({});
+  const [reportingManagers, setReportingManagers] = useState({});
   const [savingId, setSavingId] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(null);
 
@@ -141,6 +142,10 @@ const Admins = () => {
           return acc;
         }, {})
       );
+      setReportingManagers(prev => ({
+        ...prev,
+        [emp._id]: emp.reportingManager || 'Sarah Chen'
+      }));
       setSaveSuccess(null);
     }
   };
@@ -173,6 +178,7 @@ const Admins = () => {
 
     // Filter checked keys
     const allowedPages = Object.keys(selectedPermissions).filter(key => selectedPermissions[key]);
+    const reportingManager = reportingManagers[empId];
 
     fetch(API_ENDPOINTS.EMPLOYEE_ADMIN_ACCESS_UPDATE(empId), {
       method: 'PUT',
@@ -180,14 +186,14 @@ const Admins = () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ allowedPages })
+      body: JSON.stringify({ allowedPages, reportingManager })
     })
       .then(res => res.json())
       .then(d => {
         if (d.error) throw new Error(d.error);
         setSaveSuccess(empId);
         // Refresh local employee array cleanly
-        setEmployees(prev => prev.map(e => e._id === empId ? { ...e, allowedPages } : e));
+        setEmployees(prev => prev.map(e => e._id === empId ? { ...e, allowedPages, reportingManager: d.reportingManager || reportingManager } : e));
         setTimeout(() => setSaveSuccess(null), 3000);
       })
       .catch(err => alert(`Error saving access: ${err.message}`))
@@ -345,13 +351,53 @@ const Admins = () => {
                   <div style={{ padding: '24px 28px', borderTop: `1px solid ${Z.border}`, background: '#FFFFFF' }}>
                     <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <UserCheck size={16} color={Z.accent} /> System Menu Authorization Matrix
+                        <UserCheck size={16} color={Z.accent} /> System Menu Authorization Matrix & Reporting Manager
                       </h4>
                       {saveSuccess === emp._id && (
                         <div style={{ fontSize: 13, color: Z.success, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Check size={16} /> Matrix updated successfully!
+                          <Check size={16} /> Updated successfully!
                         </div>
                       )}
+                    </div>
+
+                    {/* Reporting Manager Selection Box */}
+                    <div style={{ border: `1.5px solid ${Z.accent}30`, borderRadius: 12, padding: 18, background: '#F0F6FF', marginBottom: 24 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: Z.accent, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Users size={16} color={Z.accent} /> Assign Reporting Manager
+                      </div>
+                      <div style={{ color: Z.muted, fontSize: 12.5, marginBottom: 12 }}>
+                        Select the reporting manager assigned to <strong>{emp.name}</strong>. This updates their professional profile details dynamically.
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                        <select
+                          value={reportingManagers[emp._id] || emp.reportingManager || 'Sarah Chen'}
+                          onChange={e => setReportingManagers({ ...reportingManagers, [emp._id]: e.target.value })}
+                          style={{
+                            padding: '10px 16px',
+                            borderRadius: 8,
+                            border: `1.5px solid ${Z.border}`,
+                            fontSize: 13.5,
+                            fontWeight: 600,
+                            background: '#FFFFFF',
+                            color: Z.text,
+                            outline: 'none',
+                            minWidth: 280,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="Sarah Chen">Sarah Chen (Manager - IT)</option>
+                          <option value="Muneeswaran (Admin)">Muneeswaran (Admin)</option>
+                          <option value="Executive Board">Executive Board</option>
+                          {employees.map(m => (
+                            <option key={m._id} value={m.name}>
+                              {m.name} ({m.designation || m.role} - {m.department})
+                            </option>
+                          ))}
+                        </select>
+                        <div style={{ fontSize: 13, color: Z.text, fontWeight: 600 }}>
+                          Assigned: <span style={{ color: Z.accent, fontWeight: 700 }}>{reportingManagers[emp._id] || emp.reportingManager || 'Sarah Chen'}</span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Matrix Row groups */}

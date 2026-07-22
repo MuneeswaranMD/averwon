@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
 
   // Employee Portal
   EMPLOYEE_PROFILE: `${API_BASE_URL}/api/employee/profile`,
+  EMPLOYEE_CHANGE_PASSWORD: `${API_BASE_URL}/api/employee/change-password`,
   EMPLOYEE_DASHBOARD: `${API_BASE_URL}/api/employee/dashboard`,
   EMPLOYEE_TASKS: `${API_BASE_URL}/api/employee/tasks`,
   EMPLOYEE_TASK_UPDATE: (id) => `${API_BASE_URL}/api/employee/tasks/${id}`,

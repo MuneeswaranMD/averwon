@@ -101,7 +101,7 @@ const Login = () => {
           padding: '40px 36px 36px',
           textAlign: 'center',
         }}>
-          <img src="/logo.png" alt="Averqon" style={{ height: 40, marginBottom: 16, objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Averqon" style={{ height: 40, display: 'block', margin: '0 auto 16px', objectFit: 'contain' }} />
           <div style={{ color: '#fff', fontSize: 22, fontWeight: 800, letterSpacing: 0.5 }}>Employee Portal</div>
           <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}>Sign in to your workspace</div>
         </div>

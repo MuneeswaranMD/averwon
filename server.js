@@ -109,12 +109,15 @@ const start = async () => {
 
       // Seed Employees
       const empPassword = await bcrypt.hash('employee123', 10);
+      const defaultContacts = [
+        { name: 'Muneeswaran', rel: 'Primary Contact', phone: '+91 8300864083' },
+      ];
       const employees = await Models.Employee.create([
-        { name: 'Sarah Chen', email: 'sarah.c@averqon.ai', password: empPassword, role: 'Manager', department: 'IT', designation: 'Lead Architect', joinDate: new Date('2024-01-15'), salary: 145000, status: 'Active' },
-        { name: 'Marcus Rodriguez', email: 'marcus.r@averqon.ai', password: empPassword, role: 'Employee', department: 'Design', designation: 'Senior UI/UX', joinDate: new Date('2024-02-10'), salary: 95000, status: 'Active' },
-        { name: 'Priya Sharma', email: 'priya.s@averqon.ai', password: empPassword, role: 'HR', department: 'Finance', designation: 'Accounts Manager', joinDate: new Date('2023-11-20'), salary: 110000, status: 'Active' },
-        { name: 'James Wilson', email: 'james.w@averqon.ai', password: empPassword, role: 'Employee', department: 'Operations', designation: 'Ops Director', joinDate: new Date('2024-03-05'), salary: 130000, status: 'Active' },
-        { name: 'Aisha Khan', email: 'aisha.k@averqon.ai', password: empPassword, role: 'Employee', department: 'Marketing', designation: 'Growth Lead', joinDate: new Date('2024-03-12'), salary: 85000, status: 'Active' },
+        { name: 'Sarah Chen', email: 'sarah.c@averqon.ai', password: empPassword, role: 'Manager', department: 'IT', designation: 'Lead Architect', joinDate: new Date('2024-01-15'), salary: 145000, status: 'Active', reportingManager: 'Executive Board', emergencyContacts: defaultContacts },
+        { name: 'Marcus Rodriguez', email: 'marcus.r@averqon.ai', password: empPassword, role: 'Employee', department: 'Design', designation: 'Senior UI/UX', joinDate: new Date('2024-02-10'), salary: 95000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+        { name: 'Priya Sharma', email: 'priya.s@averqon.ai', password: empPassword, role: 'HR', department: 'Finance', designation: 'Accounts Manager', joinDate: new Date('2023-11-20'), salary: 110000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+        { name: 'James Wilson', email: 'james.w@averqon.ai', password: empPassword, role: 'Employee', department: 'Operations', designation: 'Ops Director', joinDate: new Date('2024-03-05'), salary: 130000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+        { name: 'Aisha Khan', email: 'aisha.k@averqon.ai', password: empPassword, role: 'Employee', department: 'Marketing', designation: 'Growth Lead', joinDate: new Date('2024-03-12'), salary: 85000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
       ]);
 
       // Seed Projects
@@ -954,6 +957,39 @@ const start = async () => {
     }
   });
 
+  // Employee Password Change
+  app.post('/api/employee/change-password', authenticateEmployee, async (req, res) => {
+    try {
+      const { newPassword } = req.body;
+      if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const employee = await Models.Employee.findByIdAndUpdate(
+        req.employee.id,
+        { password: hashedPassword },
+        { new: true }
+      );
+
+      if (!employee) {
+        return res.status(404).json({ error: 'Employee not found' });
+      }
+
+      await Models.Activity.create({
+        user: employee.name,
+        action: 'Updated account password',
+        target: 'Account Security',
+        time: new Date()
+      });
+
+      res.json({ success: true, message: 'Password updated successfully!' });
+    } catch (err) {
+      console.error('[CHANGE PASSWORD]', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Employee Attendance — history
   app.get('/api/employee/attendance', authenticateEmployee, async (req, res) => {
     try {
@@ -1194,19 +1230,25 @@ const start = async () => {
 
   app.put('/api/employee/admin/access/:id', authenticateEmployee, checkPagePermission('Admins'), async (req, res) => {
     try {
-      const { allowedPages } = req.body;
-      if (!Array.isArray(allowedPages)) {
-        return res.status(400).json({ error: 'allowedPages must be an array of strings' });
+      const { allowedPages, reportingManager } = req.body;
+      const updateData = {};
+
+      if (Array.isArray(allowedPages)) {
+        updateData.allowedPages = allowedPages;
       }
+      if (reportingManager !== undefined) {
+        updateData.reportingManager = reportingManager;
+      }
+
       const employee = await Models.Employee.findByIdAndUpdate(
         req.params.id,
-        { allowedPages },
+        updateData,
         { new: true }
       ).select('-password');
       
       await Models.Activity.create({
         user: req.employeeDoc.name,
-        action: `Updated access permissions for ${employee.name}`,
+        action: `Updated access permissions & reporting manager for ${employee.name}`,
         target: 'System',
         time: new Date()
       });
