@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 import {
-  MapPin, Mail, Clock, Send, CheckCircle2,
+  MapPin, Mail, Phone, Clock, Send, CheckCircle2,
   AlertCircle, Instagram, Twitter, Linkedin, Loader2
 } from 'lucide-react';
 
@@ -83,8 +83,17 @@ const ContactPage = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      lines: ['averqon.hr@averqon.in'],
-      href: 'mailto:averqon.hr@averqon.in',
+      lines: [
+        { text: 'averqonhq@gmail.com', href: 'mailto:averqonhq@gmail.com' },
+        { text: 'hr@averqon.in', href: 'mailto:hr@averqon.in' },
+      ],
+    },
+    {
+      icon: Phone,
+      title: 'Call Us',
+      lines: [
+        { text: '+91 8300864083', href: 'tel:+918300864083' },
+      ],
     },
     {
       icon: Clock,
@@ -206,15 +215,18 @@ const ContactPage = () => {
                       <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#003366', opacity: 0.5, marginBottom: 4 }}>
                         {card.title}
                       </p>
-                      {card.lines.map((line, j) =>
-                        card.href ? (
-                          <a key={j} href={card.href} style={{ fontSize: 16, fontWeight: 700, color: '#003366', textDecoration: 'none', display: 'block' }}>
-                            {line}
+                      {card.lines.map((lineObj, j) => {
+                        const isObj = typeof lineObj === 'object' && lineObj !== null;
+                        const lineText = isObj ? lineObj.text : lineObj;
+                        const lineHref = isObj ? lineObj.href : card.href;
+                        return lineHref ? (
+                          <a key={j} href={lineHref} style={{ fontSize: 16, fontWeight: 700, color: '#003366', textDecoration: 'none', display: 'block', marginBottom: 2 }}>
+                            {lineText}
                           </a>
                         ) : (
-                          <p key={j} style={{ fontSize: 16, fontWeight: 700, color: '#003366', margin: 0 }}>{line}</p>
-                        )
-                      )}
+                          <p key={j} style={{ fontSize: 16, fontWeight: 700, color: '#003366', margin: 0 }}>{lineText}</p>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 );

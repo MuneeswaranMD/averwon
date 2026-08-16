@@ -8,7 +8,18 @@ const ContactSection = () => {
     {
       icon: <Mail />,
       label: 'Email Us',
-      values: ['averqon.hr@averqon.in'],
+      values: [
+        { text: 'averqonhq@gmail.com', href: 'mailto:averqonhq@gmail.com' },
+        { text: 'hr@averqon.in', href: 'mailto:hr@averqon.in' },
+      ],
+      color: 'bg-secondary/10 text-secondary'
+    },
+    {
+      icon: <Phone />,
+      label: 'Call Us',
+      values: [
+        { text: '+91 8300864083', href: 'tel:+918300864083' },
+      ],
       color: 'bg-secondary/10 text-secondary'
     },
     {
@@ -59,9 +70,16 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{info.label}</h4>
-                    {info.values.map((val, idx) => (
-                      <p key={idx} className="text-xl font-bold text-primary hover:text-secondary transition-colors cursor-pointer">{val}</p>
-                    ))}
+                    {info.values.map((valObj, idx) => {
+                      const isObj = typeof valObj === 'object' && valObj !== null;
+                      const valText = isObj ? valObj.text : valObj;
+                      const valHref = isObj ? valObj.href : null;
+                      return valHref ? (
+                        <a key={idx} href={valHref} className="text-xl font-bold text-primary hover:text-secondary transition-colors block mb-1">{valText}</a>
+                      ) : (
+                        <p key={idx} className="text-xl font-bold text-primary hover:text-secondary transition-colors cursor-pointer">{valText}</p>
+                      );
+                    })}
                   </div>
                 </motion.div>
               ))}

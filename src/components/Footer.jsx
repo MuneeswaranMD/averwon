@@ -7,6 +7,7 @@ import {
   Linkedin,
   Mail,
   MapPin,
+  Phone,
   Twitter,
 } from 'lucide-react';
 
@@ -123,15 +124,29 @@ const Footer = () => {
             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Reach us</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               <a
-                href="mailto:averqon.hr@averqon.in"
+                href="mailto:averqonhq@gmail.com"
                 className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-slate-200 transition-colors hover:border-secondary/60 hover:text-white"
               >
-                <Mail size={18} className="text-secondary" />
-                averqon.hr@averqon.in
+                <Mail size={18} className="text-secondary flex-shrink-0" />
+                averqonhq@gmail.com
+              </a>
+              <a
+                href="mailto:hr@averqon.in"
+                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-slate-200 transition-colors hover:border-secondary/60 hover:text-white"
+              >
+                <Mail size={18} className="text-secondary flex-shrink-0" />
+                hr@averqon.in
+              </a>
+              <a
+                href="tel:+918300864083"
+                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-slate-200 transition-colors hover:border-secondary/60 hover:text-white"
+              >
+                <Phone size={18} className="text-secondary flex-shrink-0" />
+                +91 8300864083
               </a>
               <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-slate-200">
-                <MapPin size={18} className="text-secondary" />
-                Chennai, India
+                <MapPin size={18} className="text-secondary flex-shrink-0" />
+                Coimbatore, Tamil Nadu
               </div>
             </div>
           </div>
