@@ -73,6 +73,10 @@ const projectBeforeHook = async (request) => {
   return transformDottedArray(request, 'teamMembers');
 };
 
+const portfolioProjectBeforeHook = async (request) => {
+  return transformDottedArray(request, 'technologies');
+};
+
 const meetingBeforeHook = async (request) => {
   return transformDottedArray(request, 'participants');
 };
@@ -199,6 +203,27 @@ export const adminOptions = {
     { resource: Models.JobApplication, options: { 
       parent: { name: 'Recruitment', icon: 'FileUser' },
       actions: { ...commonActions }
+    } },
+
+    // --- Website Showcase ---
+    { resource: Models.PortfolioProject, options: { 
+      parent: { name: 'Website Showcase', icon: 'Globe' },
+      properties: { 
+        description: { type: 'textarea', components: { list: Components.ContentToggle } },
+        isActive: { components: { list: Components.StatusTag } },
+        featured: { components: { list: Components.StatusTag } }
+      },
+      listProperties: ['title', 'category', 'clientName', 'featured', 'isActive', 'order'],
+      actions: { 
+        ...commonActions,
+        new: {
+          before: portfolioProjectBeforeHook
+        },
+        edit: {
+          ...commonActions.edit,
+          before: portfolioProjectBeforeHook
+        }
+      }
     } },
 
     // --- Operations ---
@@ -443,6 +468,8 @@ export const adminOptions = {
           'LeaveRequest': 'Leave Request',
           JobPosting: 'Job Posting',
           'HR Management': 'HR Management',
+          'Website Showcase': 'Website Showcase',
+          PortfolioProject: 'Portfolio Project',
           Operations: 'Operations',
           Support: 'Support',
           Sales: 'Sales & CRM',

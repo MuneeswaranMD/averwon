@@ -3,6 +3,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 export const API_ENDPOINTS = {
   // Public
   JOBS: `${API_BASE_URL}/api/jobs`,
+  PORTFOLIO_PROJECTS: `${API_BASE_URL}/api/portfolio-projects`,
+  PORTFOLIO_PROJECT_MANAGE: (id) => `${API_BASE_URL}/api/portfolio-projects/${id}`,
   APPLICATIONS: `${API_BASE_URL}/api/applications`,
   TICKETS: `${API_BASE_URL}/api/support/tickets`,
   TICKET_TRACK: (id) => `${API_BASE_URL}/api/support/tickets/${id}`,

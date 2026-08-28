@@ -419,9 +419,30 @@ const DocumentSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Document = mongoose.model('Document', DocumentSchema);
 
+const PortfolioProjectSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  subtitle: { type: String },
+  category: { 
+    type: String, 
+    enum: ['Web Development', 'Mobile App', 'AI & Data Science', 'Cloud & DevOps', 'Blockchain', 'Enterprise Software', 'UI/UX Design', 'Other'], 
+    default: 'Web Development' 
+  },
+  description: { type: String, required: true },
+  image: { type: String },
+  technologies: [String],
+  liveUrl: { type: String },
+  githubUrl: { type: String },
+  clientName: { type: String },
+  featured: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: true },
+  order: { type: Number, default: 0 },
+}, { timestamps: true });
+const PortfolioProject = mongoose.model('PortfolioProject', PortfolioProjectSchema);
+
 export {
   Employee, Intern, Project, Task, Ticket, Attendance, LeaveRequest, Payroll, 
   Meeting, Activity, Revenue, Invoice, Bill, Lead, Deal, LiveChat, Setting,
   JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest, Document,
-  Tool, ChatRoom
+  Tool, ChatRoom, PortfolioProject
 };
+

@@ -87,102 +87,209 @@ const start = async () => {
   async function seedDatabase() {
     try {
       let adminUser = await Models.Manager.findOne({ email: 'admin@averqon.ai' });
-      if (adminUser) {
-        console.log('✅ Admin user detected.');
-        return;
+      if (!adminUser) {
+        console.log('🧹 Initializing Admin User & Default Core Data...');
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await Models.Manager.create({
+          email: 'admin@averqon.ai',
+          password: hashedPassword
+        });
+        console.log('🔑 Admin User Created (admin@averqon.ai / admin123)');
+
+        await Models.Setting.create({ 
+          companyName: 'averqon HRMS', 
+          theme: 'System', 
+          language: 'English', 
+          timeZone: 'Asia/Kolkata' 
+        });
+
+        // Seed Employees
+        const empPassword = await bcrypt.hash('employee123', 10);
+        const defaultContacts = [
+          { name: 'Muneeswaran', rel: 'Primary Contact', phone: '+91 8300864083' },
+        ];
+        await Models.Employee.create([
+          { name: 'Sarah Chen', email: 'sarah.c@averqon.ai', password: empPassword, role: 'Manager', department: 'IT', designation: 'Lead Architect', joinDate: new Date('2024-01-15'), salary: 145000, status: 'Active', reportingManager: 'Executive Board', emergencyContacts: defaultContacts },
+          { name: 'Marcus Rodriguez', email: 'marcus.r@averqon.ai', password: empPassword, role: 'Employee', department: 'Design', designation: 'Senior UI/UX', joinDate: new Date('2024-02-10'), salary: 95000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+          { name: 'Priya Sharma', email: 'priya.s@averqon.ai', password: empPassword, role: 'HR', department: 'Finance', designation: 'Accounts Manager', joinDate: new Date('2023-11-20'), salary: 110000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+          { name: 'James Wilson', email: 'james.w@averqon.ai', password: empPassword, role: 'Employee', department: 'Operations', designation: 'Ops Director', joinDate: new Date('2024-03-05'), salary: 130000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+          { name: 'Aisha Khan', email: 'aisha.k@averqon.ai', password: empPassword, role: 'Employee', department: 'Marketing', designation: 'Growth Lead', joinDate: new Date('2024-03-12'), salary: 85000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
+        ]);
+
+        // Seed Projects
+        await Models.Project.create([
+          { name: 'AverLink Logistics', client: 'Meridian Global', teamMembers: ['Sarah Chen', 'Marcus Rodriguez'], progress: 65, deadline: new Date('2024-06-30'), status: 'In Progress' },
+          { name: 'NeoRetail Core', client: 'ZenDesk Retail', teamMembers: ['James Wilson'], progress: 40, deadline: new Date('2024-08-15'), status: 'In Progress' },
+          { name: 'Pulse Health Suite', client: 'Pulse Medicare', teamMembers: ['Sarah Chen'], progress: 95, deadline: new Date('2024-05-20'), status: 'In Progress' },
+        ]);
+
+        // Seed Tasks
+        await Models.Task.create([
+          { title: 'API Integration with AWS IoT', assignedTo: 'Sarah Chen', project: 'AverLink Logistics', priority: 'Urgent', deadline: new Date('2024-05-10'), status: 'In Progress' },
+          { title: 'Inventory Forecasting Logic', assignedTo: 'James Wilson', project: 'NeoRetail Core', priority: 'High', deadline: new Date('2024-05-15'), status: 'To Do' },
+          { title: 'Encrypted Records Audit', assignedTo: 'Sarah Chen', project: 'Pulse Health Suite', priority: 'Medium', deadline: new Date('2024-05-12'), status: 'Review' },
+        ]);
+
+        // Seed Tickets
+        await Models.Ticket.create([
+          { title: 'Login failure in staging', category: 'Technical Issue', priority: 'High', department: 'IT', description: 'Production users unable to bypass auth', userName: 'Eleanor Thorne', userEmail: 'eleanor@meridian.com', status: 'Open' },
+          { title: 'Missing invoice for Q1', category: 'Finance Issue', priority: 'Medium', department: 'Finance', description: 'Requesting duplicate of invoice INV-2024-001', userName: 'David Matsumo', userEmail: 'david@zendesk.com', status: 'In Progress' },
+          { title: 'Security patch update', category: 'General Query', priority: 'Urgent', department: 'IT', description: 'Need to update OpenSSL versions across clusters', userName: 'System', userEmail: 'admin@averqon.ai', status: 'Open' },
+        ]);
+
+        // Seed Revenue/Finance
+        await Models.Revenue.create([
+          { clientName: 'Meridian Global', amount: 45000, paymentMethod: 'Bank Transfer', status: 'Paid', receivedDate: new Date('2024-04-10') },
+          { clientName: 'ZenDesk Retail', amount: 32000, paymentMethod: 'Stripe', status: 'Paid', receivedDate: new Date('2024-04-12') },
+          { clientName: 'Pulse Medicare', amount: 55000, paymentMethod: 'Credit Card', status: 'Paid', receivedDate: new Date('2024-04-05') },
+        ]);
+
+        // Seed Activities
+        await Models.Activity.create([
+          { user: 'Sarah Chen', action: 'committed code to', target: 'AverLink Logistics', time: new Date() },
+          { user: 'Marcus Rodriguez', action: 'uploaded design for', target: 'NeoRetail Core', time: new Date(Date.now() - 3600000) },
+          { user: 'Admin', action: 'approved leave for', target: 'Priya Sharma', time: new Date(Date.now() - 7200000) },
+        ]);
+
+        // Seed Invoices
+        await Models.Invoice.create([
+          { clientName: 'Meridian Global', projectName: 'AverLink Logistics', invoiceAmount: 42000, taxAmount: 3000, dueDate: new Date('2024-05-15'), status: 'Pending' },
+          { clientName: 'ZenDesk Retail', projectName: 'NeoRetail Core', invoiceAmount: 30000, taxAmount: 2000, dueDate: new Date('2024-04-20'), status: 'Paid', paymentDate: new Date('2024-04-18') },
+          { clientName: 'Pulse Medicare', projectName: 'Pulse Health Suite', invoiceAmount: 50000, taxAmount: 5000, dueDate: new Date('2024-05-25'), status: 'Pending' },
+        ]);
+
+        // Seed Bills
+        await Models.Bill.create([
+          { vendorName: 'AWS Cloud Services', category: 'Software', amount: 1200, dueDate: new Date('2024-05-01'), status: 'Paid' },
+          { vendorName: 'WeWork Office', category: 'Office Expense', amount: 4500, dueDate: new Date('2024-05-05'), status: 'Pending' },
+          { vendorName: 'Digital Ocean', category: 'Software', amount: 450, dueDate: new Date('2024-05-10'), status: 'Pending' },
+        ]);
+
+        // Seed Leads
+        await Models.Lead.create([
+          { leadName: 'Robert Vance', companyName: 'Vance Refrigeration', email: 'vance@refrigeration.com', leadSource: 'LinkedIn', status: 'Qualified', followupDate: new Date('2024-05-08') },
+          { leadName: 'Jan Levinson', companyName: 'White Pages', email: 'jan@whitepages.com', leadSource: 'Website', status: 'New', followupDate: new Date('2024-05-12') },
+          { leadName: 'Stanley Hudson', companyName: 'Pretzel Day Inc', email: 'stanley@pretzels.com', leadSource: 'Referral', status: 'Contacted', followupDate: new Date('2024-05-05') },
+        ]);
+
+        // Seed Deals
+        await Models.Deal.create([
+          { dealName: 'Enterprise SaaS License', clientName: 'Meridian Global', dealValue: 125000, expectedClosingDate: new Date('2024-07-01'), status: 'Negotiation', probability: 75 },
+          { dealName: 'Mobile App Revamp', clientName: 'ZenDesk Retail', dealValue: 85000, expectedClosingDate: new Date('2024-06-15'), status: 'Proposal Sent', probability: 40 },
+        ]);
       }
 
-      console.log('🧹 Initializing Real Seed Data...');
-      const hashedPassword = await bcrypt.hash('admin123', 10);
-      await Models.Manager.create({
-        email: 'admin@averqon.ai',
-        password: hashedPassword
-      });
-      console.log('🔑 Admin User Created (admin@averqon.ai / admin123)');
+      // Check and seed Job Postings if empty
+      const jobCount = await Models.JobPosting.countDocuments();
+      if (jobCount === 0) {
+        console.log('💼 Seeding initial Job Postings...');
+        await Models.JobPosting.create([
+          {
+            title: 'Senior Full-Stack Engineer',
+            type: 'Full-time',
+            location: 'San Francisco, CA / Remote',
+            department: 'Engineering',
+            description: 'Lead architecture and development of high-scale cloud platforms using React, Node.js, and TypeScript. Build resilient microservices and mentor junior developers.',
+            isActive: true,
+            postedDate: new Date()
+          },
+          {
+            title: 'Lead UI/UX Designer',
+            type: 'Full-time',
+            location: 'New York, NY / Hybrid',
+            department: 'Design',
+            description: 'Shape end-to-end user experiences for enterprise SaaS and consumer applications. Drive design systems, user journey mapping, and interactive prototypes in Figma.',
+            isActive: true,
+            postedDate: new Date()
+          },
+          {
+            title: 'AI & Data Science Architect',
+            type: 'Full-time',
+            location: 'Remote',
+            department: 'AI & Research',
+            description: 'Architect generative AI applications, fine-tune LLMs, and develop scalable ML pipelines. Integrate neural retrieval systems and vector databases into production workflows.',
+            isActive: true,
+            postedDate: new Date()
+          },
+          {
+            title: 'Cloud DevOps Engineer',
+            type: 'Contract',
+            location: 'Austin, TX / Remote',
+            department: 'Operations',
+            description: 'Design CI/CD pipelines, manage multi-region Kubernetes clusters, and enforce enterprise infrastructure-as-code security standards across AWS and GCP.',
+            isActive: true,
+            postedDate: new Date()
+          }
+        ]);
+        console.log('✅ Initial Job Postings seeded successfully.');
+      }
 
-      await Models.Setting.create({ 
-        companyName: 'averqon HRMS', 
-        theme: 'System', 
-        language: 'English', 
-        timeZone: 'Asia/Kolkata' 
-      });
+      // Check and seed Portfolio Projects if empty
+      const portfolioCount = await Models.PortfolioProject.countDocuments();
+      if (portfolioCount === 0) {
+        console.log('🚀 Seeding initial Showcase Portfolio Projects...');
+        await Models.PortfolioProject.create([
+          {
+            title: 'AverLink Logistics',
+            subtitle: 'AI-Driven Fleet & Supply Chain Intelligence',
+            category: 'Enterprise Software',
+            description: 'A NEXT-GEN logistics platform optimizing fleet management with real-time tracking, IoT sensors telemetry, and predictive maintenance algorithms.',
+            image: '/src/assets/averlink_logistics.png',
+            technologies: ['React', 'Node.js', 'AWS IoT', 'Python', 'Docker'],
+            liveUrl: 'https://averqon.ai',
+            githubUrl: 'https://github.com/averqon',
+            clientName: 'Meridian Global',
+            featured: true,
+            isActive: true,
+            order: 1
+          },
+          {
+            title: 'NeoRetail Core',
+            subtitle: 'High-Scale Multi-Tenant Commerce Architecture',
+            category: 'Web Development',
+            description: 'Multi-tenant e-commerce engine serving 1M+ monthly users with integrated AI-driven inventory forecasting and sub-second checkout.',
+            image: '/src/assets/neoretail_core.png',
+            technologies: ['Next.js', 'PostgreSQL', 'Redis', 'TensorFlow', 'Stripe'],
+            liveUrl: 'https://averqon.ai',
+            githubUrl: 'https://github.com/averqon',
+            clientName: 'ZenDesk Retail',
+            featured: true,
+            isActive: true,
+            order: 2
+          },
+          {
+            title: 'Pulse Health Suite',
+            subtitle: 'HIPAA-Compliant Telemedicine & EHR Portal',
+            category: 'Mobile App',
+            description: 'HIPAA-compliant telemedicine suite featuring real-time WebRTC video consultation, automated transcription, and end-to-end encrypted patient records.',
+            image: '/src/assets/pulse_health.png',
+            technologies: ['React Native', 'Firebase', 'WebRTC', 'Go', 'Kubernetes'],
+            liveUrl: 'https://averqon.ai',
+            githubUrl: 'https://github.com/averqon',
+            clientName: 'Pulse Medicare',
+            featured: true,
+            isActive: true,
+            order: 3
+          },
+          {
+            title: 'Sentient Analytics',
+            subtitle: 'Real-Time Financial Sentiment & Market Processing',
+            category: 'AI & Data Science',
+            description: 'Real-time sentiment analysis platform for hedge funds and fintechs, processing millions of unstructured financial feeds hourly with custom LLM pipelines.',
+            image: '/src/assets/sentient_analytics.png',
+            technologies: ['PyTorch', 'Rust', 'Apache Kafka', 'Next.js', 'ClickHouse'],
+            liveUrl: 'https://averqon.ai',
+            githubUrl: 'https://github.com/averqon',
+            clientName: 'Alpha Horizon',
+            featured: true,
+            isActive: true,
+            order: 4
+          }
+        ]);
+        console.log('✅ Showcase Portfolio Projects seeded successfully.');
+      }
 
-      // Seed Employees
-      const empPassword = await bcrypt.hash('employee123', 10);
-      const defaultContacts = [
-        { name: 'Muneeswaran', rel: 'Primary Contact', phone: '+91 8300864083' },
-      ];
-      const employees = await Models.Employee.create([
-        { name: 'Sarah Chen', email: 'sarah.c@averqon.ai', password: empPassword, role: 'Manager', department: 'IT', designation: 'Lead Architect', joinDate: new Date('2024-01-15'), salary: 145000, status: 'Active', reportingManager: 'Executive Board', emergencyContacts: defaultContacts },
-        { name: 'Marcus Rodriguez', email: 'marcus.r@averqon.ai', password: empPassword, role: 'Employee', department: 'Design', designation: 'Senior UI/UX', joinDate: new Date('2024-02-10'), salary: 95000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
-        { name: 'Priya Sharma', email: 'priya.s@averqon.ai', password: empPassword, role: 'HR', department: 'Finance', designation: 'Accounts Manager', joinDate: new Date('2023-11-20'), salary: 110000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
-        { name: 'James Wilson', email: 'james.w@averqon.ai', password: empPassword, role: 'Employee', department: 'Operations', designation: 'Ops Director', joinDate: new Date('2024-03-05'), salary: 130000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
-        { name: 'Aisha Khan', email: 'aisha.k@averqon.ai', password: empPassword, role: 'Employee', department: 'Marketing', designation: 'Growth Lead', joinDate: new Date('2024-03-12'), salary: 85000, status: 'Active', reportingManager: 'Sarah Chen', emergencyContacts: defaultContacts },
-      ]);
-
-      // Seed Projects
-      const projects = await Models.Project.create([
-        { name: 'AverLink Logistics', client: 'Meridian Global', teamMembers: ['Sarah Chen', 'Marcus Rodriguez'], progress: 65, deadline: new Date('2024-06-30'), status: 'In Progress' },
-        { name: 'NeoRetail Core', client: 'ZenDesk Retail', teamMembers: ['James Wilson'], progress: 40, deadline: new Date('2024-08-15'), status: 'In Progress' },
-        { name: 'Pulse Health Suite', client: 'Pulse Medicare', teamMembers: ['Sarah Chen'], progress: 95, deadline: new Date('2024-05-20'), status: 'In Progress' },
-      ]);
-
-      // Seed Tasks
-      await Models.Task.create([
-        { title: 'API Integration with AWS IoT', assignedTo: 'Sarah Chen', project: 'AverLink Logistics', priority: 'Urgent', deadline: new Date('2024-05-10'), status: 'In Progress' },
-        { title: 'Inventory Forecasting Logic', assignedTo: 'James Wilson', project: 'NeoRetail Core', priority: 'High', deadline: new Date('2024-05-15'), status: 'To Do' },
-        { title: 'Encrypted Records Audit', assignedTo: 'Sarah Chen', project: 'Pulse Health Suite', priority: 'Medium', deadline: new Date('2024-05-12'), status: 'Review' },
-      ]);
-
-      // Seed Tickets
-      await Models.Ticket.create([
-        { title: 'Login failure in staging', category: 'Technical Issue', priority: 'High', department: 'IT', description: 'Production users unable to bypass auth', userName: 'Eleanor Thorne', userEmail: 'eleanor@meridian.com', status: 'Open' },
-        { title: 'Missing invoice for Q1', category: 'Finance Issue', priority: 'Medium', department: 'Finance', description: 'Requesting duplicate of invoice INV-2024-001', userName: 'David Matsumo', userEmail: 'david@zendesk.com', status: 'In Progress' },
-        { title: 'Security patch update', category: 'General Query', priority: 'Urgent', department: 'IT', description: 'Need to update OpenSSL versions across clusters', userName: 'System', userEmail: 'admin@averqon.ai', status: 'Open' },
-      ]);
-
-      // Seed Revenue/Finance
-      await Models.Revenue.create([
-        { clientName: 'Meridian Global', amount: 45000, paymentMethod: 'Bank Transfer', status: 'Paid', receivedDate: new Date('2024-04-10') },
-        { clientName: 'ZenDesk Retail', amount: 32000, paymentMethod: 'Stripe', status: 'Paid', receivedDate: new Date('2024-04-12') },
-        { clientName: 'Pulse Medicare', amount: 55000, paymentMethod: 'Credit Card', status: 'Paid', receivedDate: new Date('2024-04-05') },
-      ]);
-
-      // Seed Activities
-      await Models.Activity.create([
-        { user: 'Sarah Chen', action: 'committed code to', target: 'AverLink Logistics', time: new Date() },
-        { user: 'Marcus Rodriguez', action: 'uploaded design for', target: 'NeoRetail Core', time: new Date(Date.now() - 3600000) },
-        { user: 'Admin', action: 'approved leave for', target: 'Priya Sharma', time: new Date(Date.now() - 7200000) },
-      ]);
-
-      // Seed Invoices
-      await Models.Invoice.create([
-        { clientName: 'Meridian Global', projectName: 'AverLink Logistics', invoiceAmount: 42000, taxAmount: 3000, dueDate: new Date('2024-05-15'), status: 'Pending' },
-        { clientName: 'ZenDesk Retail', projectName: 'NeoRetail Core', invoiceAmount: 30000, taxAmount: 2000, dueDate: new Date('2024-04-20'), status: 'Paid', paymentDate: new Date('2024-04-18') },
-        { clientName: 'Pulse Medicare', projectName: 'Pulse Health Suite', invoiceAmount: 50000, taxAmount: 5000, dueDate: new Date('2024-05-25'), status: 'Pending' },
-      ]);
-
-      // Seed Bills
-      await Models.Bill.create([
-        { vendorName: 'AWS Cloud Services', category: 'Software', amount: 1200, dueDate: new Date('2024-05-01'), status: 'Paid' },
-        { vendorName: 'WeWork Office', category: 'Office Expense', amount: 4500, dueDate: new Date('2024-05-05'), status: 'Pending' },
-        { vendorName: 'Digital Ocean', category: 'Software', amount: 450, dueDate: new Date('2024-05-10'), status: 'Pending' },
-      ]);
-
-      // Seed Leads
-      await Models.Lead.create([
-        { leadName: 'Robert Vance', companyName: 'Vance Refrigeration', email: 'vance@refrigeration.com', leadSource: 'LinkedIn', status: 'Qualified', followupDate: new Date('2024-05-08') },
-        { leadName: 'Jan Levinson', companyName: 'White Pages', email: 'jan@whitepages.com', leadSource: 'Website', status: 'New', followupDate: new Date('2024-05-12') },
-        { leadName: 'Stanley Hudson', companyName: 'Pretzel Day Inc', email: 'stanley@pretzels.com', leadSource: 'Referral', status: 'Contacted', followupDate: new Date('2024-05-05') },
-      ]);
-
-      // Seed Deals
-      await Models.Deal.create([
-        { dealName: 'Enterprise SaaS License', clientName: 'Meridian Global', dealValue: 125000, expectedClosingDate: new Date('2024-07-01'), status: 'Negotiation', probability: 75 },
-        { dealName: 'Mobile App Revamp', clientName: 'ZenDesk Retail', dealValue: 85000, expectedClosingDate: new Date('2024-06-15'), status: 'Proposal Sent', probability: 40 },
-      ]);
-
-      console.log('✅ Real-world seed data initialized.');
+      console.log('✅ Database initialization check complete.');
     } catch (error) {
       console.error('❌ Seeding Error:', error);
     }
@@ -317,12 +424,77 @@ const start = async () => {
   // --- Recruitment API ---
   app.get('/api/jobs', async (req, res) => {
     try {
-      const jobs = await Models.JobPosting.find({ status: 'Open' });
+      const jobs = await Models.JobPosting.find({
+        $or: [
+          { isActive: true },
+          { isActive: 'true' },
+          { isActive: { $exists: false } },
+          { status: 'Open' }
+        ]
+      }).sort({ postedDate: -1, _id: -1 });
       res.json(jobs);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
+
+  // --- Portfolio / Showcase Projects API ---
+  app.get('/api/portfolio-projects', async (req, res) => {
+    try {
+      const filter = {
+        $or: [
+          { isActive: true },
+          { isActive: 'true' },
+          { isActive: { $exists: false } }
+        ]
+      };
+      if (req.query.featured === 'true') {
+        filter.featured = { $in: [true, 'true'] };
+      }
+      const projects = await Models.PortfolioProject.find(filter).sort({ order: 1, createdAt: -1, _id: -1 });
+      res.json(projects);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/portfolio-projects', upload.single('imageFile'), async (req, res) => {
+    try {
+      const data = { ...req.body };
+      if (req.file) data.image = `/uploads/${req.file.filename}`;
+      if (typeof data.technologies === 'string') {
+        data.technologies = data.technologies.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      const project = await Models.PortfolioProject.create(data);
+      res.json({ success: true, project });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put('/api/portfolio-projects/:id', upload.single('imageFile'), async (req, res) => {
+    try {
+      const data = { ...req.body };
+      if (req.file) data.image = `/uploads/${req.file.filename}`;
+      if (typeof data.technologies === 'string') {
+        data.technologies = data.technologies.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      const project = await Models.PortfolioProject.findByIdAndUpdate(req.params.id, data, { new: true });
+      res.json({ success: true, project });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete('/api/portfolio-projects/:id', async (req, res) => {
+    try {
+      await Models.PortfolioProject.findByIdAndDelete(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 
   app.post('/api/applications', upload.single('resume'), async (req, res) => {
     try {

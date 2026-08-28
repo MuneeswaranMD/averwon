@@ -4,7 +4,8 @@ import {
   Target, Shield, ChevronDown, ChevronLeft, ChevronRight, LogOut,
   BadgeCheck, GraduationCap, Clock, Palmtree, CreditCard, UserCheck,
   FolderOpen, CheckSquare, Video, Ticket, TrendingUp, ReceiptText,
-  Settings, ShieldAlert, Activity, FileText, MessageSquare, MessagesSquare
+  Settings, ShieldAlert, Activity, FileText, MessageSquare, MessagesSquare,
+  Globe, PlusCircle
 } from 'lucide-react';
 
 const averqonLogo = '/logo.png';
@@ -57,6 +58,14 @@ const navConfig = [
     items: [
       { name: 'Job Postings', path: '/admin/resources/JobPosting', icon: <Briefcase size={18} /> },
       { name: 'Applications', path: '/admin/resources/JobApplication', icon: <UserCheck size={18} /> },
+    ],
+  },
+  {
+    name: 'Website Showcase',
+    icon: <Globe size={22} />,
+    items: [
+      { name: 'Portfolio Projects', path: '/admin/resources/PortfolioProject', icon: <FolderOpen size={18} /> },
+      { name: 'Add Project', path: '/admin/resources/PortfolioProject/actions/new', icon: <PlusCircle size={18} /> },
     ],
   },
   {
