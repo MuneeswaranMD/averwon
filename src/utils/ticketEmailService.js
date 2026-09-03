@@ -516,6 +516,7 @@ export async function sendCustomerTicketConfirmationEmail(ticket) {
     subject,
     description = '',
     priority = 'Medium',
+    status = 'Open',
     category = 'General Query',
     userName = 'Valued Customer',
     userEmail,
@@ -530,6 +531,7 @@ export async function sendCustomerTicketConfirmationEmail(ticket) {
 
   const ticketSubject = title || subject || 'Support Request';
   const prioStyle = getPriorityStyle(priority);
+  const statusStyle = getStatusStyle(status);
 
   const htmlContent = `
   <!DOCTYPE html>
@@ -567,9 +569,10 @@ export async function sendCustomerTicketConfirmationEmail(ticket) {
                 <div style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px;">
                   <h3 style="margin: 0 0 12px 0; font-size: 15px; color: #0f172a;">Ticket Summary</h3>
                   <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Ticket ID:</strong> <span style="font-family: monospace; color: #2563eb; font-weight: 700;">${ticketId}</span></p>
+                  <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Ticket Status:</strong> <span style="background-color: ${statusStyle.bg}; color: ${statusStyle.color}; border: 1px solid ${statusStyle.border}; padding: 3px 10px; border-radius: 4px; font-weight: 800; font-size: 12px; text-transform: uppercase;">${status}</span></p>
                   <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Subject:</strong> ${ticketSubject}</p>
                   <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Category:</strong> ${category}</p>
-                  <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Priority:</strong> <span style="background-color: ${prioStyle.bg}; color: ${prioStyle.color}; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 12px;">${priority}</span></p>
+                  <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Priority:</strong> <span style="background-color: ${prioStyle.bg}; color: ${prioStyle.color}; border: 1px solid ${prioStyle.border}; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 12px;">${priority}</span></p>
                 </div>
 
                 <div style="margin-bottom: 25px;">
@@ -605,7 +608,7 @@ export async function sendCustomerTicketConfirmationEmail(ticket) {
   const mailOptions = {
     from: process.env.EMAIL_FROM || '"Averqon Support" <averqonhq@gmail.com>',
     to: userEmail,
-    subject: `[Averqon Support] Ticket Received: ${ticketId} - ${ticketSubject}`,
+    subject: `[Averqon Support] Ticket Received (${status}): ${ticketId} - ${ticketSubject}`,
     html: htmlContent
   };
 
@@ -630,6 +633,9 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
     ticketId = 'N/A',
     title = 'No Title',
     subject,
+    status = 'Open',
+    priority = 'Medium',
+    category = 'General Query',
     userName = 'Valued Customer',
     userEmail,
     adminNotes = '',
@@ -642,6 +648,8 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
   }
 
   const { commentMessage, senderName = 'Averqon Support', newStatus } = updateDetails;
+  const currentStatus = newStatus || status;
+  const statusStyle = getStatusStyle(currentStatus);
   const ticketSubject = title || subject || 'Support Request';
   const effectiveAdminNotes = updateDetails.adminNotes !== undefined ? updateDetails.adminNotes : adminNotes;
   const effectiveResolutionNotes = updateDetails.resolutionNotes !== undefined ? updateDetails.resolutionNotes : resolutionNotes;
@@ -679,6 +687,11 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
 
             <tr>
               <td style="padding: 25px 30px;">
+                <div style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 14px 18px; margin-bottom: 20px; font-size: 14px;">
+                  <span style="color: #64748b; font-weight: 600;">Current Ticket Status:</span> 
+                  <span style="background-color: ${statusStyle.bg}; color: ${statusStyle.color}; border: 1px solid ${statusStyle.border}; padding: 3px 12px; border-radius: 4px; font-weight: 800; font-size: 12px; text-transform: uppercase; margin-left: 8px;">${currentStatus}</span>
+                </div>
+
                 ${newStatus ? `
                 <div style="margin-bottom: 20px; background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px;">
                   <p style="margin: 0; font-size: 14px; color: #1e40af;"><strong>Status Changed To:</strong> <span style="text-transform: uppercase; font-weight: 700;">${newStatus}</span></p>
@@ -720,7 +733,7 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
   const mailOptions = {
     from: process.env.EMAIL_FROM || '"Averqon Support" <averqonhq@gmail.com>',
     to: userEmail,
-    subject: `[Update] Ticket ${ticketId}: New Reply from Averqon Support`,
+    subject: `[Update - ${currentStatus}] Ticket ${ticketId}: New Reply from Averqon Support`,
     html: htmlContent
   };
 
