@@ -1,10 +1,83 @@
 import React from 'react';
+import useSEO from '../hooks/useSEO';
 import ServicesSection from '../components/ServicesSection';
 import WhyChooseUs from '../components/WhyChooseUs';
 import FAQSection from '../components/FAQSection';
 import CTASection from '../components/CTASection';
 
 const Services = () => {
+  useSEO({
+    title: 'Our Services | Custom Software, SaaS & AI Development — Averqon',
+    description:
+      'Averqon offers custom software development, SaaS products, web applications, AI solutions, cloud services, and UI/UX design for businesses across India.',
+    canonical: 'https://averqon.in/services',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      '@id': 'https://averqon.in/services#service',
+      name: 'Software & AI Development Services',
+      url: 'https://averqon.in/services',
+      provider: { '@id': 'https://averqon.in/#organization' },
+      description:
+        'Custom software development, SaaS products, web applications, AI solutions, cloud services and UI/UX design.',
+      areaServed: { '@type': 'Country', name: 'India' },
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Averqon Services',
+        itemListElement: [
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'Custom Software Development',
+              url: 'https://averqon.in/services/software-development',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'SaaS Development',
+              url: 'https://averqon.in/services/saas-development',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'Web Application Development',
+              url: 'https://averqon.in/services/web-application-development',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'AI Development & Integration',
+              url: 'https://averqon.in/services/ai-development',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'Cloud Services',
+              url: 'https://averqon.in/services/cloud-services',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'UI/UX Design',
+              url: 'https://averqon.in/services/ui-ux-design',
+            },
+          },
+        ],
+      },
+    },
+  });
+
   return (
     <div className="overflow-x-hidden pt-20">
       {/* Page Hero Banner */}

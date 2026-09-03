@@ -213,82 +213,179 @@ const Support = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                       {/* Ticket Sidebar */}
-                      <div className="md:col-span-1 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm self-start sticky top-6">
-                        <button onClick={() => setTicketDetails(null)} className="text-xs text-slate-400 hover:text-primary mb-4 font-semibold uppercase tracking-wider">← Back to Search</button>
-                        <h3 className="text-2xl font-bold text-primary font-mono mb-6">{ticketDetails.ticketId}</h3>
-                        
-                        <div className="space-y-4">
-                          <div><p className="text-xs text-slate-500">Status</p>
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mt-1 ${ticketDetails.status === 'Closed' || ticketDetails.status === 'Resolved' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>{ticketDetails.status}</span>
-                          </div>
-                          <div><p className="text-xs text-slate-500">Department</p><p className="font-semibold text-sm">{ticketDetails.department}</p></div>
-                          <div><p className="text-xs text-slate-500">Priority</p><p className="font-semibold text-sm">{ticketDetails.priority}</p></div>
-                          <div><p className="text-xs text-slate-500">Type</p><p className="font-semibold text-sm">{ticketDetails.ticketType}</p></div>
-                          <div><p className="text-xs text-slate-500">Created At</p><p className="text-sm">{new Date(ticketDetails.createdAt).toLocaleString()}</p></div>
-                          {ticketDetails.adminNotes && (
-                            <div className="mt-6 pt-4 border-t border-slate-100">
-                              <p className="text-xs text-slate-500 mb-1">Agent Notes (Internal)</p>
-                              <p className="text-sm bg-blue-50 text-blue-800 p-3 rounded-lg italic">{ticketDetails.adminNotes}</p>
-                            </div>
-                          )}
-                          {ticketDetails.resolutionNotes && (
-                            <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg italic border border-green-100">
-                              <strong>Resolution:</strong> {ticketDetails.resolutionNotes}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Main Ticket Chat */}
-                      <div className="md:col-span-2 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col min-h-[600px]">
-                        <h2 className="text-xl font-bold text-primary mb-6 pb-4 border-b border-slate-100">{ticketDetails.title}</h2>
-                        
-                        {/* Chat History */}
-                        <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-                          <div className="flex flex-col gap-1 items-start">
-                            <span className="text-xs text-slate-400 font-semibold">{ticketDetails.userName} (Original Request)</span>
-                            <div className="bg-slate-100 text-slate-800 px-5 py-3 rounded-2xl rounded-tl-sm max-w-[85%] whitespace-pre-wrap text-sm">
-                              {ticketDetails.description}
-                            </div>
-                            {ticketDetails.attachmentUrl && (
-                              <a href={ticketDetails.attachmentUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 mt-2 text-xs text-secondary hover:underline">
-                                <Paperclip className="w-3 h-3"/> View Attachment
-                              </a>
-                            )}
-                          </div>
-
-                          {ticketDetails.comments?.map((c, i) => {
-                            const isClient = c.senderRole === 'Client';
-                            return (
-                              <div key={i} className={`flex flex-col gap-1 ${isClient ? 'items-start' : 'items-end'}`}>
-                                <span className="text-[10px] text-slate-400 font-semibold">{c.sender} • {new Date(c.timestamp).toLocaleString()}</span>
-                                <div className={`px-5 py-3 rounded-2xl text-sm max-w-[85%] whitespace-pre-wrap shadow-sm ${isClient ? 'bg-slate-100 text-slate-800 rounded-tl-sm' : 'bg-primary text-white rounded-tr-sm'}`}>
-                                  {c.message}
-                                </div>
-                              </div>
-                            )
-                          })}
+                      <div className="md:col-span-1 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm self-start sticky top-6 space-y-6">
+                        <div>
+                          <button onClick={() => setTicketDetails(null)} className="text-xs text-slate-400 hover:text-primary mb-3 font-semibold uppercase tracking-wider block">← Back to Search</button>
+                          <h3 className="text-2xl font-bold text-primary font-mono">{ticketDetails.ticketId}</h3>
                         </div>
 
-                        {/* Comment Input */}
-                        {ticketDetails.status !== 'Closed' && ticketDetails.status !== 'Resolved' ? (
-                          <div className="mt-6 pt-4 border-t border-slate-100 flex gap-3">
-                            <input 
-                              className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-5 py-3 outline-none focus:border-secondary text-sm" 
-                              placeholder="Write a reply..." 
-                              value={newComment} 
-                              onChange={e => setNewComment(e.target.value)} 
-                              onKeyPress={e => e.key === 'Enter' && sendComment()}
-                            />
-                            <button onClick={sendComment} className="w-12 h-12 bg-primary hover:bg-secondary text-white rounded-full flex items-center justify-center transition-colors shadow-md flex-shrink-0">
-                              <Send className="w-5 h-5 ml-1" />
-                            </button>
+                        {/* Ticket Information */}
+                        <div className="border-t border-slate-100 pt-4 space-y-3">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ticket Information</p>
+                          
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Status:</span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              ticketDetails.status === 'Closed' || ticketDetails.status === 'Resolved' ? 'bg-green-100 text-green-700 border border-green-200' :
+                              ticketDetails.status === 'In Progress' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                              ticketDetails.status === 'Pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                              ticketDetails.status === 'Reopened' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                              'bg-orange-100 text-orange-700 border border-orange-200'
+                            }`}>{ticketDetails.status}</span>
                           </div>
-                        ) : (
-                          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-                            <p className="text-slate-500 text-sm">This ticket is closed. No further comments can be added.</p>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Priority:</span>
+                            <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                              ticketDetails.priority === 'Urgent' ? 'bg-red-100 text-red-700 border border-red-200' :
+                              ticketDetails.priority === 'High' ? 'bg-orange-100 text-orange-700 border border-orange-200' :
+                              ticketDetails.priority === 'Medium' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                              'bg-green-100 text-green-700 border border-green-200'
+                            }`}>{ticketDetails.priority}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Category:</span>
+                            <span className="font-medium text-slate-800 text-right">{ticketDetails.category}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Department:</span>
+                            <span className="font-medium text-slate-800">{ticketDetails.department}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Ticket Type:</span>
+                            <span className="font-medium text-slate-800">{ticketDetails.ticketType}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Assigned Team:</span>
+                            <span className="font-medium text-slate-800">{ticketDetails.assignedTeam || 'Support Team'}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Due Date:</span>
+                            <span className="font-medium text-slate-800">{ticketDetails.dueDate ? new Date(ticketDetails.dueDate).toLocaleDateString() : 'Not set'}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500">Created Date:</span>
+                            <span className="font-medium text-slate-800">{new Date(ticketDetails.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Requester Information */}
+                        <div className="border-t border-slate-100 pt-4 space-y-2">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Requester Info</p>
+                          <p className="text-sm font-semibold text-slate-800">{ticketDetails.userName}</p>
+                          <p className="text-xs text-slate-500">{ticketDetails.userEmail}</p>
+                          {ticketDetails.userRole && <p className="text-xs text-slate-500">Role: <span className="font-medium text-slate-700">{ticketDetails.userRole}</span></p>}
+                          {ticketDetails.contactNumber && <p className="text-xs text-slate-500">Phone: <span className="font-medium text-slate-700">{ticketDetails.contactNumber}</span></p>}
+                        </div>
+
+                        {/* Notes */}
+                        {ticketDetails.adminNotes && (
+                          <div className="border-t border-slate-100 pt-4">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Agent Notes</p>
+                            <p className="text-sm bg-blue-50 text-blue-800 p-3 rounded-lg italic border border-blue-100">{ticketDetails.adminNotes}</p>
                           </div>
                         )}
+                        {ticketDetails.resolutionNotes && (
+                          <div className="border-t border-slate-100 pt-4">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Resolution Notes</p>
+                            <p className="text-sm bg-emerald-50 text-emerald-800 p-3 rounded-lg italic border border-emerald-100">{ticketDetails.resolutionNotes}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Main Ticket Chat & History Timeline */}
+                      <div className="md:col-span-2 space-y-6">
+                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col min-h-[500px]">
+                          <h2 className="text-xl font-bold text-primary mb-6 pb-4 border-b border-slate-100">{ticketDetails.title}</h2>
+                          
+                          {/* Description & Chat */}
+                          <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+                            <div className="flex flex-col gap-2 items-start">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-500 font-bold">{ticketDetails.userName}</span>
+                                <span className="text-[10px] text-slate-400">Original Request • {new Date(ticketDetails.createdAt).toLocaleString()}</span>
+                              </div>
+                              <div className="bg-slate-100 text-slate-800 px-5 py-4 rounded-2xl rounded-tl-sm max-w-[90%] whitespace-pre-wrap text-sm leading-relaxed border border-slate-200/50">
+                                {ticketDetails.description}
+                              </div>
+                              {ticketDetails.attachmentUrl && (
+                                <a href={ticketDetails.attachmentUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">
+                                  <Paperclip className="w-3.5 h-3.5"/> View Attachment
+                                </a>
+                              )}
+                            </div>
+
+                            {ticketDetails.comments?.map((c, i) => {
+                              const isClient = c.senderRole === 'Client';
+                              return (
+                                <div key={i} className={`flex flex-col gap-1 ${isClient ? 'items-start' : 'items-end'}`}>
+                                  <span className="text-[10px] text-slate-400 font-semibold">{c.sender} • {new Date(c.timestamp).toLocaleString()}</span>
+                                  <div className={`px-5 py-3 rounded-2xl text-sm max-w-[85%] whitespace-pre-wrap shadow-sm ${isClient ? 'bg-slate-100 text-slate-800 rounded-tl-sm border border-slate-200/50' : 'bg-primary text-white rounded-tr-sm'}`}>
+                                    {c.message}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+
+                          {/* Comment Input */}
+                          {ticketDetails.status !== 'Closed' && ticketDetails.status !== 'Resolved' ? (
+                            <div className="mt-6 pt-4 border-t border-slate-100 flex gap-3">
+                              <input 
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-5 py-3 outline-none focus:border-secondary text-sm" 
+                                placeholder="Write a reply..." 
+                                value={newComment} 
+                                onChange={e => setNewComment(e.target.value)} 
+                                onKeyPress={e => e.key === 'Enter' && sendComment()}
+                              />
+                              <button onClick={sendComment} className="w-12 h-12 bg-primary hover:bg-secondary text-white rounded-full flex items-center justify-center transition-colors shadow-md flex-shrink-0">
+                                <Send className="w-5 h-5 ml-1" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+                              <p className="text-slate-500 text-sm">This ticket is closed. No further comments can be added.</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Ticket Activity / History Timeline */}
+                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                          <h3 className="text-lg font-bold text-primary mb-4 pb-2 border-b border-slate-100">Ticket Activity & History</h3>
+                          <div className="space-y-4">
+                            {ticketDetails.history && ticketDetails.history.length > 0 ? (
+                              ticketDetails.history.map((h, idx) => (
+                                <div key={idx} className="flex items-start gap-3 text-sm">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-secondary mt-1.5 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                      <p className="font-semibold text-slate-800">{h.action}</p>
+                                      <span className="text-[11px] text-slate-400">{new Date(h.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500">Performed by: <span className="font-medium text-slate-700">{h.performedBy}</span>{h.details ? ` — ${h.details}` : ''}</p>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="flex items-start gap-3 text-sm">
+                                <div className="w-2.5 h-2.5 rounded-full bg-secondary mt-1.5 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <div className="flex justify-between items-center">
+                                    <p className="font-semibold text-slate-800">Ticket Created</p>
+                                    <span className="text-[11px] text-slate-400">{new Date(ticketDetails.createdAt).toLocaleString()}</span>
+                                  </div>
+                                  <p className="text-xs text-slate-500">Performed by: <span className="font-medium text-slate-700">{ticketDetails.userName}</span></p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

@@ -28,16 +28,33 @@ export default function Tickets() {
   const dispatch = useDispatch();
   const tickets = useSelector(s => s.tickets.items);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ subject: '', client: '', priority: 'Medium', status: 'Open', assignee: 'Support Team' });
+  const [form, setForm] = useState({ subject: '', client: '', clientEmail: 'muneeswaranmd2004@gmail.com', priority: 'Medium', status: 'Open', assignee: 'Support Team' });
 
   const openCount = tickets.filter(t => t.status === 'Open').length;
   const inProgress = tickets.filter(t => t.status === 'In Progress').length;
   const resolved = tickets.filter(t => t.status === 'Resolved').length;
 
   const save = () => { 
-    dispatch(addTicket({ ...form, id: `TKT-${Math.floor(1000 + Math.random() * 9000)}`, created: new Date().toISOString().split('T')[0] })); 
+    const ticketId = `TKT-${Math.floor(1000 + Math.random() * 9000)}`;
+    dispatch(addTicket({ ...form, id: ticketId, created: new Date().toISOString().split('T')[0] })); 
     setOpen(false); 
-    setForm({ subject: '', client: '', priority: 'Medium', status: 'Open', assignee: 'Support Team' }); 
+
+    try {
+      const data = new FormData();
+      data.append('title', form.subject);
+      data.append('category', 'General Query');
+      data.append('priority', form.priority);
+      data.append('description', `Support ticket raised in CRM for client "${form.client || 'N/A'}". Assigned to: ${form.assignee || 'Support Team'}`);
+      data.append('department', 'IT');
+      data.append('ticketType', 'Client Ticket');
+      data.append('userName', form.client || 'CRM User');
+      data.append('userEmail', form.clientEmail || 'muneeswaranmd2004@gmail.com');
+      fetch('/api/support/tickets', { method: 'POST', body: data }).catch(() => {});
+    } catch (e) {
+      // ignore client side error
+    }
+
+    setForm({ subject: '', client: '', clientEmail: 'muneeswaranmd2004@gmail.com', priority: 'Medium', status: 'Open', assignee: 'Support Team' }); 
   };
 
   const resolve = (t) => dispatch(updateTicket({ ...t, status: 'Resolved', resolved: new Date().toISOString().split('T')[0] }));
@@ -180,6 +197,12 @@ export default function Tickets() {
               value={form.assignee} 
               onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))}
               options={ASSIGNEES.map(a => ({ label: a, value: a }))}
+            />
+            <Input 
+              label="Customer Email" 
+              value={form.clientEmail} 
+              onChange={e => setForm(f => ({ ...f, clientEmail: e.target.value }))} 
+              placeholder="customer@email.com"
             />
           </div>
           

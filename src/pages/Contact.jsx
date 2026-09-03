@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import useSEO from '../hooks/useSEO';
 import { motion } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 import {
@@ -28,6 +29,23 @@ const services = [
 ];
 
 const ContactPage = () => {
+  useSEO({
+    title: 'Contact Averqon | Get a Free Quote for Software Development',
+    description:
+      'Get in touch with Averqon for custom software development, SaaS, web apps, and AI solutions. Free project consultation for businesses in Coimbatore and India.',
+    canonical: 'https://averqon.in/contact',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'ContactPage',
+      '@id': 'https://averqon.in/contact#webpage',
+      url: 'https://averqon.in/contact',
+      name: 'Contact Averqon | Get a Free Quote for Software Development',
+      description:
+        'Get in touch with Averqon for custom software development, SaaS, web apps, and AI solutions.',
+      isPartOf: { '@id': 'https://averqon.in/#organization' },
+    },
+  });
+
   const formRef = useRef(null);
   const [form, setForm] = useState({ user_name: '', user_email: '', user_phone: '', company: '', budget: '', timeline: '', service: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle | sending | success | error

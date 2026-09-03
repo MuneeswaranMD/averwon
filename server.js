@@ -12,6 +12,12 @@ import multer from 'multer';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
+import { 
+  sendTicketNotificationEmail, 
+  sendTicketStatusUpdateEmail,
+  sendCustomerTicketConfirmationEmail, 
+  sendCustomerTicketUpdateEmail 
+} from './src/utils/ticketEmailService.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'averqon-employee-secret-key';
 
@@ -511,8 +517,72 @@ const start = async () => {
     try {
       const ticketData = { ...req.body };
       if (req.file) ticketData.attachmentUrl = `/uploads/${req.file.filename}`;
+
+      ticketData.history = [{
+        action: 'Ticket Created',
+        performedBy: ticketData.userName || 'Requester',
+        details: `Ticket submitted with priority ${ticketData.priority || 'Medium'}`,
+        timestamp: new Date()
+      }];
+
       const ticket = await Models.Ticket.create(ticketData);
-      res.json({ success: true, ticketId: ticket.ticketId });
+
+      // Send email notifications asynchronously
+      sendTicketNotificationEmail(ticket).catch(err => {
+        console.error('[SERVER] Failed to send admin ticket notification email:', err);
+      });
+      sendCustomerTicketConfirmationEmail(ticket).catch(err => {
+        console.error('[SERVER] Failed to send customer ticket confirmation email:', err);
+      });
+
+      res.json({ success: true, ticketId: ticket.ticketId, ticket });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Admin / General Ticket Listing with Filtering & Search
+  app.get('/api/admin/tickets', async (req, res) => {
+    try {
+      const { search, status, priority, category, department, ticketType } = req.query;
+      const filter = {};
+
+      if (status) filter.status = status;
+      if (priority) filter.priority = priority;
+      if (category) filter.category = category;
+      if (department) filter.department = department;
+      if (ticketType) filter.ticketType = ticketType;
+
+      if (search) {
+        filter.$or = [
+          { ticketId: { $regex: search, $options: 'i' } },
+          { title: { $regex: search, $options: 'i' } },
+          { userName: { $regex: search, $options: 'i' } },
+          { userEmail: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      const tickets = await Models.Ticket.find(filter).sort({ createdAt: -1 });
+
+      const [total, open, inProgress, pending, resolved, closed, reopened, highPriority, urgent] = await Promise.all([
+        Models.Ticket.countDocuments(),
+        Models.Ticket.countDocuments({ status: 'Open' }),
+        Models.Ticket.countDocuments({ status: 'In Progress' }),
+        Models.Ticket.countDocuments({ status: 'Pending' }),
+        Models.Ticket.countDocuments({ status: 'Resolved' }),
+        Models.Ticket.countDocuments({ status: 'Closed' }),
+        Models.Ticket.countDocuments({ status: 'Reopened' }),
+        Models.Ticket.countDocuments({ priority: 'High' }),
+        Models.Ticket.countDocuments({ priority: 'Urgent' }),
+      ]);
+
+      res.json({
+        tickets,
+        stats: {
+          total, open, inProgress, pending, resolved, closed, reopened, highPriority, urgent
+        }
+      });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -521,12 +591,100 @@ const start = async () => {
   app.get('/api/support/tickets/:ticketId', async (req, res) => {
     try {
       const { email } = req.query;
-      const ticket = await Models.Ticket.findOne({ 
-        ticketId: req.params.ticketId,
-        userEmail: email 
-      });
-      if (!ticket) return res.status(404).json({ error: 'Ticket not found or email mismatch' });
+      const query = { ticketId: req.params.ticketId };
+      if (email) query.userEmail = email;
+
+      const ticket = await Models.Ticket.findOne(query);
+      if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
       res.json(ticket);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Ticket Update Endpoint (Status, Assignee, Notes, Priority, History)
+  app.put('/api/support/tickets/:ticketId', async (req, res) => {
+    try {
+      const ticket = await Models.Ticket.findOne({ ticketId: req.params.ticketId });
+      if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+
+      const previousStatus = ticket.status;
+      const { 
+        status, 
+        priority, 
+        assignedTeam, 
+        dueDate, 
+        adminNotes, 
+        resolutionNotes, 
+        updatedBy,
+        comment 
+      } = req.body;
+
+      const actor = updatedBy || 'Admin';
+      let statusChanged = false;
+
+      if (status && status !== previousStatus) {
+        statusChanged = true;
+        ticket.status = status;
+        ticket.history.push({
+          action: `Status Changed from ${previousStatus} to ${status}`,
+          performedBy: actor,
+          details: resolutionNotes ? `Resolution: ${resolutionNotes}` : `Status updated`,
+          timestamp: new Date()
+        });
+      }
+
+      if (priority && priority !== ticket.priority) {
+        ticket.history.push({
+          action: `Priority Changed from ${ticket.priority} to ${priority}`,
+          performedBy: actor,
+          timestamp: new Date()
+        });
+        ticket.priority = priority;
+      }
+
+      if (assignedTeam && assignedTeam !== ticket.assignedTeam) {
+        ticket.history.push({
+          action: `Assigned Team Changed to ${assignedTeam}`,
+          performedBy: actor,
+          timestamp: new Date()
+        });
+        ticket.assignedTeam = assignedTeam;
+      }
+
+      if (dueDate) ticket.dueDate = dueDate;
+      if (adminNotes !== undefined) ticket.adminNotes = adminNotes;
+      if (resolutionNotes !== undefined) ticket.resolutionNotes = resolutionNotes;
+
+      if (comment) {
+        ticket.comments.push({
+          sender: actor,
+          senderRole: 'Agent',
+          message: comment,
+          timestamp: new Date()
+        });
+        ticket.history.push({
+          action: 'Comment Added',
+          performedBy: actor,
+          details: comment,
+          timestamp: new Date()
+        });
+      }
+
+      await ticket.save();
+
+      // Send Status Update Email if status changed
+      if (statusChanged) {
+        sendTicketStatusUpdateEmail(ticket, previousStatus, status, {
+          actorName: actor,
+          comments: comment,
+          resolutionNotes
+        }).catch(err => {
+          console.error('[SERVER] Failed to send status update email:', err);
+        });
+      }
+
+      res.json({ success: true, ticket });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -534,19 +692,38 @@ const start = async () => {
 
   app.post('/api/support/tickets/:ticketId/comments', async (req, res) => {
     try {
-      const { senderRole, message } = req.body;
+      const { senderRole, message, senderName: customSender } = req.body;
       const ticket = await Models.Ticket.findOne({ ticketId: req.params.ticketId });
       if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
 
+      const senderName = customSender || (senderRole === 'Client' ? ticket.userName : 'Averqon Agent');
       ticket.comments.push({
-        sender: senderRole === 'Client' ? ticket.userName : 'Averqon Agent',
+        sender: senderName,
         senderRole,
         message,
         timestamp: new Date()
       });
 
+      ticket.history.push({
+        action: 'Comment Added',
+        performedBy: senderName,
+        details: message,
+        timestamp: new Date()
+      });
+
       await ticket.save();
-      res.json({ success: true, comments: ticket.comments });
+
+      // If reply is from support agent/admin, send email update to customer
+      if (senderRole !== 'Client') {
+        sendCustomerTicketUpdateEmail(ticket, {
+          commentMessage: message,
+          senderName
+        }).catch(err => {
+          console.error('[SERVER] Failed to send customer comment update email:', err);
+        });
+      }
+
+      res.json({ success: true, comments: ticket.comments, history: ticket.history });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -742,9 +919,13 @@ const start = async () => {
           ticketMetrics: { 
             total: totalTickets, 
             open: openTickets, 
+            inProgress: await Models.Ticket.countDocuments({ status: 'In Progress' }),
+            pending: await Models.Ticket.countDocuments({ status: 'Pending' }),
+            resolved: await Models.Ticket.countDocuments({ status: 'Resolved' }),
             closed: closedTickets,
-            pending: totalTickets - openTickets - closedTickets,
-            urgent: openTickets
+            reopened: await Models.Ticket.countDocuments({ status: 'Reopened' }),
+            highPriority: await Models.Ticket.countDocuments({ priority: 'High' }),
+            urgent: await Models.Ticket.countDocuments({ priority: 'Urgent' })
           },
           attendanceRate: 94
         },

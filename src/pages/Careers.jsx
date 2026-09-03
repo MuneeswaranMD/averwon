@@ -1,8 +1,26 @@
 import React from 'react';
+import useSEO from '../hooks/useSEO';
 import CareersSection from '../components/CareersSection';
 import CTASection from '../components/CTASection';
 
 const Careers = () => {
+  useSEO({
+    title: 'Careers at Averqon | Software & AI Jobs in Coimbatore',
+    description:
+      'Join Averqon and build innovative software, SaaS, and AI products. Explore open roles for developers, designers, and technology professionals in Coimbatore.',
+    canonical: 'https://averqon.in/careers',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'EmployerAggregateRating',
+      '@id': 'https://averqon.in/careers#webpage',
+      url: 'https://averqon.in/careers',
+      name: 'Careers at Averqon | Software & AI Jobs in Coimbatore',
+      description:
+        'Open technology roles at Averqon — software developers, AI engineers, UI/UX designers in Coimbatore, India.',
+      isPartOf: { '@id': 'https://averqon.in/#organization' },
+    },
+  });
+
   return (
     <div className="overflow-x-hidden pt-20">
       {/* Page Hero Banner */}

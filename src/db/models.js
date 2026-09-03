@@ -123,7 +123,13 @@ const TicketSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
   }],
   adminNotes: { type: String },
-  resolutionNotes: { type: String }
+  resolutionNotes: { type: String },
+  history: [{
+    action: { type: String, required: true },
+    performedBy: { type: String, default: 'System' },
+    details: { type: String },
+    timestamp: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 TicketSchema.pre('save', async function (next) {
