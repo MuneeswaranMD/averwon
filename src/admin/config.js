@@ -323,7 +323,42 @@ export const adminOptions = {
           description: { type: 'textarea', components: { list: Components.ContentToggle } },
         },
         listProperties: ['ticketId', 'title', 'category', 'priority', 'status'],
-        actions: { ...commonActions }
+        actions: { 
+          ...commonActions,
+          sendEmail: {
+            actionType: 'record',
+            icon: 'Mail',
+            label: 'Send Email Notification',
+            component: false,
+            handler: async (request, response, context) => {
+              const { record, currentAdmin } = context;
+              const ticketId = record.params.ticketId;
+              
+              const ticket = await Models.Ticket.findOne({ ticketId });
+              if (ticket) {
+                ticket.history.push({
+                  action: 'Manual Email Dispatched',
+                  performedBy: currentAdmin ? (currentAdmin.name || currentAdmin.email) : 'Admin',
+                  details: `Notification email sent manually via AdminJS`,
+                  timestamp: new Date()
+                });
+                await ticket.save();
+
+                const { sendTicketNotificationEmail, sendCustomerTicketConfirmationEmail } = await import('../utils/ticketEmailService.js');
+                await sendTicketNotificationEmail(ticket).catch(console.error);
+                await sendCustomerTicketConfirmationEmail(ticket).catch(console.error);
+              }
+
+              return {
+                record: record.toJSON(currentAdmin),
+                notice: {
+                  message: `✓ Notification email sent successfully for Ticket #${ticketId || record.id}!`,
+                  type: 'success'
+                }
+              };
+            }
+          }
+        }
       } 
     },
 

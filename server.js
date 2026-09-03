@@ -729,6 +729,38 @@ const start = async () => {
     }
   });
 
+  // Manual Email Dispatch Endpoint
+  app.post('/api/support/tickets/:ticketId/send-email', async (req, res) => {
+    try {
+      const ticket = await Models.Ticket.findOne({ ticketId: req.params.ticketId });
+      if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+
+      const actor = req.body.performedBy || 'Admin';
+
+      ticket.history.push({
+        action: 'Manual Email Dispatched',
+        performedBy: actor,
+        details: `Email notification sent manually to admin & customer (${ticket.userEmail})`,
+        timestamp: new Date()
+      });
+      await ticket.save();
+
+      // Trigger email sending
+      const adminRes = await sendTicketNotificationEmail(ticket);
+      const customerRes = await sendCustomerTicketConfirmationEmail(ticket);
+
+      res.json({
+        success: true,
+        message: `Email notification sent for ticket #${ticket.ticketId}`,
+        adminResult: adminRes,
+        customerResult: customerRes,
+        history: ticket.history
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ===================== EMPLOYEE PORTAL APIS =====================
 
   app.post('/api/employee/login', async (req, res) => {

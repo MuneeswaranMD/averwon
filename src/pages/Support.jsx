@@ -343,6 +343,35 @@ export default function TicketManagementSystem() {
     }
   };
 
+  // Manual Send Email Handler
+  const [sendingManualEmail, setSendingManualEmail] = useState(false);
+
+  const triggerManualSendEmail = async (ticketToEmail) => {
+    const target = ticketToEmail || selectedTicket;
+    if (!target) return;
+    setSendingManualEmail(true);
+    try {
+      const res = await fetch(`/api/support/tickets/${target.ticketId}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ performedBy: 'Admin' })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast(`✓ Email notification sent manually for ticket #${target.ticketId}!`, 'success');
+        if (selectedTicket && selectedTicket.ticketId === target.ticketId) {
+          setSelectedTicket({ ...selectedTicket, history: json.history || selectedTicket.history });
+        }
+      } else {
+        showToast(json.error || 'Failed to send manual email', 'error');
+      }
+    } catch (err) {
+      showToast('Error sending email: ' + err.message, 'error');
+    } finally {
+      setSendingManualEmail(false);
+    }
+  };
+
   // Reset Filters
   const resetFilters = () => {
     setFilters({ search: '', status: '', priority: '', category: '', department: '', ticketType: '', date: '' });
@@ -884,6 +913,13 @@ export default function TicketManagementSystem() {
                           <td className="py-3.5 px-4 text-slate-400">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'N/A'}</td>
                           <td className="py-3.5 px-4 text-right space-x-2">
                             <button
+                              onClick={() => triggerManualSendEmail(t)}
+                              title="Send Email Notification"
+                              className="px-2.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded-lg transition-colors font-bold text-xs inline-flex items-center gap-1"
+                            >
+                              <Mail className="w-3.5 h-3.5" /> Mail
+                            </button>
+                            <button
                               onClick={() => { setSelectedTicket(t); setActiveNav('ticket-details'); }}
                               className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg transition-colors font-bold text-xs"
                             >
@@ -1192,6 +1228,14 @@ export default function TicketManagementSystem() {
               </div>
 
               <div className="flex items-center gap-3">
+                <button
+                  onClick={() => triggerManualSendEmail(selectedTicket)}
+                  disabled={sendingManualEmail}
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
+                >
+                  {sendingManualEmail ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  <span>{sendingManualEmail ? 'Sending Email...' : 'Send Email Notification'}</span>
+                </button>
                 <button
                   onClick={() => {
                     setEditData({

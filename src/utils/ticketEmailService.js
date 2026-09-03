@@ -69,8 +69,54 @@ function getStatusStyle(status = 'Open') {
 }
 
 /**
+ * HTML Helper to render comments list cleanly
+ */
+function renderCommentsHtml(comments = []) {
+  if (!comments || comments.length === 0) return '';
+  return `
+    <div style="margin-top: 20px;">
+      <p style="font-weight: 700; color: #0f172a; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">💬 Comments & Updates (${comments.length}):</p>
+      ${comments.map(c => `
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-size: 13px;">
+          <div style="margin-bottom: 4px;">
+            <strong style="color: #2563eb;">${c.sender || 'User'} (${c.senderRole || 'Client'})</strong>
+            <span style="color: #94a3b8; font-size: 11px; margin-left: 8px;">${c.timestamp ? new Date(c.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : ''}</span>
+          </div>
+          <div style="color: #334155; line-height: 1.5; white-space: pre-wrap;">${c.message}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/**
+ * HTML Helper to render Admin Notes
+ */
+function renderAdminNotesHtml(adminNotes) {
+  if (!adminNotes || !adminNotes.trim()) return '';
+  return `
+    <div style="margin-top: 20px;">
+      <p style="font-weight: 700; color: #1e40af; margin-bottom: 8px; font-size: 14px;">📝 Agent / Admin Notes:</p>
+      <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; padding: 14px 16px; border-radius: 8px; font-size: 14px; color: #1e3a8a; line-height: 1.5; white-space: pre-wrap;">${adminNotes}</div>
+    </div>
+  `;
+}
+
+/**
+ * HTML Helper to render Resolution Notes
+ */
+function renderResolutionNotesHtml(resolutionNotes) {
+  if (!resolutionNotes || !resolutionNotes.trim()) return '';
+  return `
+    <div style="margin-top: 20px;">
+      <p style="font-weight: 700; color: #065f46; margin-bottom: 8px; font-size: 14px;">💡 Resolution Notes:</p>
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 8px; font-size: 14px; color: #065f46; line-height: 1.5; white-space: pre-wrap;">${resolutionNotes}</div>
+    </div>
+  `;
+}
+
+/**
  * Sends automated email notification when a new ticket is raised.
- * @param {Object} ticket - The newly created ticket document or object.
  */
 export async function sendTicketNotificationEmail(ticket) {
   const {
@@ -91,6 +137,8 @@ export async function sendTicketNotificationEmail(ticket) {
     dueDate,
     attachmentUrl,
     comments = [],
+    adminNotes = '',
+    resolutionNotes = '',
     createdAt
   } = ticket;
 
@@ -101,9 +149,6 @@ export async function sendTicketNotificationEmail(ticket) {
   const prioStyle = getPriorityStyle(priority);
   const statusStyle = getStatusStyle(status);
 
-  // Subject line per requirements:
-  // If High or Urgent: URGENT Ticket Raised – {{ticketId}} – {{title}}
-  // Otherwise: New Ticket Raised – {{ticketId}} – {{title}}
   const isHighOrUrgent = ['high', 'urgent'].includes(priority.toLowerCase());
   const subjectPrefix = isHighOrUrgent ? (priority.toLowerCase() === 'urgent' ? 'URGENT' : 'HIGH') : 'New Ticket';
   const emailSubject = `${subjectPrefix} Ticket Raised – ${ticketId} – ${ticketTitle}`;
@@ -237,16 +282,9 @@ export async function sendTicketNotificationEmail(ticket) {
                   <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 16px; border-radius: 8px; font-size: 14px; color: #334155; line-height: 1.6; white-space: pre-wrap;">${description}</div>
                 </div>
 
-                ${comments && comments.length > 0 ? `
-                <div style="margin-top: 20px;">
-                  <p style="font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 14px;">Initial Comments (${comments.length}):</p>
-                  ${comments.map(c => `
-                    <div style="background-color: #ffffff; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-                      <strong style="color: #0f172a;">${c.sender}</strong> (${c.senderRole}): ${c.message}
-                    </div>
-                  `).join('')}
-                </div>
-                ` : ''}
+                ${renderAdminNotesHtml(adminNotes)}
+                ${renderResolutionNotesHtml(resolutionNotes)}
+                ${renderCommentsHtml(comments)}
 
               </td>
             </tr>
@@ -289,10 +327,6 @@ export async function sendTicketNotificationEmail(ticket) {
 
 /**
  * Sends an email notification when a ticket's status is updated.
- * @param {Object} ticket - Ticket document.
- * @param {String} previousStatus - Status before change.
- * @param {String} newStatus - New status after change.
- * @param {Object} extra - { actorName, comments, resolutionNotes }
  */
 export async function sendTicketStatusUpdateEmail(ticket, previousStatus = 'Open', newStatus = 'In Progress', extra = {}) {
   const {
@@ -306,7 +340,8 @@ export async function sendTicketStatusUpdateEmail(ticket, previousStatus = 'Open
     userName = 'N/A',
     userEmail = 'N/A',
     adminNotes = '',
-    resolutionNotes = ''
+    resolutionNotes = '',
+    comments = []
   } = ticket;
 
   const ticketTitle = title || subject || 'Support Request';
@@ -318,8 +353,8 @@ export async function sendTicketStatusUpdateEmail(ticket, previousStatus = 'Open
 
   const emailSubject = `Ticket Status Updated – ${ticketId} – ${newStatus}`;
   const actorName = extra.actorName || 'Admin';
-  const latestComment = extra.comments || extra.message || '';
-  const effectiveResolutionNotes = extra.resolutionNotes || resolutionNotes;
+  const effectiveAdminNotes = extra.adminNotes !== undefined ? extra.adminNotes : adminNotes;
+  const effectiveResolutionNotes = extra.resolutionNotes !== undefined ? extra.resolutionNotes : resolutionNotes;
 
   const recipients = [...new Set([...ADMIN_RECIPIENT_EMAILS, userEmail].filter(e => e && e !== 'N/A' && e.includes('@')))];
 
@@ -428,19 +463,9 @@ export async function sendTicketStatusUpdateEmail(ticket, previousStatus = 'Open
                   </tr>
                 </table>
 
-                ${latestComment ? `
-                <div style="margin-top: 20px;">
-                  <p style="font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 14px;">Admin / Update Comments:</p>
-                  <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; padding: 14px; border-radius: 6px; font-size: 14px; color: #334155; line-height: 1.5; white-space: pre-wrap;">${latestComment}</div>
-                </div>
-                ` : ''}
-
-                ${effectiveResolutionNotes ? `
-                <div style="margin-top: 20px;">
-                  <p style="font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 14px;">Resolution Notes:</p>
-                  <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #10b981; padding: 14px; border-radius: 6px; font-size: 14px; color: #065f46; line-height: 1.5; white-space: pre-wrap;">${effectiveResolutionNotes}</div>
-                </div>
-                ` : ''}
+                ${renderAdminNotesHtml(effectiveAdminNotes)}
+                ${renderResolutionNotesHtml(effectiveResolutionNotes)}
+                ${renderCommentsHtml(comments)}
 
               </td>
             </tr>
@@ -493,7 +518,10 @@ export async function sendCustomerTicketConfirmationEmail(ticket) {
     priority = 'Medium',
     category = 'General Query',
     userName = 'Valued Customer',
-    userEmail
+    userEmail,
+    adminNotes = '',
+    resolutionNotes = '',
+    comments = []
   } = ticket;
 
   if (!userEmail || userEmail === 'N/A' || !userEmail.includes('@')) {
@@ -549,7 +577,11 @@ export async function sendCustomerTicketConfirmationEmail(ticket) {
                   <div style="background-color: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 6px; font-size: 14px; color: #334155; line-height: 1.5;">${description}</div>
                 </div>
 
-                <p style="font-size: 14px; color: #475569; line-height: 1.5;">
+                ${renderAdminNotesHtml(adminNotes)}
+                ${renderResolutionNotesHtml(resolutionNotes)}
+                ${renderCommentsHtml(comments)}
+
+                <p style="font-size: 14px; color: #475569; line-height: 1.5; margin-top: 20px;">
                   You can track your ticket status at any time by entering your Ticket ID (<strong style="font-family: monospace;">${ticketId}</strong>) and email address on our Support portal.
                 </p>
               </td>
@@ -599,7 +631,10 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
     title = 'No Title',
     subject,
     userName = 'Valued Customer',
-    userEmail
+    userEmail,
+    adminNotes = '',
+    resolutionNotes = '',
+    comments = []
   } = ticket;
 
   if (!userEmail || userEmail === 'N/A' || !userEmail.includes('@')) {
@@ -608,6 +643,8 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
 
   const { commentMessage, senderName = 'Averqon Support', newStatus } = updateDetails;
   const ticketSubject = title || subject || 'Support Request';
+  const effectiveAdminNotes = updateDetails.adminNotes !== undefined ? updateDetails.adminNotes : adminNotes;
+  const effectiveResolutionNotes = updateDetails.resolutionNotes !== undefined ? updateDetails.resolutionNotes : resolutionNotes;
 
   const htmlContent = `
   <!DOCTYPE html>
@@ -654,6 +691,10 @@ export async function sendCustomerTicketUpdateEmail(ticket, updateDetails = {}) 
                   <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; font-size: 14px; color: #1e293b; line-height: 1.6; white-space: pre-wrap;">${commentMessage}</div>
                 </div>
                 ` : ''}
+
+                ${renderAdminNotesHtml(effectiveAdminNotes)}
+                ${renderResolutionNotesHtml(effectiveResolutionNotes)}
+                ${renderCommentsHtml(comments)}
 
                 <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
                   You can respond or track your request status directly on the Averqon Support Portal.
