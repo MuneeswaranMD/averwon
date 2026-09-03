@@ -90,11 +90,16 @@ export default function SupportPage() {
   const handleTrackSubmit = async (e) => {
     e.preventDefault();
     setTrackStatus({ loading: true, error: '' });
+    const cleanId = (trackQuery.ticketId || '').trim();
+    const cleanEmail = (trackQuery.email || '').trim();
+
     try {
-      const res = await fetch(`${API_ENDPOINTS.TICKET_TRACK(trackQuery.ticketId)}?email=${encodeURIComponent(trackQuery.email)}`);
+      const res = await fetch(`${API_ENDPOINTS.TICKET_TRACK(cleanId)}?email=${encodeURIComponent(cleanEmail)}`);
       const data = await res.json();
-      if (data.success && data.ticket) {
-        setSelectedTicket(data.ticket);
+      const ticketFound = data.ticket || (data.ticketId ? data : null);
+
+      if (ticketFound) {
+        setSelectedTicket(ticketFound);
         setTrackStatus({ loading: false, error: '' });
       } else {
         setTrackStatus({ loading: false, error: data.error || 'Ticket not found with provided ID and Email.' });
@@ -512,64 +517,131 @@ export default function SupportPage() {
                   </form>
                 </div>
               ) : (
-                /* Ticket Details View */
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                /* ── Ticket Details Track View (Neatly Aligned) ── */
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   
-                  {/* Sidebar Info */}
-                  <div className="lg:col-span-1 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm self-start space-y-6">
-                    <button onClick={() => setSelectedTicket(null)} className="text-xs font-bold text-slate-400 hover:text-blue-600 uppercase tracking-wider block transition-colors">← Search Another Ticket</button>
+                  {/* Left Sidebar Info Card */}
+                  <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200/90 p-6 md:p-7 shadow-xl shadow-slate-200/50 space-y-6 lg:sticky lg:top-24">
+                    <button 
+                      onClick={() => setSelectedTicket(null)} 
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 transition-all"
+                    >
+                      ← Back to Track Search
+                    </button>
+
                     <div>
-                      <h3 className="text-2xl font-black font-mono text-blue-600">{selectedTicket.ticketId}</h3>
-                      <h4 className="text-base font-bold text-slate-900 mt-1">{selectedTicket.title}</h4>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-2xl font-black font-mono text-blue-600">{selectedTicket.ticketId}</span>
+                        {getStatusBadge(selectedTicket.status)}
+                      </div>
+                      <h3 className="text-base font-extrabold text-slate-900 mt-2 leading-snug">{selectedTicket.title}</h3>
                     </div>
 
-                    <div className="border-t border-slate-100 pt-4 space-y-3 text-xs">
-                      <div className="flex justify-between items-center"><span className="text-slate-500">Status:</span>{getStatusBadge(selectedTicket.status)}</div>
-                      <div className="flex justify-between items-center"><span className="text-slate-500">Priority:</span>{getPriorityBadge(selectedTicket.priority)}</div>
-                      <div className="flex justify-between"><span className="text-slate-500">Category:</span><span className="font-semibold text-slate-800">{selectedTicket.category}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-500">Department:</span><span className="font-semibold text-slate-800">{selectedTicket.department}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-500">Assigned Team:</span><span className="font-semibold text-slate-800">{selectedTicket.assignedTeam || 'Support Team'}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-500">Due Date:</span><span className="font-semibold text-slate-800">{selectedTicket.dueDate ? new Date(selectedTicket.dueDate).toLocaleDateString() : 'N/A'}</span></div>
+                    {/* Metadata Rows */}
+                    <div className="space-y-2.5 text-xs pt-2 border-t border-slate-100">
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Priority</span>
+                        <div>{getPriorityBadge(selectedTicket.priority)}</div>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Category</span>
+                        <span className="font-bold text-slate-800">{selectedTicket.category || 'General Query'}</span>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Department</span>
+                        <span className="font-bold text-slate-800">{selectedTicket.department || 'IT'}</span>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Assigned Team</span>
+                        <span className="font-bold text-slate-800">{selectedTicket.assignedTeam || 'IT Helpdesk'}</span>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Ticket Type</span>
+                        <span className="font-bold text-slate-800">{selectedTicket.ticketType || 'Client Ticket'}</span>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Created At</span>
+                        <span className="font-bold text-slate-800">{new Date(selectedTicket.createdAt || Date.now()).toLocaleDateString()}</span>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-100">
+                        <span className="text-slate-500 font-semibold">Due Date</span>
+                        <span className="font-bold text-slate-800">{selectedTicket.dueDate ? new Date(selectedTicket.dueDate).toLocaleDateString() : 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    {/* Requester Info Box */}
+                    <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-2 text-xs">
+                      <h4 className="font-extrabold text-blue-900 uppercase tracking-widest text-[11px] flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-blue-600" /> Requester Info
+                      </h4>
+                      <div className="space-y-1 text-slate-700">
+                        <p><strong className="text-slate-900">Name:</strong> {selectedTicket.userName}</p>
+                        <p><strong className="text-slate-900">Email:</strong> {selectedTicket.userEmail}</p>
+                        {selectedTicket.userRole && <p><strong className="text-slate-900">Role:</strong> {selectedTicket.userRole}</p>}
+                        {selectedTicket.contactNumber && <p><strong className="text-slate-900">Contact:</strong> {selectedTicket.contactNumber}</p>}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Main Feed */}
-                  <div className="lg:col-span-2 space-y-6">
-                    {/* Description */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
-                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Description</h4>
-                      <div className="p-4 bg-slate-50 rounded-2xl text-sm text-slate-800 whitespace-pre-wrap leading-relaxed border border-slate-100">{selectedTicket.description}</div>
+                  {/* Right Main Content */}
+                  <div className="lg:col-span-8 space-y-6">
+                    
+                    {/* Description & Notes Container */}
+                    <div className="bg-white rounded-3xl border border-slate-200/90 p-6 md:p-8 shadow-xl shadow-slate-200/50 space-y-5">
+                      <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                        <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600"><FileText className="w-4 h-4" /></span>
+                        <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-800">Issue Overview</h4>
+                      </div>
+
+                      {/* Description */}
+                      <div className="space-y-1.5">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Description</span>
+                        <div className="p-4 bg-slate-50 rounded-2xl text-sm text-slate-800 whitespace-pre-wrap leading-relaxed border border-slate-100">
+                          {selectedTicket.description}
+                        </div>
+                      </div>
+
+                      {/* Agent Notes */}
+                      {selectedTicket.adminNotes && (
+                        <div className="p-4 bg-blue-50/80 border-l-4 border-blue-500 rounded-xl space-y-1">
+                          <span className="text-xs font-extrabold uppercase tracking-wider text-blue-800">Agent Notes</span>
+                          <p className="text-xs text-blue-950 font-medium leading-relaxed">{selectedTicket.adminNotes}</p>
+                        </div>
+                      )}
+
+                      {/* Resolution Summary */}
+                      {selectedTicket.resolutionNotes && (
+                        <div className="p-4 bg-emerald-50/80 border-l-4 border-emerald-500 rounded-xl space-y-1">
+                          <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">Resolution Summary</span>
+                          <p className="text-xs text-emerald-950 font-semibold leading-relaxed">{selectedTicket.resolutionNotes}</p>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Agent / Admin Notes */}
-                    {selectedTicket.adminNotes && (
-                      <div className="bg-blue-50/70 border border-blue-100 rounded-3xl p-6 shadow-sm space-y-2">
-                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-700">Agent Notes</h4>
-                        <div className="text-sm text-blue-900 italic">{selectedTicket.adminNotes}</div>
+                    {/* Discussion & Comments */}
+                    <div className="bg-white rounded-3xl border border-slate-200/90 p-6 md:p-8 shadow-xl shadow-slate-200/50 space-y-5">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600"><MessageSquare className="w-4 h-4" /></span>
+                          <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-800">Updates & Discussion</h4>
+                        </div>
+                        <span className="text-xs font-bold text-slate-400">{selectedTicket.comments?.length || 0} messages</span>
                       </div>
-                    )}
 
-                    {/* Resolution Notes */}
-                    {selectedTicket.resolutionNotes && (
-                      <div className="bg-emerald-50/70 border border-emerald-100 rounded-3xl p-6 shadow-sm space-y-2">
-                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">Resolution Summary</h4>
-                        <div className="text-sm text-emerald-900 font-medium">{selectedTicket.resolutionNotes}</div>
-                      </div>
-                    )}
-
-                    {/* Comments Discussion */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
-                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Updates & Discussion</h4>
-                      <div className="space-y-3">
-                        {selectedTicket.comments?.map((c, i) => (
-                          <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span className="font-bold text-blue-600">{c.sender} ({c.senderRole})</span>
-                              <span className="text-[10px] text-slate-400">{new Date(c.timestamp).toLocaleString()}</span>
+                      <div className="space-y-3.5">
+                        {selectedTicket.comments && selectedTicket.comments.length > 0 ? (
+                          selectedTicket.comments.map((c, i) => (
+                            <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-extrabold text-blue-600">{c.sender} <span className="text-slate-400 font-normal">({c.senderRole})</span></span>
+                                <span className="text-[10px] text-slate-400 font-medium">{new Date(c.timestamp).toLocaleString()}</span>
+                              </div>
+                              <p className="text-sm text-slate-800 leading-normal">{c.message}</p>
                             </div>
-                            <p className="text-sm text-slate-800">{c.message}</p>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <p className="text-xs text-slate-400 italic py-2">No comments posted yet.</p>
+                        )}
                       </div>
 
                       {/* Reply Input */}
@@ -580,30 +652,42 @@ export default function SupportPage() {
                           value={newComment} 
                           onChange={e => setNewComment(e.target.value)} 
                           onKeyPress={e => e.key === 'Enter' && handleSendComment()} 
-                          className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-5 py-3 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600" 
+                          className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 shadow-sm" 
                         />
-                        <button onClick={handleSendComment} disabled={sendingComment} className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md transition-all">
+                        <button 
+                          onClick={handleSendComment} 
+                          disabled={sendingComment} 
+                          className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl shadow-md flex items-center gap-2 text-xs transition-all disabled:opacity-50"
+                        >
                           {sendingComment ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                          <span>Send Reply</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Activity History Timeline */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
-                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Activity History Timeline</h4>
-                      <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                    <div className="bg-white rounded-3xl border border-slate-200/90 p-6 md:p-8 shadow-xl shadow-slate-200/50 space-y-5">
+                      <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                        <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600"><Clock className="w-4 h-4" /></span>
+                        <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-800">Activity History Timeline</h4>
+                      </div>
+
+                      <div className="relative pl-6 space-y-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                         {selectedTicket.history?.map((h, idx) => (
-                          <div key={idx} className="relative space-y-0.5 text-xs">
-                            <div className="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-blue-600 ring-4 ring-white" />
-                            <div className="flex justify-between">
-                              <span className="font-bold text-slate-800">{h.action}</span>
-                              <span className="text-[10px] text-slate-400">{new Date(h.timestamp).toLocaleString()}</span>
+                          <div key={idx} className="relative text-xs space-y-1">
+                            <div className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100" />
+                            <div className="flex items-center justify-between">
+                              <span className="font-extrabold text-slate-900 text-xs">{h.action}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">{new Date(h.timestamp).toLocaleString()}</span>
                             </div>
-                            <p className="text-slate-500">By: <strong className="text-slate-700">{h.performedBy}</strong> {h.details ? `— ${h.details}` : ''}</p>
+                            <p className="text-slate-500 leading-normal">
+                              By: <strong className="text-slate-700">{h.performedBy}</strong> {h.details ? `— ${h.details}` : ''}
+                            </p>
                           </div>
                         ))}
                       </div>
                     </div>
+
                   </div>
 
                 </div>

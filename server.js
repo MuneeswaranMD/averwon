@@ -591,14 +591,21 @@ const start = async () => {
   app.get('/api/support/tickets/:ticketId', async (req, res) => {
     try {
       const { email } = req.query;
-      const query = { ticketId: req.params.ticketId };
-      if (email) query.userEmail = email;
+      const cleanTicketId = (req.params.ticketId || '').trim();
+      const cleanEmail = (email || '').trim();
+
+      const query = {
+        ticketId: { $regex: `^${cleanTicketId.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, $options: 'i' }
+      };
+      if (cleanEmail) {
+        query.userEmail = { $regex: `^${cleanEmail.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, $options: 'i' };
+      }
 
       const ticket = await Models.Ticket.findOne(query);
-      if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
-      res.json(ticket);
+      if (!ticket) return res.status(404).json({ success: false, error: 'Ticket not found with provided ID and Email.' });
+      res.json({ success: true, ticket });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ success: false, error: err.message });
     }
   });
 
