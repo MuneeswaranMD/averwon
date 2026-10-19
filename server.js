@@ -521,48 +521,6 @@ const start = async () => {
             featured: true,
             isActive: true,
             order: 1
-          },
-          {
-            title: 'NeoRetail Core',
-            subtitle: 'High-Scale Multi-Tenant Commerce Architecture',
-            category: 'Web Development',
-            description: 'Multi-tenant e-commerce engine serving 1M+ monthly users with integrated AI-driven inventory forecasting and sub-second checkout.',
-            image: '/src/assets/neoretail_core.png',
-            technologies: ['Next.js', 'PostgreSQL', 'Redis', 'TensorFlow', 'Stripe'],
-            liveUrl: 'https://averqon.ai',
-            githubUrl: 'https://github.com/averqon',
-            clientName: 'ZenDesk Retail',
-            featured: true,
-            isActive: true,
-            order: 2
-          },
-          {
-            title: 'Pulse Health Suite',
-            subtitle: 'HIPAA-Compliant Telemedicine & EHR Portal',
-            category: 'Mobile App',
-            description: 'HIPAA-compliant telemedicine suite featuring real-time WebRTC video consultation, automated transcription, and end-to-end encrypted patient records.',
-            image: '/src/assets/pulse_health.png',
-            technologies: ['React Native', 'Firebase', 'WebRTC', 'Go', 'Kubernetes'],
-            liveUrl: 'https://averqon.ai',
-            githubUrl: 'https://github.com/averqon',
-            clientName: 'Pulse Medicare',
-            featured: true,
-            isActive: true,
-            order: 3
-          },
-          {
-            title: 'Sentient Analytics',
-            subtitle: 'Real-Time Financial Sentiment & Market Processing',
-            category: 'AI & Data Science',
-            description: 'Real-time sentiment analysis platform for hedge funds and fintechs, processing millions of unstructured financial feeds hourly with custom LLM pipelines.',
-            image: '/src/assets/sentient_analytics.png',
-            technologies: ['PyTorch', 'Rust', 'Apache Kafka', 'Next.js', 'ClickHouse'],
-            liveUrl: 'https://averqon.ai',
-            githubUrl: 'https://github.com/averqon',
-            clientName: 'Alpha Horizon',
-            featured: true,
-            isActive: true,
-            order: 4
           }
         ]);
         console.log('✅ Showcase Portfolio Projects seeded successfully.');
@@ -3424,21 +3382,26 @@ const start = async () => {
         time: new Date()
       });
 
-      // Dispatch direct email alert to averqonhq@gmail.com
-      sendProductEnquiryAdminNotification({
-        productName,
-        customerName: customerName.trim(),
-        shopName: (shopName || '').trim(),
-        email: email ? email.trim() : '',
-        phone: phone.trim(),
-        city: (city || '').trim(),
-        operationType,
-        countersCount,
-        gstin,
-        address,
-        notes,
-        leadId: lead.leadId
-      }).catch(err => console.error('Failed to send admin enquiry notification:', err));
+      // Dispatch direct email alert to averqonhq@gmail.com and admin mail IDs
+      try {
+        const emailResult = await sendProductEnquiryAdminNotification({
+          productName,
+          customerName: customerName.trim(),
+          shopName: (shopName || '').trim(),
+          email: email ? email.trim() : '',
+          phone: phone.trim(),
+          city: (city || '').trim(),
+          operationType,
+          countersCount,
+          gstin,
+          address,
+          notes,
+          leadId: lead.leadId
+        });
+        console.log('✅ Admin notification email dispatched:', emailResult);
+      } catch (emailErr) {
+        console.error('❌ Failed to dispatch admin enquiry email:', emailErr);
+      }
 
       // Optional acknowledgment to customer
       if (email && email.includes('@')) {

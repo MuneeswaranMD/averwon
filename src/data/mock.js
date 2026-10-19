@@ -79,27 +79,6 @@ export const projects = [
     image: averlinkLogistics,
     technologies: ['React', 'Node.js', 'AWS IoT', 'Python']
   },
-  {
-    id: 2,
-    title: 'NeoRetail Core',
-    description: 'Multi-tenant e-commerce engine serving 1M+ monthly users with integrated AI-driven inventory forecasting.',
-    image: neoretailCore,
-    technologies: ['Next.js', 'PostgreSQL', 'Redis', 'TensorFlow']
-  },
-  {
-    id: 3,
-    title: 'Pulse Health App',
-    description: 'HIPAA-compliant telemedicine suite featuring real-time video consultation and encrypted patient records.',
-    image: pulseHealth,
-    technologies: ['React Native', 'Firebase', 'WebRTC', 'Go']
-  },
-  {
-    id: 4,
-    title: 'Sentient Analytics',
-    description: 'Real-time sentiment analysis platform for hedge funds, processing millions of financial news feeds hourly.',
-    image: sentientAnalytics,
-    technologies: ['PyTorch', 'Rust', 'Apache Kafka', 'Next.js']
-  }
 ];
 
 

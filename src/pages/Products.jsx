@@ -24,9 +24,7 @@ import {
   Send
 } from 'lucide-react';
 import crackersScreenshot from '../assets/crackers-pos-screenshot.png';
-import neoretailCore from '../assets/neoretail_core.png';
-import averlinkLogistics from '../assets/averlink_logistics.png';
-import sentientAnalytics from '../assets/sentient_analytics.png';
+import API_BASE_URL from '../api-config';
 
 const products = [
   {
@@ -45,60 +43,6 @@ const products = [
       'HSN 3604 compliance & automated 18% / 28% GST',
       'Thermal receipt (2"/3") & formal A4 GST prints',
       'Offline-first engine resilient to festive internet cuts'
-    ]
-  },
-  {
-    id: 'neoretail-core',
-    name: 'NeoRetail Core',
-    category: 'Modern Multi-Store Retail ERP',
-    status: 'Enterprise Custom',
-    isFeatured: false,
-    tagline: 'Unified inventory, billing & CRM for multi-branch retail.',
-    description: 'Cloud-synchronized Point of Sale and inventory management platform designed for departmental stores, electronics, and fashion apparel chains.',
-    image: neoretailCore,
-    link: '/contact',
-    highlights: [
-      'Real-time central warehouse & branch inventory synchronization',
-      'Barcode label generation & batch expiry monitoring',
-      'Omnichannel loyalty points & promotional campaign engine',
-      'Integrated payment gateways, UPI dynamic QR, and card EDC',
-      'Automated GSTR-1, GSTR-3B tax export reports'
-    ]
-  },
-  {
-    id: 'averlink-logistics',
-    name: 'AverLink Logistics',
-    category: 'Fleet & Dispatch Logistics',
-    status: 'Enterprise Deployment',
-    isFeatured: false,
-    tagline: 'End-to-end transport dispatch, tracking & e-way billing.',
-    description: 'Streamline heavy transport bookings, driver dispatch schedules, automated GST e-way bill generation, and milestone freight tracking.',
-    image: averlinkLogistics,
-    link: '/contact',
-    highlights: [
-      '1-Click automated NIC portal E-Way Bill generation',
-      'Driver trip sheets, fuel consumption & advance cash ledgers',
-      'Consignment tracking with SMS & WhatsApp updates',
-      'Fleet preventive maintenance alerts & permit expiry logs',
-      'Automated freight billing & multi-transporter freight consolidation'
-    ]
-  },
-  {
-    id: 'sentient-analytics',
-    name: 'Sentient Analytics',
-    category: 'Business Intelligence & AI Ops',
-    status: 'Cloud SaaS / Dedicated',
-    isFeatured: false,
-    tagline: 'Transform transactional data into predictive business decisions.',
-    description: 'Executive dashboards providing real-time visibility into revenue velocity, customer retention rates, demand forecasts, and gross margin leakages.',
-    image: sentientAnalytics,
-    link: '/contact',
-    highlights: [
-      'Real-time sales velocity & seasonal demand forecasting models',
-      'Customer lifetime value (CLV) & churn risk indicators',
-      'Dead stock identifier & markdown optimization suggestions',
-      'Custom KPI alerts delivered directly to Slack & WhatsApp',
-      'Multi-source data ingestion from SQL, MongoDB & Excel workbooks'
     ]
   }
 ];
@@ -131,7 +75,8 @@ export default function Products() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch('/api/products/enquiry', {
+      const endpoint = `${API_BASE_URL || ''}/api/products/enquiry`;
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -143,11 +88,29 @@ export default function Products() {
       if (data.success) {
         setSubmitted(true);
       } else {
-        alert(data.error || 'Failed to submit enquiry. Please call us directly.');
+        alert(data.error || 'Failed to submit enquiry. Please try again.');
       }
     } catch (err) {
-      // Graceful fallback
-      setSubmitted(true);
+      console.error('Error submitting enquiry:', err);
+      // Try relative fetch fallback
+      try {
+        const fallbackRes = await fetch('/api/products/enquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productName: selectedProduct,
+            ...quoteForm
+          })
+        });
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.success) {
+          setSubmitted(true);
+          return;
+        }
+      } catch (fErr) {
+        console.error('Fallback error:', fErr);
+      }
+      alert('Unable to reach server. Please call us directly at +91 8300864083 or email averqonhq@gmail.com.');
     } finally {
       setSubmitting(false);
     }

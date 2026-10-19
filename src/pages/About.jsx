@@ -6,7 +6,7 @@ import CTASection from '../components/CTASection';
 
 const About = () => {
   useSEO({
-    title: 'About Averqon | Software & AI Company in Coimbatore, India',
+    title: 'About Averqon | Software & AI Company in Chennai, India',
     description:
       'Learn about Averqon — our mission, team, and how we help businesses across India grow with custom software, AI solutions, and SaaS products.',
     canonical: 'https://averqon.in/about',
@@ -15,7 +15,7 @@ const About = () => {
       '@type': 'AboutPage',
       '@id': 'https://averqon.in/about#webpage',
       url: 'https://averqon.in/about',
-      name: 'About Averqon | Software & AI Company in Coimbatore, India',
+      name: 'About Averqon | Software & AI Company in Chennai, India',
       description:
         'Learn about Averqon — our mission, team, and how we help businesses across India grow with custom software, AI solutions, and SaaS products.',
       isPartOf: { '@id': 'https://averqon.in/#organization' },

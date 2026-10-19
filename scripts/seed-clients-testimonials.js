@@ -160,7 +160,7 @@ async function seedClientsAndTestimonials() {
         client: client4.clientName,
         clientId: client4._id,
         services: ['Website development', 'Domain', 'Hosting', 'Maintenance'],
-        address: '16, M.M.A. Market, South Ukkadam, Coimbatore',
+        address: 'Coimbatore',
         projectValue: 22000,
         paymentStatus: 'Fully Paid',
         outstandingBalance: 0,

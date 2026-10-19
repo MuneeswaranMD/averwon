@@ -25,7 +25,7 @@ const ContactSection = () => {
     {
       icon: <MapPin />,
       label: 'Our Base',
-      values: ['Coimbatore, Tamil Nadu'],
+      values: ['Chennai, Tamil Nadu'],
       color: 'bg-primary/10 text-primary'
     }
   ];

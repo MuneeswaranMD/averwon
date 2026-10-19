@@ -1,6 +1,11 @@
 import nodemailer from 'nodemailer';
 
-const NOTIFICATION_RECIPIENT = 'averqonhq@gmail.com';
+// Primary notification recipients for POS & Product Enquiries
+const ADMIN_RECIPIENT_EMAILS = [
+  'averqonhq@gmail.com',
+  'muneeswaranmd2004@gmail.com',
+  'muneeswaran@averqon.in'
+];
 
 function createTransporter() {
   const user = process.env.SMTP_USER || 'averqonhq@gmail.com';
@@ -22,7 +27,7 @@ function createTransporter() {
 }
 
 /**
- * Send full product enquiry notification to averqonhq@gmail.com
+ * Send full product enquiry notification to averqonhq@gmail.com and admin mail IDs
  */
 export async function sendProductEnquiryAdminNotification({
   productName = 'Crackers POS',
@@ -40,7 +45,7 @@ export async function sendProductEnquiryAdminNotification({
 }) {
   const transporter = createTransporter();
   if (!transporter) {
-    console.warn('⚠️ SMTP not configured. Unable to send product enquiry notification to:', NOTIFICATION_RECIPIENT);
+    console.warn('⚠️ SMTP not configured. Unable to send product enquiry notification to:', ADMIN_RECIPIENT_EMAILS.join(', '));
     return { success: false, reason: 'SMTP not configured' };
   }
 
@@ -146,7 +151,7 @@ export async function sendProductEnquiryAdminNotification({
     </div>
 
     <div class="footer">
-      This notification was automatically dispatched by Averqon CRM System to <strong>${NOTIFICATION_RECIPIENT}</strong>.
+      This notification was automatically dispatched by Averqon CRM System to <strong>${ADMIN_RECIPIENT_EMAILS.join(', ')}</strong>.
     </div>
   </div>
 </body>
@@ -156,13 +161,13 @@ export async function sendProductEnquiryAdminNotification({
   try {
     const info = await transporter.sendMail({
       from: `"Averqon Leads" <${process.env.SMTP_USER || 'averqonhq@gmail.com'}>`,
-      to: NOTIFICATION_RECIPIENT,
+      to: ADMIN_RECIPIENT_EMAILS.join(', '),
       replyTo: email || undefined,
       subject,
       html
     });
 
-    console.log(`✅ Product enquiry email sent to ${NOTIFICATION_RECIPIENT}: Message ID ${info.messageId}`);
+    console.log(`✅ Product enquiry email sent to ${ADMIN_RECIPIENT_EMAILS.join(', ')}: Message ID ${info.messageId}`);
     return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error('❌ Failed to dispatch product enquiry email:', err);

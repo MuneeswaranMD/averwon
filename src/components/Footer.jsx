@@ -147,7 +147,7 @@ const Footer = () => {
               </a>
               <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-slate-200">
                 <MapPin size={18} className="text-secondary flex-shrink-0" />
-                Coimbatore, Tamil Nadu
+                Chennai, Tamil Nadu
               </div>
             </div>
           </div>

@@ -12,7 +12,7 @@ import ContactSection from '../components/ContactSection';
 
 const Home = () => {
   useSEO({
-    title: 'Averqon | Software Development & AI Solutions in Coimbatore',
+    title: 'Averqon | Software Development & AI Solutions in Chennai',
     description:
       'Averqon builds custom software, web applications, SaaS platforms and AI solutions for growing businesses and startups in India.',
     canonical: 'https://averqon.in/',
@@ -21,7 +21,7 @@ const Home = () => {
       '@type': 'WebPage',
       '@id': 'https://averqon.in/#webpage',
       url: 'https://averqon.in/',
-      name: 'Averqon | Software Development & AI Solutions in Coimbatore',
+      name: 'Averqon | Software Development & AI Solutions in Chennai',
       description:
         'Averqon builds custom software, web applications, SaaS platforms and AI solutions for growing businesses and startups in India.',
       isPartOf: { '@id': 'https://averqon.in/#organization' },

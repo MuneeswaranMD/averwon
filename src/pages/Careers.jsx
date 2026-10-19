@@ -5,18 +5,18 @@ import CTASection from '../components/CTASection';
 
 const Careers = () => {
   useSEO({
-    title: 'Careers at Averqon | Software & AI Jobs in Coimbatore',
+    title: 'Careers at Averqon | Software & AI Jobs in Chennai',
     description:
-      'Join Averqon and build innovative software, SaaS, and AI products. Explore open roles for developers, designers, and technology professionals in Coimbatore.',
+      'Join Averqon and build innovative software, SaaS, and AI products. Explore open roles for developers, designers, and technology professionals in Chennai.',
     canonical: 'https://averqon.in/careers',
     schema: {
       '@context': 'https://schema.org',
       '@type': 'EmployerAggregateRating',
       '@id': 'https://averqon.in/careers#webpage',
       url: 'https://averqon.in/careers',
-      name: 'Careers at Averqon | Software & AI Jobs in Coimbatore',
+      name: 'Careers at Averqon | Software & AI Jobs in Chennai',
       description:
-        'Open technology roles at Averqon — software developers, AI engineers, UI/UX designers in Coimbatore, India.',
+        'Open technology roles at Averqon — software developers, AI engineers, UI/UX designers in Chennai, India.',
       isPartOf: { '@id': 'https://averqon.in/#organization' },
     },
   });

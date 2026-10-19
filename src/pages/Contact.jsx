@@ -32,7 +32,7 @@ const ContactPage = () => {
   useSEO({
     title: 'Contact Averqon | Get a Free Quote for Software Development',
     description:
-      'Get in touch with Averqon for custom software development, SaaS, web apps, and AI solutions. Free project consultation for businesses in Coimbatore and India.',
+      'Get in touch with Averqon for custom software development, SaaS, web apps, and AI solutions. Free project consultation for businesses in Chennai and India.',
     canonical: 'https://averqon.in/contact',
     schema: {
       '@context': 'https://schema.org',
@@ -96,7 +96,7 @@ const ContactPage = () => {
     {
       icon: MapPin,
       title: 'Our Base',
-      lines: ['Coimbatore, Tamil Nadu'],
+      lines: ['Chennai, Tamil Nadu'],
     },
     {
       icon: Mail,
@@ -166,7 +166,7 @@ const ContactPage = () => {
             }}>Hello.</span>
           </h1>
           <p style={{ fontSize: 18, color: '#64748b', maxWidth: 560, margin: '0 auto', lineHeight: 1.75 }}>
-            Have a project in mind? We'd love to hear about it. Drop us a message or visit our office in the heart of Coimbatore.
+            Have a project in mind? We'd love to hear about it. Drop us a message or visit our office in the heart of Chennai.
           </p>
         </motion.div>
       </div>

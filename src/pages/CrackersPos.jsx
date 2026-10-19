@@ -28,6 +28,7 @@ import {
   X
 } from 'lucide-react';
 import crackersScreenshot from '../assets/crackers-pos-screenshot.png';
+import API_BASE_URL from '../api-config';
 
 export default function CrackersPos() {
   const [openFaq, setOpenFaq] = useState(null);
@@ -55,7 +56,8 @@ export default function CrackersPos() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch('/api/products/enquiry', {
+      const endpoint = `${API_BASE_URL || ''}/api/products/enquiry`;
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -67,11 +69,29 @@ export default function CrackersPos() {
       if (data.success) {
         setSubmitted(true);
       } else {
-        alert(data.error || 'Failed to submit quote request. Please call us directly.');
+        alert(data.error || 'Failed to submit quote request. Please try again.');
       }
     } catch (err) {
-      // Fallback
-      setSubmitted(true);
+      console.error('Error submitting enquiry:', err);
+      // Try relative fetch as fallback
+      try {
+        const fallbackRes = await fetch('/api/products/enquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productName: 'Crackers POS',
+            ...quoteForm
+          })
+        });
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.success) {
+          setSubmitted(true);
+          return;
+        }
+      } catch (fErr) {
+        console.error('Fallback error:', fErr);
+      }
+      alert('Unable to reach server. Please call us directly at +91 8300864083 or email averqonhq@gmail.com.');
     } finally {
       setSubmitting(false);
     }
