@@ -38,6 +38,7 @@ export const Components = {
   AdminProjectAssign: componentLoader.add('AdminProjectAssign', path.join(__dirname, 'components/AdminProjectAssign.jsx')),
   LeadImport: componentLoader.add('LeadImport', path.join(__dirname, 'components/LeadImport.jsx')),
   EmployeeSelect: componentLoader.add('EmployeeSelect', path.join(__dirname, 'components/EmployeeSelect.jsx')),
+  FeedbackManagement: componentLoader.add('FeedbackManagement', path.join(__dirname, 'components/FeedbackManagement.jsx')),
 };
 
 const transformDottedArray = (request, fieldName) => {
@@ -426,9 +427,48 @@ export const adminOptions = {
       parent: { name: 'Sales & CRM', icon: 'Contact' },
       actions: { ...commonActions }
     } },
+    { resource: Models.ServiceRenewal, options: { 
+      parent: { name: 'Sales & CRM', icon: 'Repeat' },
+      listProperties: ['serviceId', 'serviceName', 'serviceType', 'clientName', 'expiryDate', 'renewalAmount', 'status'],
+      properties: { 
+        status: { components: { list: Components.StatusTag } },
+        serviceType: { components: { list: Components.StatusTag } }
+      },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.UpsellOpportunity, options: { 
+      parent: { name: 'Sales & CRM', icon: 'TrendingUp' },
+      listProperties: ['opportunityId', 'title', 'clientName', 'estimatedValue', 'status', 'nextFollowupDate'],
+      properties: { 
+        status: { components: { list: Components.StatusTag } }
+      },
+      actions: { ...commonActions }
+    } },
+    { resource: Models.RenewalHistory, options: { 
+      parent: { name: 'Finance', icon: 'History' },
+      listProperties: ['serviceName', 'clientName', 'renewalPrice', 'previousExpiryDate', 'newExpiryDate', 'paymentStatus', 'renewedAt'],
+      properties: { 
+        paymentStatus: { components: { list: Components.StatusTag } }
+      },
+      actions: { ...commonActions }
+    } },
     { resource: Models.ClientRequest, options: { 
       parent: { name: 'Sales & CRM', icon: 'Zap' },
       actions: { ...commonActions }
+    } },
+    { resource: Models.ClientFeedback, options: { 
+      parent: { name: 'Sales & CRM', icon: 'Star' },
+      actions: { 
+        ...commonActions,
+        list: { component: Components.FeedbackManagement }
+      }
+    } },
+    { resource: Models.FeedbackRequest, options: { 
+      parent: { name: 'Sales & CRM', icon: 'Send' },
+      actions: { 
+        ...commonActions,
+        list: { component: Components.FeedbackManagement }
+      }
     } },
 
     // --- Communication ---

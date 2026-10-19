@@ -5,7 +5,7 @@ import {
   BadgeCheck, GraduationCap, Clock, Palmtree, CreditCard, UserCheck,
   FolderOpen, CheckSquare, Video, Ticket, TrendingUp, ReceiptText,
   Settings, ShieldAlert, Activity, FileText, MessageSquare, MessagesSquare,
-  Globe, PlusCircle
+  Globe, PlusCircle, Repeat, Contact, History, Star
 } from 'lucide-react';
 
 const averqonLogo = '/logo.png';
@@ -101,6 +101,7 @@ const navConfig = [
       { name: 'Revenue', path: '/admin/resources/Revenue', icon: <TrendingUp size={18} /> },
       { name: 'Invoices', path: '/admin/resources/Invoice', icon: <ReceiptText size={18} /> },
       { name: 'Bills', path: '/admin/resources/Bill', icon: <CreditCard size={18} /> },
+      { name: 'Renewal History', path: '/admin/resources/RenewalHistory', icon: <History size={18} /> },
     ],
   },
   {
@@ -108,6 +109,10 @@ const navConfig = [
     icon: <Target size={22} />,
     items: [
       { name: 'Dashboard', path: '/admin/pages/sales-dashboard', icon: <LayoutDashboard size={18} /> },
+      { name: 'Clients', path: '/admin/resources/Client', icon: <Contact size={18} /> },
+      { name: 'Services & Renewals', path: '/admin/resources/ServiceRenewal', icon: <Repeat size={18} /> },
+      { name: 'Upsell Pipeline', path: '/admin/resources/UpsellOpportunity', icon: <TrendingUp size={18} /> },
+      { name: 'Client Feedback', path: '/admin/resources/ClientFeedback', icon: <Star size={18} /> },
       { name: 'Leads', path: '/admin/resources/Lead', icon: <UserCheck size={18} /> },
       { name: 'Deals', path: '/admin/resources/Sales', icon: <Briefcase size={18} /> },
     ],

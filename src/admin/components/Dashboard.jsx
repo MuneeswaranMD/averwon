@@ -22,7 +22,14 @@ import {
   Layers,
   Wrench,
   Clock,
-  Loader2
+  Loader2,
+  Globe,
+  Repeat,
+  AlertTriangle,
+  ShieldCheck,
+  Send,
+  ExternalLink,
+  Star
 } from 'lucide-react';
 
 // ── Clean Corporate Light Theme Color Tokens ──────────────────────────────────────────
@@ -234,14 +241,68 @@ const SectionHeader = ({ title, action, actionUrl }) => (
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [projectTab, setProjectTab] = useState('portfolio');
 
-  useEffect(() => {
+  // Renewal & Upsell Module States
+  const [renewalSearch, setRenewalSearch] = useState('');
+  const [renewalStatusFilter, setRenewalStatusFilter] = useState('All');
+  const [renewalTypeFilter, setRenewalTypeFilter] = useState('All');
+  const [renewalTab, setRenewalTab] = useState('active'); // 'active' | 'history' | 'upsells'
+  const [isManualCheckingReminders, setIsManualCheckingReminders] = useState(false);
+  const [reminderStatusMsg, setReminderStatusMsg] = useState(null);
+
+  const fetchStats = () => {
     fetch('/api/admin/dashboard-stats')
       .then(r => r.json())
       .then(json => setData(json))
       .catch(err => console.error('Dashboard error:', err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchStats();
   }, []);
+
+  const handleTriggerReminderCheck = async () => {
+    setIsManualCheckingReminders(true);
+    setReminderStatusMsg('Dispatching automated email reminder checks...');
+    try {
+      const res = await fetch('/api/admin/renewals/check-reminders', { method: 'POST' });
+      const json = await res.json();
+      if (json.success) {
+        setReminderStatusMsg(`✓ Checked ${json.report.evaluatedCount} services. Dispatched ${json.report.adminEmailsSent} admin alert(s) & ${json.report.clientEmailsSent} client notification(s).`);
+        fetchStats();
+      } else {
+        setReminderStatusMsg('Failed to run reminder checks.');
+      }
+    } catch (err) {
+      setReminderStatusMsg('Error executing reminder check.');
+    } finally {
+      setIsManualCheckingReminders(false);
+      setTimeout(() => setReminderStatusMsg(null), 6000);
+    }
+  };
+
+  const handleConvertUpsellOnDashboard = async (upsell) => {
+    if (!confirm(`Convert opportunity "${upsell.title}" into an active Project for ${upsell.clientName}?`)) return;
+    try {
+      const res = await fetch(`/api/admin/upsells/${upsell._id}/convert-to-project`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectName: upsell.title })
+      });
+      const resData = await res.json();
+      if (resData.success) {
+        alert(`✓ Opportunity converted to Project "${resData.project.name}"! Status updated to Won.`);
+        fetchStats();
+      } else {
+        alert(resData.error || 'Failed to convert');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error converting opportunity');
+    }
+  };
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', background: C.bg }}>
@@ -255,10 +316,40 @@ const Dashboard = () => {
 
   const stats = data?.stats || {};
   const projects = data?.projects || [];
+  const portfolioProjects = data?.portfolioProjects || [];
   const tasks = data?.tasks || [];
   const finance = data?.finance || [];
   const activities = data?.activities || [];
   const meetings = data?.meetings || [];
+
+  // Services, Renewals & Upsells Data
+  const services = data?.services || [];
+  const renewalHistory = data?.renewalHistory || [];
+  const upsellOpportunities = data?.upsellOpportunities || [];
+  const renewalStats = stats?.renewalStats || {
+    upcomingRenewalsCount: 0,
+    overdueServicesCount: 0,
+    expectedRenewalRevenue: 0,
+    openUpsellsCount: 0,
+    openUpsellsValue: 0,
+    revenueForecast: { next30Days: 0, next60Days: 0, next90Days: 0, total90Days: 0 }
+  };
+  const revenueForecast = renewalStats.revenueForecast || { next30Days: 0, next60Days: 0, next90Days: 0, total90Days: 0 };
+
+  const clientSummary = stats?.clientSummary || {
+    totalConfirmedClients: 5,
+    totalProjectValue: 82000,
+    totalRecordedPayments: 82000,
+    recordedOutstandingBalance: 0,
+    totalTestimonials: 5,
+    testimonialsAwaitingApproval: 5,
+    publishedTestimonials: 0,
+    upcomingRenewalReviews: 1,
+    pendingMaintenanceFollowups: 1,
+    clientsList: [],
+    projectsList: [],
+    testimonialsList: []
+  };
 
   const revenueData = data?.monthlyRevenue?.data || [0, 0, 0, 0, 0, 0];
   const revLabels = data?.monthlyRevenue?.labels || ['', '', '', '', '', ''];
@@ -268,10 +359,90 @@ const Dashboard = () => {
   const totalRev = stats.monthlyRevenue || 0;
   const totalExp = finance.filter(f => f.type === 'Expense').reduce((sum, f) => sum + (f.amount || 0), 0) || 35000;
 
+  // Filtered Services
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const filteredServices = services.filter(s => {
+    if (renewalSearch) {
+      const q = renewalSearch.toLowerCase();
+      const matchName = s.serviceName?.toLowerCase().includes(q);
+      const matchClient = s.clientName?.toLowerCase().includes(q);
+      const matchProject = s.projectName?.toLowerCase().includes(q);
+      const matchType = s.serviceType?.toLowerCase().includes(q);
+      if (!matchName && !matchClient && !matchProject && !matchType) return false;
+    }
+    if (renewalTypeFilter !== 'All' && s.serviceType !== renewalTypeFilter) return false;
+    if (renewalStatusFilter === 'overdue') {
+      const exp = s.expiryDate ? new Date(s.expiryDate) : null;
+      return exp && exp < today && s.status !== 'Renewed';
+    }
+    if (renewalStatusFilter === '7days') {
+      const exp = s.expiryDate ? new Date(s.expiryDate) : null;
+      if (!exp) return false;
+      const days = (exp - today) / 86400000;
+      return days >= 0 && days <= 7;
+    }
+    if (renewalStatusFilter === '30days') {
+      const exp = s.expiryDate ? new Date(s.expiryDate) : null;
+      if (!exp) return false;
+      const days = (exp - today) / 86400000;
+      return days >= 0 && days <= 30;
+    }
+    if (renewalStatusFilter === 'active') {
+      return s.status === 'Active' || s.status === 'Pending Renewal';
+    }
+    return true;
+  });
+
+  // Compact Renewal Cards
+  const renewalCards = [
+    {
+      icon: <Repeat />,
+      label: 'Upcoming Renewals',
+      value: renewalStats.upcomingRenewalsCount || 0,
+      sub: 'Expiring in next 30 days',
+      badge: '30 Days',
+      badgeType: 'warning',
+      color: C.amber,
+      bg: C.amberLight
+    },
+    {
+      icon: <AlertTriangle />,
+      label: 'Overdue Services',
+      value: renewalStats.overdueServicesCount || 0,
+      sub: (renewalStats.overdueServicesCount || 0) > 0 ? 'Follow-up required' : 'All services current',
+      badge: (renewalStats.overdueServicesCount || 0) > 0 ? 'Urgent' : 'All Clear',
+      badgeType: (renewalStats.overdueServicesCount || 0) > 0 ? 'danger' : 'success',
+      color: C.rose,
+      bg: C.roseLight
+    },
+    {
+      icon: <IndianRupee />,
+      label: 'Expected Renewal Revenue',
+      value: "₹" + (renewalStats.expectedRenewalRevenue || 0).toLocaleString('en-IN'),
+      sub: 'Next 90 days projected',
+      badge: 'Forecast',
+      badgeType: 'success',
+      color: C.emerald,
+      bg: C.emeraldLight
+    },
+    {
+      icon: <TrendingUp />,
+      label: 'Open Upsell Opportunities',
+      value: `${renewalStats.openUpsellsCount || 0} (${renewalStats.openUpsellsValue ? '₹' + renewalStats.openUpsellsValue.toLocaleString('en-IN') : '₹0'})`,
+      sub: 'Identified client pipeline',
+      badge: 'Pipeline',
+      badgeType: 'primary',
+      color: C.indigo,
+      bg: C.indigoLight
+    },
+  ];
+
   const statCards = [
     { icon: <Users />, label: 'Active Employees', value: stats.totalEmployees || 0, sub: 'Registered staff', badge: 'Active', badgeType: 'success', color: C.primary, bg: C.primaryLight },
     { icon: <GraduationCap />, label: 'Active Interns', value: stats.totalInterns || 0, sub: 'Assigned interns', badge: 'Active', badgeType: 'primary', color: C.indigo, bg: C.indigoLight },
-    { icon: <FolderOpen />, label: 'Active Projects', value: stats.activeProjects || 0, sub: 'Ongoing contracts', badge: 'Running', badgeType: 'warning', color: C.amber, bg: C.amberLight },
+    { icon: <FolderOpen />, label: 'Active Projects', value: (stats.totalPortfolioProjects || 0) + (stats.activeProjects || 0), sub: `${stats.totalPortfolioProjects || 0} showcase · ${stats.activeProjects || 0} operations`, badge: 'Active', badgeType: 'warning', color: C.amber, bg: C.amberLight },
     { icon: <CheckSquare />, label: 'Pending Tasks', value: stats.pendingTasks || 0, sub: 'Awaiting completion', badge: 'Tasks', badgeType: 'danger', color: C.rose, bg: C.roseLight },
     { icon: <IndianRupee />, label: 'Monthly Revenue', value: "₹" + (stats.monthlyRevenue || 0).toLocaleString('en-IN'), sub: 'Calculated this month', badge: '+18.5%', badgeType: 'success', color: C.emerald, bg: C.emeraldLight },
     { icon: <FileText />, label: 'Pending Invoices', value: "₹" + (stats.pendingPayments || 0).toLocaleString('en-IN'), sub: 'Unbilled payouts', badge: 'Pending', badgeType: 'warning', color: C.amber, bg: C.amberLight },
@@ -288,6 +459,7 @@ const Dashboard = () => {
   ];
 
   return (
+    
     <div style={{ minHeight: '100vh', background: C.bg, padding: '20px 24px', fontFamily: "'Inter', sans-serif", color: C.text, boxSizing: 'border-box' }}>
       
       {/* ── Page Header ── */}
@@ -390,6 +562,612 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* ── Confirmed Clients & Testimonial Intelligence Hub ── */}
+      <div style={{ marginBottom: '28px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h2 style={{ ...T.h2, color: C.text, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Star size={18} color="#2160FF" fill="#2160FF" /> Confirmed Clients & Testimonial Management
+            </h2>
+            <p style={{ ...T.small, marginTop: '2px' }}>
+              Confirmed client contracts, recorded project payments, and authentic testimonial approval workflows
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => window.location.href = '/admin/resources/ClientFeedback'}
+              style={{
+                fontSize: '12px',
+                padding: '7px 14px',
+                background: '#2160FF',
+                color: '#fff',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontWeight: 600,
+                boxShadow: '0 2px 6px rgba(33,96,255,0.2)'
+              }}
+            >
+              <Star size={14} /> Open Testimonial Manager
+            </button>
+            <button
+              onClick={() => window.location.href = '/admin/resources/Client'}
+              style={{
+                fontSize: '12px',
+                padding: '7px 14px',
+                background: '#fff',
+                color: C.text,
+                borderRadius: '8px',
+                border: `1px solid ${C.border}`,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontWeight: 600
+              }}
+            >
+              <Users size={14} /> View All Clients
+            </button>
+          </div>
+        </div>
+
+        {/* 5 Core Metrics for the Confirmed Client Accounts */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+          <Card style={{ padding: '16px 20px', borderLeft: '4px solid #2160FF' }}>
+            <div style={T.label}>Confirmed Clients</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: C.text, marginTop: 4 }}>
+              {clientSummary.totalConfirmedClients || 5}
+            </div>
+            <div style={{ ...T.small, color: C.textMuted, marginTop: 2 }}>Verified accounts</div>
+          </Card>
+
+          <Card style={{ padding: '16px 20px', borderLeft: '4px solid #10B981' }}>
+            <div style={T.label}>Total Project Value</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#10B981', marginTop: 4 }}>
+              ₹{(clientSummary.totalProjectValue || 82000).toLocaleString('en-IN')}
+            </div>
+            <div style={{ ...T.small, color: C.textMuted, marginTop: 2 }}>5 client contracts</div>
+          </Card>
+
+          <Card style={{ padding: '16px 20px', borderLeft: '4px solid #059669' }}>
+            <div style={T.label}>Recorded Payments</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#059669', marginTop: 4 }}>
+              ₹{(clientSummary.totalRecordedPayments || 82000).toLocaleString('en-IN')}
+            </div>
+            <div style={{ ...T.small, color: '#059669', fontWeight: 600, marginTop: 2 }}>Fully Paid · ₹0 Outstanding</div>
+          </Card>
+
+          <Card style={{ padding: '16px 20px', borderLeft: '4px solid #F59E0B' }}>
+            <div style={T.label}>Testimonials Stored</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#F59E0B', marginTop: 4 }}>
+              {clientSummary.totalTestimonials || 5}
+            </div>
+            <div style={{ ...T.small, color: C.textMuted, marginTop: 2 }}>
+              {clientSummary.testimonialsAwaitingApproval || 5} awaiting approval/consent
+            </div>
+          </Card>
+
+          <Card style={{ padding: '16px 20px', borderLeft: '4px solid #8B5CF6' }}>
+            <div style={T.label}>Website Published</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#8B5CF6', marginTop: 4 }}>
+              {clientSummary.publishedTestimonials || 0}
+            </div>
+            <div style={{ ...T.small, color: C.textMuted, marginTop: 2 }}>Consent verified only</div>
+          </Card>
+        </div>
+
+        {/* Confirmed Clients Quick Table */}
+        <Card style={{ padding: '18px 22px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: C.text }}>Confirmed Client Contracts & Testimonial Status</span>
+            <span style={{ fontSize: '11px', color: C.textMuted }}>Maintenance follow-up: Aug 19, 2027 · Review: Sept 2027</span>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.border}`, textAlign: 'left', color: C.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '8px 12px' }}>Client & Organization</th>
+                  <th style={{ padding: '8px 12px' }}>Project Scope</th>
+                  <th style={{ padding: '8px 12px' }}>Package Value</th>
+                  <th style={{ padding: '8px 12px' }}>Payment Status</th>
+                  <th style={{ padding: '8px 12px' }}>Testimonial Status</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { name: 'MaxxJoy Tours', org: 'MaxxJoy Tours', project: 'Travel website development & deployment', value: 10000, status: 'Draft — Client Approval Required', source: 'Suggested Draft', badgeColor: '#F59E0B' },
+                  { name: 'RetroStylings', org: 'RetroStylings', project: 'E-commerce website development', value: 20000, status: 'Draft — Client Approval Required', source: 'Suggested Draft', badgeColor: '#F59E0B' },
+                  { name: 'Psychologist', org: 'Private Practice', project: 'Psychology website development', value: 15000, status: 'Pending Publication Approval', source: 'Client-Provided', badgeColor: '#8B5CF6' },
+                  { name: 'Peeyem Traders', org: 'South Ukkadam, Coimbatore', project: 'Website, Domain, Hosting & Maintenance', value: 22000, status: 'Draft — Client Approval Required', source: 'Suggested Draft', badgeColor: '#F59E0B', amc: 'AMC Review Sept 2027' },
+                  { name: 'Dr. R. Murugadoss', org: 'V.S.B. College of Engineering (Prof. & HoD)', project: 'Website redesign & server/domain renewal', value: 15000, status: 'Draft — Client Approval Required', source: 'Suggested Draft', badgeColor: '#F59E0B' },
+                ].map((row, idx) => (
+                  <tr key={idx} style={{ borderBottom: `1px solid ${C.border}15` }}>
+                    <td style={{ padding: '12px' }}>
+                      <div style={{ fontWeight: 600, color: C.text }}>{row.name}</div>
+                      <div style={{ fontSize: '11px', color: C.textMuted }}>{row.org}</div>
+                    </td>
+                    <td style={{ padding: '12px', color: C.textSub }}>
+                      {row.project}
+                      {row.amc && <div style={{ fontSize: '10.5px', color: '#2563EB', fontWeight: 600, marginTop: 2 }}>{row.amc}</div>}
+                    </td>
+                    <td style={{ padding: '12px', fontWeight: 700, color: C.text }}>
+                      ₹{row.value.toLocaleString('en-IN')}
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, background: '#ECFDF5', color: '#059669' }}>
+                        <CheckCircle size={12} /> Fully Paid (₹0 Due)
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, background: `${row.badgeColor}15`, color: row.badgeColor }}>
+                        {row.status}
+                      </div>
+                      <div style={{ fontSize: '10px', color: C.textMuted, marginTop: 2 }}>{row.source}</div>
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                      <button
+                        onClick={() => window.location.href = '/admin/resources/ClientFeedback'}
+                        style={{
+                          fontSize: '11px',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          background: '#F1F5F9',
+                          border: `1px solid ${C.border}`,
+                          color: C.text,
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Manage
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+
+      {/* ── Post-Delivery Services, Renewals & Upsells Hub ── */}
+      <div style={{ marginBottom: '28px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h2 style={T.h2}>Post-Delivery Services, Renewals & Upsells</h2>
+            <p style={{ ...T.small, marginTop: '2px' }}>
+              Track domain, hosting/VPS, AMC maintenance, and client enhancement requests
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={handleTriggerReminderCheck}
+              disabled={isManualCheckingReminders}
+              style={{
+                border: `1px solid ${C.border}`,
+                background: C.card,
+                color: C.primary,
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: isManualCheckingReminders ? 'not-allowed' : 'pointer',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+              }}
+            >
+              <Send size={13} />
+              <span>{isManualCheckingReminders ? 'Checking Reminders...' : 'Run Reminder Checks'}</span>
+            </button>
+
+            <button
+              onClick={() => window.location.href = '/admin/resources/ServiceRenewal'}
+              style={{
+                border: 'none',
+                background: C.primary,
+                color: C.card,
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '6px 12px',
+                borderRadius: '6px',
+              }}
+            >
+              Manage Services ↗
+            </button>
+          </div>
+        </div>
+
+        {reminderStatusMsg && (
+          <div style={{
+            padding: '10px 14px',
+            borderRadius: '8px',
+            background: '#EFF6FF',
+            color: '#1E40AF',
+            border: '1px solid #BFDBFE',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            marginBottom: '14px'
+          }}>
+            {reminderStatusMsg}
+          </div>
+        )}
+
+        {/* 4 Compact Dashboard KPI Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+          {renewalCards.map((s, i) => (
+            <Card key={i}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div style={{ 
+                  width: '36px', 
+                  height: '36px', 
+                  borderRadius: '8px', 
+                  background: s.bg, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  color: s.color,
+                }}>
+                  {React.cloneElement(s.icon, { size: 18, color: 'currentColor' })}
+                </div>
+                <Badge label={s.badge} type={s.badgeType} />
+              </div>
+              
+              <p style={{ ...T.label, marginBottom: '4px' }}>{s.label}</p>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: C.text, margin: 0, letterSpacing: '-0.5px' }}>
+                {s.value}
+              </p>
+              <p style={{ ...T.small, marginTop: '4px' }}>{s.sub}</p>
+            </Card>
+          ))}
+        </div>
+
+        {/* 30 / 60 / 90-Day Revenue Forecast Panel */}
+        <Card style={{ marginBottom: '20px', padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: 10 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ ...T.h2, fontSize: '14px', color: C.text }}>Revenue Forecast Timeline</h3>
+                <Badge label="Projected" type="success" />
+              </div>
+              <p style={{ ...T.small, marginTop: '2px' }}>
+                Expected renewal cash flow across 30, 60, and 90-day intervals
+              </p>
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: C.emerald }}>
+              Total 90-Day Forecast: ₹{(revenueForecast.total90Days || 0).toLocaleString('en-IN')}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+            <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '8px', border: `1px solid ${C.border}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>Next 30 Days</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: C.amber }}>Immediate</span>
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: C.text }}>₹{(revenueForecast.next30Days || 0).toLocaleString('en-IN')}</div>
+              <div style={{ height: '4px', background: '#E2E8F0', borderRadius: '2px', marginTop: '8px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: revenueForecast.total90Days ? `${Math.min(100, (revenueForecast.next30Days / revenueForecast.total90Days) * 100)}%` : '0%', background: C.amber }} />
+              </div>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '8px', border: `1px solid ${C.border}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>31 – 60 Days</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: C.primary }}>Mid-Term</span>
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: C.text }}>₹{(revenueForecast.next60Days || 0).toLocaleString('en-IN')}</div>
+              <div style={{ height: '4px', background: '#E2E8F0', borderRadius: '2px', marginTop: '8px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: revenueForecast.total90Days ? `${Math.min(100, (revenueForecast.next60Days / revenueForecast.total90Days) * 100)}%` : '0%', background: C.primary }} />
+              </div>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '8px', border: `1px solid ${C.border}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>61 – 90 Days</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: C.indigo }}>Quarterly</span>
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: C.text }}>₹{(revenueForecast.next90Days || 0).toLocaleString('en-IN')}</div>
+              <div style={{ height: '4px', background: '#E2E8F0', borderRadius: '2px', marginTop: '8px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: revenueForecast.total90Days ? `${Math.min(100, (revenueForecast.next90Days / revenueForecast.total90Days) * 100)}%` : '0%', background: C.indigo }} />
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Searchable Renewal List, Expiry-Date Filters & History Tabs */}
+        <Card style={{ padding: 0 }}>
+          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setRenewalTab('active')}
+                style={{
+                  border: 'none',
+                  background: renewalTab === 'active' ? C.primaryLight : 'transparent',
+                  color: renewalTab === 'active' ? C.primary : C.textSub,
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Repeat size={14} />
+                <span>Tracked Services ({filteredServices.length})</span>
+              </button>
+
+              <button
+                onClick={() => setRenewalTab('history')}
+                style={{
+                  border: 'none',
+                  background: renewalTab === 'history' ? C.primaryLight : 'transparent',
+                  color: renewalTab === 'history' ? C.primary : C.textSub,
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <History size={14} />
+                <span>Renewal History ({renewalHistory.length})</span>
+              </button>
+
+              <button
+                onClick={() => setRenewalTab('upsells')}
+                style={{
+                  border: 'none',
+                  background: renewalTab === 'upsells' ? C.primaryLight : 'transparent',
+                  color: renewalTab === 'upsells' ? C.primary : C.textSub,
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <TrendingUp size={14} />
+                <span>Upsell Pipeline ({upsellOpportunities.length})</span>
+              </button>
+            </div>
+
+            {/* Search and Filters */}
+            {renewalTab === 'active' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', background: '#F8FAFC', border: `1px solid ${C.border}`, borderRadius: '6px', padding: '4px 8px' }}>
+                  <Search size={12} color={C.textMuted} style={{ marginRight: 6 }} />
+                  <input
+                    placeholder="Search renewal..."
+                    value={renewalSearch}
+                    onChange={e => setRenewalSearch(e.target.value)}
+                    style={{ border: 'none', outline: 'none', fontSize: '12px', color: C.textSub, background: 'transparent', width: '130px' }}
+                  />
+                </div>
+
+                <select
+                  value={renewalStatusFilter}
+                  onChange={e => setRenewalStatusFilter(e.target.value)}
+                  style={{ border: `1px solid ${C.border}`, borderRadius: '6px', padding: '5px 8px', fontSize: '11.5px', color: C.textSub, background: '#F8FAFC' }}
+                >
+                  <option value="All">All Deadlines</option>
+                  <option value="7days">Expiring ≤ 7 Days</option>
+                  <option value="30days">Expiring ≤ 30 Days</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="active">Active Status</option>
+                </select>
+
+                <select
+                  value={renewalTypeFilter}
+                  onChange={e => setRenewalTypeFilter(e.target.value)}
+                  style={{ border: `1px solid ${C.border}`, borderRadius: '6px', padding: '5px 8px', fontSize: '11.5px', color: C.textSub, background: '#F8FAFC' }}
+                >
+                  <option value="All">All Types</option>
+                  <option value="Domain renewal">Domain</option>
+                  <option value="Hosting / VPS renewal">Hosting / VPS</option>
+                  <option value="AMC / Maintenance renewal">AMC Maintenance</option>
+                  <option value="Extra development and additional feature requests">Extra Features</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Tab 1: Active Services Table */}
+          {renewalTab === 'active' && (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 640 }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: `1px solid ${C.border}` }}>
+                    {['Service & Type', 'Client / Project', 'Expiry Date', 'Amount & Cycle', 'Status', 'Follow-Up', 'Action'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', fontSize: '10.5px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredServices.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ padding: '24px 16px', textAlign: 'center', color: C.textMuted, fontSize: '13px' }}>
+                        No matching services found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredServices.map((s, i) => {
+                      const exp = s.expiryDate ? new Date(s.expiryDate) : null;
+                      const isExpired = exp && exp < today;
+                      const daysLeft = exp ? Math.ceil((exp - today) / 86400000) : 0;
+                      const bType = s.status === 'Active' ? 'success' : s.status === 'Overdue' ? 'danger' : 'warning';
+
+                      return (
+                        <tr key={s._id || i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                          <td style={{ padding: '12px 16px' }}>
+                            <div style={{ fontWeight: 600, fontSize: '13px', color: C.text }}>{s.serviceName}</div>
+                            <div style={{ fontSize: '11px', color: C.textMuted }}>{s.serviceType}</div>
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '12px', color: C.textSub }}>
+                            <div style={{ fontWeight: 600, color: C.primary }}>{s.clientName}</div>
+                            {s.projectName && <div style={{ fontSize: '11px', color: C.textMuted }}>{s.projectName}</div>}
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '12px' }}>
+                            <div style={{ fontWeight: 600, color: isExpired ? C.rose : C.text }}>
+                              {exp ? exp.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                            </div>
+                            <div style={{ fontSize: '10.5px', color: isExpired ? C.rose : daysLeft <= 15 ? C.amber : C.textMuted }}>
+                              {isExpired ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d remaining`}
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '12px' }}>
+                            <div style={{ fontWeight: 700, color: C.emerald }}>₹{(s.renewalAmount || 0).toLocaleString('en-IN')}</div>
+                            <div style={{ fontSize: '10.5px', color: C.textMuted }}>{s.billingFrequency}</div>
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Badge label={s.status} type={bType} />
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '11.5px', color: C.textMuted }}>
+                            {s.nextFollowupDate ? new Date(s.nextFollowupDate).toLocaleDateString('en-IN') : 'None'}
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <a
+                              href={`/admin/resources/ServiceRenewal/records/${s._id}/show`}
+                              style={{ color: C.primary, fontSize: '11.5px', fontWeight: 600, textDecoration: 'none' }}
+                            >
+                              Manage ↗
+                            </a>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Tab 2: Renewal History */}
+          {renewalTab === 'history' && (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 600 }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: `1px solid ${C.border}` }}>
+                    {['Service', 'Client', 'Previous Expiry', 'New Expiry', 'Price', 'Invoice Ref', 'Payment Status', 'Renewed Date'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', fontSize: '10.5px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {renewalHistory.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" style={{ padding: '24px 16px', textAlign: 'center', color: C.textMuted, fontSize: '13px' }}>
+                        No renewal history recorded yet
+                      </td>
+                    </tr>
+                  ) : (
+                    renewalHistory.map((h, i) => (
+                      <tr key={h._id || i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: '10px 16px', fontWeight: 600, fontSize: '12.5px', color: C.text }}>{h.serviceName}</td>
+                        <td style={{ padding: '10px 16px', fontSize: '12px', color: C.textSub }}>{h.clientName}</td>
+                        <td style={{ padding: '10px 16px', fontSize: '11.5px', color: C.textMuted }}>{h.previousExpiryDate ? new Date(h.previousExpiryDate).toLocaleDateString('en-IN') : 'N/A'}</td>
+                        <td style={{ padding: '10px 16px', fontWeight: 600, fontSize: '12px', color: C.text }}>{h.newExpiryDate ? new Date(h.newExpiryDate).toLocaleDateString('en-IN') : 'N/A'}</td>
+                        <td style={{ padding: '10px 16px', fontWeight: 700, fontSize: '12px', color: C.emerald }}>₹{(h.renewalPrice || 0).toLocaleString('en-IN')}</td>
+                        <td style={{ padding: '10px 16px', fontSize: '11.5px', color: C.primary }}>{h.invoiceReference || 'None'}</td>
+                        <td style={{ padding: '10px 16px' }}>
+                          <Badge label={h.paymentStatus} type={h.paymentStatus === 'Paid' ? 'success' : 'warning'} />
+                        </td>
+                        <td style={{ padding: '10px 16px', fontSize: '11px', color: C.textMuted }}>{new Date(h.renewedAt).toLocaleDateString('en-IN')}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Tab 3: Upsell Opportunities */}
+          {renewalTab === 'upsells' && (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 640 }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: `1px solid ${C.border}` }}>
+                    {['Opportunity & Description', 'Client', 'Estimated Value', 'Status', 'Next Follow-Up', 'Quotation', 'Action'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', fontSize: '10.5px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {upsellOpportunities.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ padding: '24px 16px', textAlign: 'center', color: C.textMuted, fontSize: '13px' }}>
+                        No open upsell opportunities found
+                      </td>
+                    </tr>
+                  ) : (
+                    upsellOpportunities.map((u, i) => (
+                      <tr key={u._id || i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: '12px 16px', maxWidth: '280px' }}>
+                          <div style={{ fontWeight: 600, fontSize: '13px', color: C.text }}>{u.title}</div>
+                          {u.description && <div style={{ fontSize: '11.5px', color: C.textMuted, marginTop: '2px' }}>{u.description}</div>}
+                        </td>
+                        <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: C.primary }}>{u.clientName}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 700, color: C.emerald }}>₹{(u.estimatedValue || 0).toLocaleString('en-IN')}</td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <Badge label={u.status} type={u.status === 'Won' ? 'success' : u.status === 'Lost' ? 'danger' : 'primary'} />
+                        </td>
+                        <td style={{ padding: '12px 16px', fontSize: '11.5px', color: C.textMuted }}>
+                          {u.nextFollowupDate ? new Date(u.nextFollowupDate).toLocaleDateString('en-IN') : 'None'}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {u.quotationLink ? (
+                            <a href={u.quotationLink} target="_blank" rel="noopener noreferrer" style={{ color: C.primary, fontSize: '11.5px', textDecoration: 'none' }}>Quote ↗</a>
+                          ) : (
+                            <span style={{ color: C.textMuted, fontSize: '11px' }}>—</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {u.convertedToProject ? (
+                            <span style={{ fontSize: '11px', color: C.emerald, fontWeight: 700 }}>✓ Converted</span>
+                          ) : (
+                            <button
+                              onClick={() => handleConvertUpsellOnDashboard(u)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                background: C.primaryLight,
+                                color: C.primary,
+                                border: `1px solid ${C.border}`,
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Convert to Project
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      </div>
+
       {/* ── Charts ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '28px' }}>
         <Card>
@@ -422,57 +1200,160 @@ const Dashboard = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Projects */}
           <Card style={{ padding: 0 }}>
-            <div style={{ padding: '18px 20px 10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={T.h2}>Active Projects Portfolio</h3>
-              <button 
-                onClick={() => window.location.href = '/admin/resources/Project'}
-                style={{ border: 'none', background: 'transparent', color: C.primary, fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
-              >
-                View All
-              </button>
+            <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  onClick={() => setProjectTab('portfolio')}
+                  style={{ 
+                    border: 'none',
+                    background: projectTab === 'portfolio' ? C.primaryLight : 'transparent',
+                    color: projectTab === 'portfolio' ? C.primary : C.textSub,
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Globe size={15} />
+                  <span>Website Showcase ({portfolioProjects.length})</span>
+                </button>
+                <button 
+                  onClick={() => setProjectTab('operations')}
+                  style={{ 
+                    border: 'none',
+                    background: projectTab === 'operations' ? C.primaryLight : 'transparent',
+                    color: projectTab === 'operations' ? C.primary : C.textSub,
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Briefcase size={15} />
+                  <span>Operations Projects ({projects.length})</span>
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button 
+                  onClick={() => window.location.href = projectTab === 'portfolio' ? '/admin/resources/PortfolioProject' : '/admin/resources/Project'}
+                  style={{ border: 'none', background: 'transparent', color: C.primary, fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {projectTab === 'portfolio' ? 'Manage Showcase' : 'Manage Operations'}
+                </button>
+              </div>
             </div>
+
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 450 }}>
-                <thead>
-                  <tr style={{ background: '#F8FAFC', borderBottom: `1px solid ${C.border}` }}>
-                    {['Project Name', 'Client', 'Deadline', 'Progress', 'Status'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', fontSize: '10.5px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.map((p, i) => {
-                    const bType = p.status === 'Completed' ? 'success' : p.status === 'In Progress' ? 'primary' : 'warning';
-                    return (
-                      <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
-                        <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '13px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: C.primaryLight, color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '11px' }}>
-                              {p.name ? p.name[0].toUpperCase() : 'P'}
-                            </div>
-                            <span>{p.name}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px 16px', fontSize: '12.5px', color: C.textSub }}>{p.client}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '12px', color: C.textMuted }}>
-                          {new Date(p.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ flex: 1, height: '4px', background: '#F1F5F9', borderRadius: '10px', overflow: 'hidden', minWidth: '50px' }}>
-                              <div style={{ height: '100%', width: `${p.progress}%`, background: p.status === 'Completed' ? C.emerald : C.primary, borderRadius: '10px' }} />
-                            </div>
-                            <span style={{ fontSize: '10.5px', fontWeight: 700, color: C.textMuted }}>{p.progress}%</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <Badge label={p.status} type={bType} />
+              {projectTab === 'portfolio' ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 480 }}>
+                  <thead>
+                    <tr style={{ background: '#F8FAFC', borderBottom: `1px solid ${C.border}` }}>
+                      {['Project Title', 'Category', 'Client', 'Technologies', 'Status'].map(h => (
+                        <th key={h} style={{ padding: '10px 16px', fontSize: '10.5px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {portfolioProjects.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" style={{ padding: '24px 16px', textAlign: 'center', color: C.textMuted, fontSize: '13px' }}>
+                          No showcase projects found
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    ) : (
+                      portfolioProjects.map((p, i) => (
+                        <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                          <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '13px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: C.indigoLight, color: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '11px' }}>
+                                {p.title ? p.title[0].toUpperCase() : 'P'}
+                              </div>
+                              <div>
+                                <span style={{ display: 'block' }}>{p.title}</span>
+                                {p.subtitle && <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 400 }}>{p.subtitle}</span>}
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '12px', color: C.textSub }}>{p.category || 'Web App'}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '12px', color: C.textSub }}>{p.clientName || 'Internal'}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '11.5px', color: C.textMuted }}>
+                            {Array.isArray(p.technologies) && p.technologies.length > 0 
+                              ? p.technologies.slice(0, 3).join(', ') 
+                              : 'Custom Stack'}
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Badge label={p.isActive ? 'Active' : 'Hidden'} type={p.isActive ? 'success' : 'default'} />
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 450 }}>
+                  <thead>
+                    <tr style={{ background: '#F8FAFC', borderBottom: `1px solid ${C.border}` }}>
+                      {['Project Name', 'Client', 'Deadline', 'Progress', 'Status'].map(h => (
+                        <th key={h} style={{ padding: '10px 16px', fontSize: '10.5px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projects.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" style={{ padding: '24px 16px', textAlign: 'center', color: C.textMuted, fontSize: '13px' }}>
+                          No operations projects found
+                        </td>
+                      </tr>
+                    ) : (
+                      projects.map((p, i) => {
+                        const bType = p.status === 'Completed' ? 'success' : p.status === 'In Progress' ? 'primary' : 'warning';
+                        const deadlineText = p.deadline 
+                          ? new Date(p.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : 'Ongoing';
+                        return (
+                          <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                            <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '13px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: C.primaryLight, color: C.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '11px' }}>
+                                  {p.name ? p.name[0].toUpperCase() : 'P'}
+                                </div>
+                                <span>{p.name}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 16px', fontSize: '12.5px', color: C.textSub }}>{p.client || 'Internal'}</td>
+                            <td style={{ padding: '12px 16px', fontSize: '12px', color: C.textMuted }}>
+                              {deadlineText}
+                            </td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ flex: 1, height: '4px', background: '#F1F5F9', borderRadius: '10px', overflow: 'hidden', minWidth: '50px' }}>
+                                  <div style={{ height: '100%', width: `${p.progress || 0}%`, background: p.status === 'Completed' ? C.emerald : C.primary, borderRadius: '10px' }} />
+                                </div>
+                                <span style={{ fontSize: '10.5px', fontWeight: 700, color: C.textMuted }}>{p.progress || 0}%</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <Badge label={p.status || 'Pending'} type={bType} />
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </Card>
 

@@ -78,11 +78,18 @@ const Intern = mongoose.model('Intern', InternSchema);
 const ProjectSchema = new mongoose.Schema({
   name: { type: String, required: true },
   client: { type: String },
+  clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
   teamMembers: [String],
   progress: { type: Number, default: 0 },
   deadline: { type: Date },
-  status: { type: String, enum: ['Completed', 'In Progress', 'Pending', 'Delayed', 'Urgent'], default: 'Pending' },
-});
+  status: { type: String, enum: ['Completed', 'In Progress', 'Pending', 'Delayed', 'Urgent', 'Confirmed'], default: 'Confirmed' },
+  projectValue: { type: Number, default: 0 },
+  paymentStatus: { type: String, enum: ['Fully Paid', 'Partially Paid', 'Pending', 'Unpaid'], default: 'Fully Paid' },
+  outstandingBalance: { type: Number, default: 0 },
+  services: [String],
+  address: { type: String },
+  maintenanceNotes: { type: String }
+}, { timestamps: true });
 const Project = mongoose.model('Project', ProjectSchema);
 
 const TaskSchema = new mongoose.Schema({
@@ -227,8 +234,18 @@ const InvoiceSchema = new mongoose.Schema({
 InvoiceSchema.pre('save', async function(next) {
   this.totalAmount = (this.invoiceAmount + (this.taxAmount || 0)) - (this.discountAmount || 0);
   if (!this.invoiceId) {
-    const c = await mongoose.models.Invoice.countDocuments();
-    this.invoiceId = `INV-${new Date().getFullYear()}-${String(c + 1).padStart(4, '0')}`;
+    const year = new Date().getFullYear();
+    const last = await mongoose.models.Invoice.findOne({ invoiceId: new RegExp(`^INV-${year}-`) }).sort({ invoiceId: -1 });
+    let nextNum = 1;
+    if (last && last.invoiceId) {
+      const parts = last.invoiceId.split('-');
+      const parsed = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(parsed)) nextNum = parsed + 1;
+    } else {
+      const c = await mongoose.models.Invoice.countDocuments();
+      nextNum = c + 1;
+    }
+    this.invoiceId = `INV-${year}-${String(nextNum).padStart(4, '0')}`;
   }
   next();
 });
@@ -364,11 +381,17 @@ const Manager = mongoose.model('Manager', ManagerSchema);
 
 const ClientSchema = new mongoose.Schema({
   clientName: { type: String, required: true, unique: true },
-  email: { type: String, required: true },
+  email: { type: String }, // Optional so unprovided contact details are not invented
   phone: { type: String },
   company: { type: String },
+  organization: { type: String },
+  designation: { type: String },
   address: { type: String },
-  status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' }
+  location: { type: String },
+  status: { type: String, enum: ['Active', 'Inactive', 'Confirmed'], default: 'Confirmed' },
+  totalProjectValue: { type: Number, default: 0 },
+  totalPaid: { type: Number, default: 0 },
+  outstandingBalance: { type: Number, default: 0 }
 }, { timestamps: true });
 const Client = mongoose.model('Client', ClientSchema);
 
@@ -445,10 +468,321 @@ const PortfolioProjectSchema = new mongoose.Schema({
 }, { timestamps: true });
 const PortfolioProject = mongoose.model('PortfolioProject', PortfolioProjectSchema);
 
+// --- Post-Delivery Service & Renewal Tracking ---
+const ServiceRenewalSchema = new mongoose.Schema({
+  serviceId: { type: String, unique: true },
+  serviceName: { type: String, required: true },
+  serviceType: {
+    type: String,
+    required: true,
+    enum: [
+      'Domain renewal',
+      'Hosting / VPS renewal',
+      'AMC / Maintenance renewal',
+      'Extra development and additional feature requests',
+      'Other'
+    ],
+    default: 'Domain renewal'
+  },
+  clientName: { type: String, required: true },
+  clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
+  projectName: { type: String },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+  startDate: { type: Date, required: true },
+  expiryDate: { type: Date, required: true },
+  renewalAmount: { type: Number, required: true },
+  billingFrequency: {
+    type: String,
+    enum: ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual', 'One-Time', 'Custom'],
+    default: 'Annual'
+  },
+  status: {
+    type: String,
+    enum: ['Active', 'Pending Renewal', 'Renewed', 'Expired', 'Cancelled', 'Overdue'],
+    default: 'Active'
+  },
+  nextFollowupDate: { type: Date },
+  notes: { type: String },
+  clientEmail: { type: String },
+  clientNotificationEnabled: { type: Boolean, default: false },
+  autoReminderEnabled: { type: Boolean, default: true },
+  latestInvoiceReference: { type: String },
+  latestPaymentStatus: {
+    type: String,
+    enum: ['Pending', 'Paid', 'Partially Paid', 'Overdue', 'Unbilled'],
+    default: 'Unbilled'
+  }
+}, { timestamps: true });
+
+ServiceRenewalSchema.pre('save', async function(next) {
+  if (!this.serviceId) {
+    const year = new Date().getFullYear();
+    const last = await mongoose.models.ServiceRenewal.findOne({ serviceId: new RegExp(`^SRV-${year}-`) }).sort({ serviceId: -1 });
+    let nextNum = 1;
+    if (last && last.serviceId) {
+      const parts = last.serviceId.split('-');
+      const parsed = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(parsed)) nextNum = parsed + 1;
+    } else {
+      const c = await mongoose.models.ServiceRenewal.countDocuments();
+      nextNum = c + 1;
+    }
+    this.serviceId = `SRV-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+  next();
+});
+
+ServiceRenewalSchema.index({ clientName: 1 });
+ServiceRenewalSchema.index({ projectName: 1 });
+ServiceRenewalSchema.index({ expiryDate: 1 });
+ServiceRenewalSchema.index({ status: 1 });
+
+const ServiceRenewal = mongoose.model('ServiceRenewal', ServiceRenewalSchema);
+
+// --- Renewal History ---
+const RenewalHistorySchema = new mongoose.Schema({
+  serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'ServiceRenewal', required: true },
+  serviceIdentifier: { type: String },
+  serviceName: { type: String, required: true },
+  clientName: { type: String, required: true },
+  projectName: { type: String },
+  previousPeriodStart: { type: Date, required: true },
+  previousExpiryDate: { type: Date, required: true },
+  newPeriodStart: { type: Date },
+  newExpiryDate: { type: Date, required: true },
+  renewalPrice: { type: Number, required: true },
+  invoiceReference: { type: String },
+  invoiceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice' },
+  paymentStatus: {
+    type: String,
+    enum: ['Pending', 'Paid', 'Partially Paid', 'Overdue', 'Unbilled'],
+    default: 'Pending'
+  },
+  paymentRecordId: { type: String },
+  renewedAt: { type: Date, default: Date.now },
+  renewedBy: { type: String, default: 'Admin' },
+  notes: { type: String }
+}, { timestamps: true });
+
+RenewalHistorySchema.index({ serviceId: 1 });
+RenewalHistorySchema.index({ clientName: 1 });
+RenewalHistorySchema.index({ renewedAt: -1 });
+
+const RenewalHistory = mongoose.model('RenewalHistory', RenewalHistorySchema);
+
+// --- Upsell Tracking ---
+const UpsellOpportunitySchema = new mongoose.Schema({
+  opportunityId: { type: String, unique: true },
+  clientName: { type: String, required: true },
+  clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
+  title: { type: String, required: true },
+  description: { type: String },
+  estimatedValue: { type: Number, required: true },
+  nextFollowupDate: { type: Date },
+  notes: { type: String },
+  quotationLink: { type: String },
+  status: {
+    type: String,
+    enum: ['Identified', 'Contacted', 'Quotation Sent', 'Negotiation', 'Won', 'Lost'],
+    default: 'Identified'
+  },
+  convertedToProject: { type: Boolean, default: false },
+  convertedProjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+  convertedProjectName: { type: String },
+  createdBy: { type: String, default: 'Admin' }
+}, { timestamps: true });
+
+UpsellOpportunitySchema.pre('save', async function(next) {
+  if (!this.opportunityId) {
+    const year = new Date().getFullYear();
+    const last = await mongoose.models.UpsellOpportunity.findOne({ opportunityId: new RegExp(`^UPS-${year}-`) }).sort({ opportunityId: -1 });
+    let nextNum = 1;
+    if (last && last.opportunityId) {
+      const parts = last.opportunityId.split('-');
+      const parsed = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(parsed)) nextNum = parsed + 1;
+    } else {
+      const c = await mongoose.models.UpsellOpportunity.countDocuments();
+      nextNum = c + 1;
+    }
+    this.opportunityId = `UPS-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+  next();
+});
+
+UpsellOpportunitySchema.index({ clientName: 1 });
+UpsellOpportunitySchema.index({ status: 1 });
+UpsellOpportunitySchema.index({ nextFollowupDate: 1 });
+
+const UpsellOpportunity = mongoose.model('UpsellOpportunity', UpsellOpportunitySchema);
+
+// --- Renewal Email Reminder Delivery Log ---
+const RenewalReminderLogSchema = new mongoose.Schema({
+  serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'ServiceRenewal', required: true },
+  serviceName: { type: String },
+  clientName: { type: String },
+  reminderType: {
+    type: String,
+    enum: ['30_days_before', '15_days_before', '7_days_before', '1_day_before', 'on_expiry', 'after_expiry_followup'],
+    required: true
+  },
+  targetExpiryDate: { type: Date, required: true },
+  recipientEmail: { type: String, required: true },
+  recipientType: { type: String, enum: ['Admin', 'Client'], required: true },
+  status: { type: String, enum: ['Sent', 'Failed', 'Pending Retry'], default: 'Sent' },
+  attemptCount: { type: Number, default: 1 },
+  lastAttemptAt: { type: Date, default: Date.now },
+  error: { type: String },
+  sentAt: { type: Date }
+}, { timestamps: true });
+
+RenewalReminderLogSchema.index({ serviceId: 1, reminderType: 1, recipientEmail: 1, targetExpiryDate: 1 }, { unique: true });
+
+const RenewalReminderLog = mongoose.model('RenewalReminderLog', RenewalReminderLogSchema);
+
+// --- Client Feedback Request Schema ---
+const FeedbackRequestSchema = new mongoose.Schema({
+  requestId: { type: String, unique: true },
+  clientName: { type: String, required: true },
+  companyName: { type: String },
+  email: { type: String, required: true },
+  project: { type: String, required: true },
+  clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
+  tokenHash: { type: String, required: true, index: true },
+  rawToken: { type: String },
+  expiresAt: { type: Date, required: true },
+  status: {
+    type: String,
+    enum: ['Pending', 'Submitted', 'Expired', 'Revoked'],
+    default: 'Pending'
+  },
+  createdBy: { type: String, default: 'Admin' },
+  submittedAt: { type: Date },
+}, { timestamps: true });
+
+FeedbackRequestSchema.pre('save', async function(next) {
+  if (!this.requestId) {
+    const year = new Date().getFullYear();
+    const last = await mongoose.models.FeedbackRequest.findOne({ requestId: new RegExp(`^FBR-${year}-`) }).sort({ requestId: -1 });
+    let nextNum = 1;
+    if (last && last.requestId) {
+      const parts = last.requestId.split('-');
+      const parsed = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(parsed)) nextNum = parsed + 1;
+    } else {
+      const c = await mongoose.models.FeedbackRequest.countDocuments();
+      nextNum = c + 1;
+    }
+    this.requestId = `FBR-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+  next();
+});
+
+FeedbackRequestSchema.index({ email: 1 });
+FeedbackRequestSchema.index({ status: 1 });
+FeedbackRequestSchema.index({ expiresAt: 1 });
+
+const FeedbackRequest = mongoose.model('FeedbackRequest', FeedbackRequestSchema);
+
+// --- Client Feedback / Testimonial Submission Schema ---
+const ClientFeedbackSchema = new mongoose.Schema({
+  feedbackId: { type: String, unique: true },
+  requestId: { type: String, index: true },
+  clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+  clientName: { type: String, required: true },
+  companyName: { type: String },
+  organization: { type: String },
+  designation: { type: String },
+  email: { type: String },
+  project: { type: String, required: true },
+  rating: { type: Number, min: 1, max: 5 }, // Left blank unless client provides one
+  qualityRating: { type: Number, min: 1, max: 5 },
+  communicationRating: { type: Number, min: 1, max: 5 },
+  deliveryRating: { type: Number, min: 1, max: 5 },
+  feedbackText: { type: String, required: true },
+  draftText: { type: String },
+  source: { 
+    type: String, 
+    enum: ['Client-Provided', 'Suggested Draft'], 
+    default: 'Suggested Draft' 
+  },
+  clientApproved: { type: Boolean, default: false },
+  clientApprovalDate: { type: Date },
+  publicationConsent: { type: Boolean, required: true, default: false },
+  publicationConsentDate: { type: Date },
+  identityDisplayConsent: { type: Boolean, default: false },
+  imageDisplayConsent: { type: Boolean, default: false },
+  photoUrl: { type: String },
+  status: {
+    type: String,
+    enum: [
+      'Draft', 
+      'Awaiting Client Approval', 
+      'Awaiting Publication Consent', 
+      'Pending Review', 
+      'Approved', 
+      'Published', 
+      'Rejected', 
+      'Archived'
+    ],
+    default: 'Draft'
+  },
+  approvedBy: { type: String },
+  approvedAt: { type: Date },
+  publishedAt: { type: Date },
+  adminNotes: { type: String },
+}, { timestamps: true });
+
+ClientFeedbackSchema.pre('save', async function(next) {
+  if (!this.feedbackId) {
+    const year = new Date().getFullYear();
+    const last = await mongoose.models.ClientFeedback.findOne({ feedbackId: new RegExp(`^FDB-${year}-`) }).sort({ feedbackId: -1 });
+    let nextNum = 1;
+    if (last && last.feedbackId) {
+      const parts = last.feedbackId.split('-');
+      const parsed = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(parsed)) nextNum = parsed + 1;
+    } else {
+      const c = await mongoose.models.ClientFeedback.countDocuments();
+      nextNum = c + 1;
+    }
+    this.feedbackId = `FDB-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+  next();
+});
+
+ClientFeedbackSchema.index({ status: 1 });
+ClientFeedbackSchema.index({ publicationConsent: 1 });
+ClientFeedbackSchema.index({ rating: -1 });
+
+const ClientFeedback = mongoose.model('ClientFeedback', ClientFeedbackSchema);
+
+// --- Feedback Audit Log Schema ---
+const FeedbackAuditLogSchema = new mongoose.Schema({
+  feedbackId: { type: String },
+  requestId: { type: String },
+  actorId: { type: String, default: 'Admin' },
+  action: { type: String, required: true },
+  previousValues: { type: mongoose.Schema.Types.Mixed },
+  newValues: { type: mongoose.Schema.Types.Mixed },
+  notes: { type: String },
+  ipAddress: { type: String },
+}, { timestamps: true });
+
+FeedbackAuditLogSchema.index({ feedbackId: 1 });
+FeedbackAuditLogSchema.index({ requestId: 1 });
+FeedbackAuditLogSchema.index({ createdAt: -1 });
+
+const FeedbackAuditLog = mongoose.model('FeedbackAuditLog', FeedbackAuditLogSchema);
+
 export {
   Employee, Intern, Project, Task, Ticket, Attendance, LeaveRequest, Payroll, 
   Meeting, Activity, Revenue, Invoice, Bill, Lead, Deal, LiveChat, Setting,
   JobPosting, JobApplication, Manager, Client, Vendor, ClientRequest, Document,
-  Tool, ChatRoom, PortfolioProject
+  Tool, ChatRoom, PortfolioProject,
+  ServiceRenewal, RenewalHistory, UpsellOpportunity, RenewalReminderLog,
+  FeedbackRequest, ClientFeedback, FeedbackAuditLog
 };
+
 

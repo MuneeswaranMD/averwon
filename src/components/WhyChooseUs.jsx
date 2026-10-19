@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Users, Award, HeadphonesIcon, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Users, Award, HeadphonesIcon, Rocket, Code, HeartHandshake } from 'lucide-react';
 import { stats } from '../data/mock';
 
 const iconMap = {
-  0: TrendingUp,
+  0: Rocket,
   1: Users,
-  2: Award,
-  3: HeadphonesIcon
+  2: Code,
+  3: HeartHandshake
 };
 
 const Counter = ({ target, suffix, isVisible }) => {

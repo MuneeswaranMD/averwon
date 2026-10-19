@@ -17,6 +17,10 @@ import Projects from './pages/Projects';
 import Careers from './pages/Careers';
 import Contact from './pages/Contact';
 import Support from './pages/Support';
+import ClientFeedback from './pages/ClientFeedback';
+import Products from './pages/Products';
+import CrackersPos from './pages/CrackersPos';
+import PosDemo from './pages/PosDemo';
 
 // Employee Portal Pages
 import EmployeeLogin from './employee/Login';
@@ -59,6 +63,8 @@ const PageTransition = ({ children }) => (
 const AppInner = () => {
   const location = useLocation();
   const isEmployeeRoute = location.pathname.startsWith('/employee');
+  const isDemoRoute = location.pathname.startsWith('/demo');
+  const hideStandardNav = isEmployeeRoute || isDemoRoute;
 
   // Scroll to top on route change
   useEffect(() => {
@@ -67,7 +73,7 @@ const AppInner = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {!isEmployeeRoute && <Navbar />}
+      {!hideStandardNav && <Navbar />}
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
@@ -76,9 +82,13 @@ const AppInner = () => {
             <Route path="/about" element={<PageTransition><About /></PageTransition>} />
             <Route path="/services" element={<PageTransition><Services /></PageTransition>} />
             <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+            <Route path="/products" element={<PageTransition><Products /></PageTransition>} />
+            <Route path="/products/crackers-pos" element={<PageTransition><CrackersPos /></PageTransition>} />
+            <Route path="/demo/retail-pos" element={<PosDemo />} />
             <Route path="/careers" element={<PageTransition><Careers /></PageTransition>} />
             <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
             <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+            <Route path="/feedback/:token" element={<PageTransition><ClientFeedback /></PageTransition>} />
 
             {/* Employee Portal Routes */}
             <Route path="/employee/login" element={<EmployeeLogin />} />
@@ -112,7 +122,7 @@ const AppInner = () => {
           </Routes>
         </AnimatePresence>
       </main>
-      {!isEmployeeRoute && <Footer />}
+      {!hideStandardNav && <Footer />}
     </div>
   );
 };

@@ -27,9 +27,10 @@ const Footer = () => {
     {
       title: 'Solutions',
       links: [
+        { label: 'Software Products', path: '/products' },
+        { label: 'Crackers POS', path: '/products/crackers-pos' },
         { label: 'Services', path: '/services' },
         { label: 'Projects', path: '/projects' },
-        { label: 'Billing Software', path: '/billing' },
         { label: 'Support', path: '/support' },
       ],
     },

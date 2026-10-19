@@ -45,3 +45,5 @@ import LeadImport from '../src/admin/components/LeadImport'
 AdminJS.UserComponents.LeadImport = LeadImport
 import EmployeeSelect from '../src/admin/components/EmployeeSelect'
 AdminJS.UserComponents.EmployeeSelect = EmployeeSelect
+import FeedbackManagement from '../src/admin/components/FeedbackManagement'
+AdminJS.UserComponents.FeedbackManagement = FeedbackManagement

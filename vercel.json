@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://averqon-backend.onrender.com/api/:path*"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://averqon-backend.onrender.com/admin/:path*"
+    },
+    {
+      "source": "/admin",
+      "destination": "https://averqon-backend.onrender.com/admin"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

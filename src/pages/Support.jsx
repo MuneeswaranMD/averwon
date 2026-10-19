@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PlusCircle, 
@@ -23,7 +23,8 @@ import {
   ChevronRight,
   Upload,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  X
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../api-config';
 
@@ -56,6 +57,7 @@ export default function SupportPage() {
   });
   const [attachment, setAttachment] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Reply Comments State
   const [newComment, setNewComment] = useState('');
@@ -135,6 +137,7 @@ export default function SupportPage() {
           status: 'Open', dueDate: '', initialComment: '', adminNotes: '', resolutionNotes: ''
         });
         setAttachment(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
         await fetchTickets();
         if (json.ticket) {
           setSelectedTicket(json.ticket);
@@ -212,59 +215,59 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+    <div className="min-h-screen bg-[#F6F8FC] text-[#101A32] font-sans">
 
       {/* ── Toast Notification Banner ── */}
       <AnimatePresence>
         {toast.show && (
           <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className={`fixed bottom-6 right-6 z-50 px-5 py-4 rounded-2xl shadow-2xl border flex items-center gap-3 max-w-md ${
-              toast.type === 'error' ? 'bg-red-950 text-red-200 border-red-800' : 'bg-slate-900 text-white border-emerald-500/40'
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            className={`fixed bottom-6 right-6 z-50 px-4 py-3.5 rounded-xl shadow-xl border flex items-center gap-3 max-w-md ${
+              toast.type === 'error' ? 'bg-[#101A32] text-red-200 border-red-500/40' : 'bg-[#101A32] text-white border-emerald-500/40'
             }`}
           >
-            <div className={`p-2 rounded-xl ${toast.type === 'error' ? 'bg-red-900/60' : 'bg-emerald-500/20 text-emerald-400'}`}>
-              {toast.type === 'error' ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+            <div className={`p-1.5 rounded-lg shrink-0 ${toast.type === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-[#10B981]'}`}>
+              {toast.type === 'error' ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
             </div>
-            <p className="text-sm font-medium leading-snug">{toast.message}</p>
+            <p className="text-xs sm:text-sm font-medium leading-snug">{toast.message}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Hero Header Section ── */}
-      <section className="bg-slate-900 text-white pt-14 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center space-y-4">
-          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" /> Enterprise Support Center
+      {/* ── Clean Hero Header Section ── */}
+      <section className="bg-[#101A32] text-white pt-28 sm:pt-32 lg:pt-36 pb-12 sm:pb-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center space-y-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-white/10 text-blue-200 border border-white/10">
+            <Sparkles className="w-3.5 h-3.5 text-[#2160FF]" /> Enterprise Support Center
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
             How Can We Help You Today?
           </h1>
-          <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+          <p className="text-[#64748B] text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
             Submit a new support ticket or track your existing request in real time with our support engineering team.
           </p>
 
           {/* Tab Selector Buttons */}
-          <div className="pt-6 flex justify-center">
-            <div className="bg-slate-800/90 p-1.5 rounded-2xl border border-slate-700/60 inline-flex gap-2 shadow-xl">
+          <div className="pt-4 flex justify-center">
+            <div className="bg-[#18233C] p-1 rounded-xl border border-white/10 inline-flex gap-1 shadow-sm">
               <button
                 onClick={() => setActiveTab('submit')}
-                className={`px-7 py-3 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 ${
+                className={`px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 ${
                   activeTab === 'submit' 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#2160FF] text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <PlusCircle className="w-4 h-4" /> Raise a Ticket
               </button>
               <button
                 onClick={() => setActiveTab('track')}
-                className={`px-7 py-3 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 ${
+                className={`px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 ${
                   activeTab === 'track' 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#2160FF] text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <Search className="w-4 h-4" /> Track Status
@@ -274,194 +277,289 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* ── Main Content Body (White Theme) ── */}
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      {/* ── Main Content Body ── */}
+      <main className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         <AnimatePresence mode="wait">
 
           {/* 1. SUBMIT TICKET FORM */}
           {activeTab === 'submit' && (
-            <motion.div key="submit" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.2 }}>
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-10 shadow-xl shadow-slate-200/60 space-y-8">
+            <motion.div key="submit" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
+              <div className="bg-white rounded-[18px] border border-[#E2E8F0] p-6 sm:p-8 lg:p-9 shadow-[0_4px_20px_rgba(16,26,50,0.04)]">
                 
                 {/* Form Header */}
-                <div className="border-b border-slate-100 pb-5">
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                    <FileText className="w-6 h-6 text-blue-600" /> Submit Support Request
-                  </h2>
-                  <p className="text-slate-500 text-xs sm:text-sm mt-1">
-                    Please fill out the form below with your details and issue description.
-                  </p>
+                <div className="flex items-start gap-3.5 pb-6 border-b border-[#E2E8F0]">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100/70 flex items-center justify-center shrink-0 text-[#2160FF]">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[#101A32] tracking-tight">
+                      Submit Support Request
+                    </h2>
+                    <p className="text-sm text-[#64748B] mt-0.5 leading-relaxed">
+                      Tell us what you need help with, and our team will get back to you.
+                    </p>
+                  </div>
                 </div>
 
-                <form onSubmit={handleCreateTicket} className="space-y-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <form onSubmit={handleCreateTicket} className="mt-7 space-y-7">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                     
-                    {/* Left Column — Ticket Details */}
-                    <div className="space-y-5">
-                      <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600"><Layers className="w-4 h-4" /></span>
-                        <h3 className="text-xs font-extrabold text-blue-600 uppercase tracking-widest">Ticket Information</h3>
+                    {/* Left Column — Ticket Information */}
+                    <div className="space-y-4">
+                      <div className="pb-1">
+                        <h3 className="text-sm font-semibold text-[#101A32]">Ticket Information</h3>
                       </div>
 
+                      {/* Title — full width */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Title *</label>
+                        <label htmlFor="ticket-title" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Title <span className="text-[#2160FF]">*</span>
+                        </label>
                         <input 
+                          id="ticket-title"
                           required 
                           type="text" 
-                          placeholder="Summary of issue" 
+                          placeholder="Brief summary of the issue" 
                           value={form.title} 
                           onChange={e => setForm({ ...form, title: e.target.value })} 
-                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all shadow-sm" 
+                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      {/* Category and Priority — two equal columns */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Category *</label>
+                          <label htmlFor="ticket-category" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            Category <span className="text-[#2160FF]">*</span>
+                          </label>
                           <select 
+                            id="ticket-category"
                             value={form.category} 
                             onChange={e => setForm({ ...form, category: e.target.value })} 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-3.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all cursor-pointer shadow-sm"
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#101A32] outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all cursor-pointer"
                           >
                             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Priority *</label>
+                          <label htmlFor="ticket-priority" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            Priority <span className="text-[#2160FF]">*</span>
+                          </label>
                           <select 
+                            id="ticket-priority"
                             value={form.priority} 
                             onChange={e => setForm({ ...form, priority: e.target.value })} 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-3.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all cursor-pointer shadow-sm"
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#101A32] outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all cursor-pointer"
                           >
                             {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
                           </select>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      {/* Department and Ticket Type — two equal columns */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Department *</label>
+                          <label htmlFor="ticket-department" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            Department <span className="text-[#2160FF]">*</span>
+                          </label>
                           <select 
+                            id="ticket-department"
                             value={form.department} 
                             onChange={e => setForm({ ...form, department: e.target.value })} 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-3.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all cursor-pointer shadow-sm"
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#101A32] outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all cursor-pointer"
                           >
                             {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Ticket Type *</label>
+                          <label htmlFor="ticket-type" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            Ticket Type <span className="text-[#2160FF]">*</span>
+                          </label>
                           <select 
+                            id="ticket-type"
                             value={form.ticketType} 
                             onChange={e => setForm({ ...form, ticketType: e.target.value })} 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-3.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all cursor-pointer shadow-sm"
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 text-sm text-[#101A32] outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all cursor-pointer"
                           >
                             {TICKET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
                       </div>
 
+                      {/* Description — full width */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Description *</label>
+                        <label htmlFor="ticket-description" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Description <span className="text-[#2160FF]">*</span>
+                        </label>
                         <textarea 
+                          id="ticket-description"
                           required 
                           rows={4} 
-                          placeholder="Describe your issue in detail..." 
+                          placeholder="Please describe your issue or question in detail..." 
                           value={form.description} 
                           onChange={e => setForm({ ...form, description: e.target.value })} 
-                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all leading-relaxed shadow-sm" 
+                          className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all leading-relaxed resize-y min-h-[96px]" 
                         />
                       </div>
 
+                      {/* Attachment — full width with clean file upload component */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Attachment (Optional)</label>
-                        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 shadow-sm hover:bg-slate-100/60 transition-all">
-                          <input 
-                            type="file" 
-                            onChange={e => setAttachment(e.target.files[0])} 
-                            className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all cursor-pointer" 
-                          />
-                        </div>
+                        <label className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Attachment <span className="text-[#64748B] font-normal">(Optional)</span>
+                        </label>
+                        <input 
+                          type="file" 
+                          ref={fileInputRef}
+                          onChange={e => setAttachment(e.target.files[0] || null)} 
+                          className="hidden" 
+                          id="ticket-attachment-upload"
+                        />
+                        {!attachment ? (
+                          <label 
+                            htmlFor="ticket-attachment-upload"
+                            className="flex items-center justify-between w-full h-11 px-3.5 bg-[#F8FAFC] border border-dashed border-[#CBD5E1] rounded-xl hover:bg-slate-100/70 hover:border-[#2160FF] cursor-pointer transition-all group"
+                          >
+                            <div className="flex items-center gap-2 text-xs text-[#64748B] truncate">
+                              <Paperclip className="w-4 h-4 text-[#64748B] group-hover:text-[#2160FF] transition-colors shrink-0" />
+                              <span className="truncate">Attach file (logs, screenshots, documents)</span>
+                            </div>
+                            <span className="text-[11px] font-semibold text-[#2160FF] bg-blue-50 px-2.5 py-1 rounded-lg shrink-0 group-hover:bg-blue-100 transition-colors">
+                              Browse
+                            </span>
+                          </label>
+                        ) : (
+                          <div className="flex items-center justify-between w-full h-11 px-3.5 bg-blue-50/50 border border-blue-200 rounded-xl">
+                            <div className="flex items-center gap-2 min-w-0 text-xs text-[#101A32]">
+                              <Paperclip className="w-4 h-4 text-[#2160FF] shrink-0" />
+                              <span className="font-medium truncate">{attachment.name}</span>
+                              <span className="text-[#64748B] text-[11px] shrink-0">
+                                ({(attachment.size / 1024).toFixed(0)} KB)
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAttachment(null);
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                              className="p-1 rounded-md text-[#64748B] hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
+                              title="Remove attachment"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Right Column — Requester Details */}
-                    <div className="space-y-5">
-                      <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600"><UserCheck className="w-4 h-4" /></span>
-                        <h3 className="text-xs font-extrabold text-indigo-600 uppercase tracking-widest">Requester Information</h3>
+                    {/* Right Column — Requester Information */}
+                    <div className="space-y-4">
+                      <div className="pb-1">
+                        <h3 className="text-sm font-semibold text-[#101A32]">Requester Information</h3>
                       </div>
 
+                      {/* Full Name — full width */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name *</label>
+                        <label htmlFor="requester-name" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Full Name <span className="text-[#2160FF]">*</span>
+                        </label>
                         <input 
+                          id="requester-name"
                           required 
                           type="text" 
-                          placeholder="John Doe" 
+                          placeholder="e.g. John Doe" 
                           value={form.userName} 
                           onChange={e => setForm({ ...form, userName: e.target.value })} 
-                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all shadow-sm" 
+                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                         />
                       </div>
 
+                      {/* Email Address — full width */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Email Address *</label>
+                        <label htmlFor="requester-email" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Email Address <span className="text-[#2160FF]">*</span>
+                        </label>
                         <input 
+                          id="requester-email"
                           required 
                           type="email" 
-                          placeholder="john@company.com" 
+                          placeholder="name@company.com" 
                           value={form.userEmail} 
                           onChange={e => setForm({ ...form, userEmail: e.target.value })} 
-                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all shadow-sm" 
+                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      {/* User Role and Contact Phone — two equal columns */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">User Role</label>
+                          <label htmlFor="requester-role" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            User Role
+                          </label>
                           <input 
+                            id="requester-role"
                             type="text" 
-                            placeholder="Client" 
+                            placeholder="e.g. Client" 
                             value={form.userRole} 
                             onChange={e => setForm({ ...form, userRole: e.target.value })} 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all shadow-sm" 
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Contact Phone</label>
+                          <label htmlFor="requester-phone" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            Contact Phone
+                          </label>
                           <input 
-                            type="text" 
+                            id="requester-phone"
+                            type="tel" 
                             placeholder="+91 98765 43210" 
                             value={form.contactNumber} 
                             onChange={e => setForm({ ...form, contactNumber: e.target.value })} 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all shadow-sm" 
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                           />
                         </div>
                       </div>
 
-                      {/* Clean info note */}
-                      <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1 text-xs text-slate-600">
-                        <p className="font-bold text-slate-800 flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Automated Tracking & Notifications
-                        </p>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          A unique Ticket ID will be generated upon submission for real-time tracking and communication.
-                        </p>
+                      {/* Automated Tracking Notice */}
+                      <div className="pt-2">
+                        <div className="p-4 bg-[#F0F5FF]/70 border border-[#E0E7FF] rounded-xl flex items-start gap-3">
+                          <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                          <div className="space-y-0.5">
+                            <h4 className="text-xs font-semibold text-[#101A32]">
+                              Automated Tracking & Notifications
+                            </h4>
+                            <p className="text-xs text-[#64748B] leading-relaxed">
+                              A unique ticket ID will be generated after submission. You'll receive updates as your request progresses.
+                            </p>
+                          </div>
+                        </div>
                       </div>
 
                     </div>
 
                   </div>
 
-                  {/* Form Action */}
-                  <div className="flex justify-end pt-5 border-t border-slate-100">
+                  {/* Form Action Footer */}
+                  <div className="pt-6 border-t border-[#E2E8F0] flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-[#64748B] order-2 sm:order-1 text-center sm:text-left">
+                      Fields marked with <span className="text-[#2160FF] font-semibold">*</span> are required
+                    </p>
                     <button 
                       type="submit" 
                       disabled={submitting} 
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-9 py-4 rounded-2xl shadow-lg shadow-blue-600/25 flex items-center gap-2.5 text-sm transition-all disabled:opacity-50"
+                      className="w-full sm:w-auto h-11 px-7 rounded-xl font-semibold text-sm text-white bg-[#2160FF] hover:bg-[#1a4ecc] active:bg-[#153eb3] shadow-sm hover:shadow transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                     >
-                      {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-                      <span>{submitting ? 'Submitting Ticket...' : 'Submit Support Ticket'}</span>
+                      {submitting ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Submitting Ticket...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>Submit Support Ticket</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>
@@ -473,46 +571,59 @@ export default function SupportPage() {
           {activeTab === 'track' && (
             <motion.div key="track" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.2 }}>
               {!selectedTicket ? (
-                <div className="max-w-md mx-auto bg-white rounded-3xl border border-slate-200 p-8 md:p-10 shadow-xl shadow-slate-200/60 text-center space-y-6">
-                  <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
-                    <Search className="w-6 h-6" />
+                <div className="max-w-md mx-auto bg-white rounded-[18px] border border-[#E2E8F0] p-6 sm:p-8 shadow-[0_4px_20px_rgba(16,26,50,0.04)] text-center space-y-6">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto text-[#2160FF]">
+                    <Search className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-slate-900">Track Ticket Status</h2>
-                    <p className="text-xs text-slate-500 mt-1">Enter your Ticket ID & email address to view updates.</p>
+                    <h2 className="text-xl font-bold text-[#101A32]">Track Ticket Status</h2>
+                    <p className="text-xs text-[#64748B] mt-1">Enter your Ticket ID & email address to view updates.</p>
                   </div>
 
-                  {trackStatus.error && <p className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 p-3.5 rounded-2xl">{trackStatus.error}</p>}
+                  {trackStatus.error && (
+                    <p className="text-xs font-medium text-red-600 bg-red-50 border border-red-200 p-3 rounded-xl text-left">
+                      {trackStatus.error}
+                    </p>
+                  )}
 
                   <form onSubmit={handleTrackSubmit} className="space-y-4 text-left">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">Ticket ID</label>
+                      <label htmlFor="track-ticket-id" className="block text-xs font-medium text-[#101A32] mb-1.5">Ticket ID</label>
                       <input 
+                        id="track-ticket-id"
                         required 
                         type="text" 
                         placeholder="e.g. TKT-2026-001" 
                         value={trackQuery.ticketId} 
                         onChange={e => setTrackQuery({ ...trackQuery, ticketId: e.target.value })} 
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 font-mono text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 shadow-sm" 
+                        className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 font-mono text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">Registered Email</label>
+                      <label htmlFor="track-registered-email" className="block text-xs font-medium text-[#101A32] mb-1.5">Registered Email</label>
                       <input 
+                        id="track-registered-email"
                         required 
                         type="email" 
                         placeholder="user@company.com" 
                         value={trackQuery.email} 
                         onChange={e => setTrackQuery({ ...trackQuery, email: e.target.value })} 
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 shadow-sm" 
+                        className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                       />
                     </div>
                     <button 
                       type="submit" 
                       disabled={trackStatus.loading} 
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-blue-600/25 mt-2 text-sm transition-all"
+                      className="w-full h-11 bg-[#2160FF] hover:bg-[#1a4ecc] active:bg-[#153eb3] text-white font-semibold rounded-xl shadow-sm hover:shadow transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {trackStatus.loading ? 'Searching Server...' : 'Track Ticket Status'}
+                      {trackStatus.loading ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Searching Server...</span>
+                        </>
+                      ) : (
+                        <span>Track Ticket Status</span>
+                      )}
                     </button>
                   </form>
                 </div>

@@ -19,11 +19,11 @@ const AdminProjectAssign = () => {
   const fetchData = async () => {
     try {
       const [pRes, eRes] = await Promise.all([
-        fetch('/api/admin/projects').then(r => r.json()),
-        fetch('/api/admin/employees/all').then(r => r.json())
+        fetch('/api/admin/projects').then(r => r.json()).catch(() => []),
+        fetch('/api/admin/employees/all').then(r => r.json()).catch(() => [])
       ]);
-      setProjects(pRes);
-      setEmployees(eRes.map(e => e.name));
+      setProjects(Array.isArray(pRes) ? pRes : []);
+      setEmployees(Array.isArray(eRes) ? eRes.map(e => e.name).filter(Boolean) : []);
     } catch (err) {
       console.error(err);
     } finally {

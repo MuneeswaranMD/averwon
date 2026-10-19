@@ -65,10 +65,10 @@ export const services = [
 ];
 
 export const stats = [
-  { id: 1, label: 'Global Launches', value: 120, suffix: '+' },
-  { id: 2, label: 'Enterprise Partners', value: 45, suffix: '' },
-  { id: 3, label: 'Full-stack Engineers', value: 85, suffix: '+' },
-  { id: 4, label: 'Success Quotient', value: 98, suffix: '%' },
+  { id: 1, label: 'Projects Delivered', value: 10, suffix: '+' },
+  { id: 2, label: 'Clients Served', value: 5, suffix: '+' },
+  { id: 3, label: 'Technologies & Solutions', value: 5, suffix: '+' },
+  { id: 4, label: 'Client Satisfaction', value: 95, suffix: '%+' },
 ];
 
 export const projects = [
@@ -102,30 +102,69 @@ export const projects = [
   }
 ];
 
+
 export const testimonials = [
   {
     id: 1,
-    name: 'Eleanor Thorne',
-    company: 'CTO at Meridian Global',
-    feedback: 'Averqon didn\'t just build a product; they architected a solution that redefined our operational efficiency. Their depth in AI integration is truly industry-leading.',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200',
-    rating: 5
+    name: 'Psychologist',
+    company: 'Psychology Website Client',
+    feedback:
+      "Honestly, most of my clients have told me that booking a session has become so much easier now, and everyone who has seen the website absolutely loves it. I’m genuinely so happy and satisfied with how everything has turned out. All the credit for the work and effort you put into building this website goes to you. Thank you so much for making this happen for me! It really means a lot. ✨",
+    image: '',
+    rating: null,
+    status: 'pending-approval',
+    source: 'client-provided',
+    approvedForPublication: false,
   },
   {
     id: 2,
-    name: 'David Matsumo',
-    company: 'VP of Engineering, ZenDesk',
-    feedback: 'The technical rigour and project management from the Averqon team are exceptional. They delivered a high-availability legacy migration 3 weeks ahead of schedule.',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
-    rating: 5
+    name: 'MaxxJoy Tours',
+    company: 'Travel Website Development',
+    feedback:
+      'The website gives our travel business a professional online presence and makes it easier to bring our booking process and other services together. We appreciate the effort put into developing the website and integrating the tools needed for our workflow.',
+    image: '',
+    rating: null,
+    status: 'draft',
+    source: 'suggested-draft',
+    approvedForPublication: false,
   },
   {
     id: 3,
-    name: 'Clarissa Vance',
-    company: 'Founder of Ark Technologies',
-    feedback: 'Averqon is the ultimate partner for scaling startups. Their UI/UX vision combined with robust backend engineering gave us the edge we needed in a crowded market.',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
-    rating: 5
-  }
+    name: 'RetroStylings',
+    company: 'E-commerce Website Development',
+    feedback:
+      'We wanted a website that reflects our brand and showcases our products professionally. The new e-commerce website gives us a dedicated online platform for our business. We appreciate the time and effort put into bringing this project to life.',
+    image: '',
+    rating: null,
+    status: 'draft',
+    source: 'suggested-draft',
+    approvedForPublication: false,
+  },
+  {
+    id: 4,
+    name: 'Peeyem Traders',
+    company: 'Website, Domain & Hosting',
+    feedback:
+      'Having a dedicated website helps us present our business professionally online. We appreciate the work put into developing the website and arranging the domain, hosting, and maintenance services to support our online presence.',
+    image: '',
+    rating: null,
+    status: 'draft',
+    source: 'suggested-draft',
+    approvedForPublication: false,
+  },
+  {
+    id: 5,
+    name: 'Dr. R. Murugadoss',
+    company:
+      'Professor & Head, Artificial Intelligence and Data Science — V.S.B. College of Engineering Technical Campus',
+    feedback:
+      'The website redesign has helped us work toward a more modern and professional online presence. I appreciate the dedication and effort put into the project, along with the attention given to our website and technical requirements.',
+    image: '',
+    rating: null,
+    status: 'draft',
+    source: 'suggested-draft',
+    approvedForPublication: false,
+  },
 ];
+
 
