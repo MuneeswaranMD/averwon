@@ -86,10 +86,12 @@
   <!-- ── Preconnect for performance ────────────────────────────────── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Preconnect for JotForm third-party widget -->
+  <link rel="preconnect" href="https://cdn.jotfor.ms" />
 
-  <!-- ── Google Fonts: Inter + Poppins ─────────────────────────────── -->
+  <!-- ── Google Fonts: Inter + Poppins (only weights actually used) ── -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap"
     rel="stylesheet" />
 </head>
 
@@ -97,8 +99,8 @@
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 
-  <!-- Start of JotForm Agent Embed Code -->
-  <script src='https://cdn.jotfor.ms/agent/embedjs/019b56fbfa8f75a5b2a874d6aaedb3fa9994/embed.js'></script>
+  <!-- Start of JotForm Agent Embed Code — deferred to avoid blocking main thread -->
+  <script defer src='https://cdn.jotfor.ms/agent/embedjs/019b56fbfa8f75a5b2a874d6aaedb3fa9994/embed.js'></script>
   <!-- End of JotForm Agent Embed Code -->
 </body>
 

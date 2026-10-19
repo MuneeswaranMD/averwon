@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import useSEO from '../hooks/useSEO';
 import {
   Sparkles,
   ArrowRight,
@@ -48,6 +49,12 @@ const products = [
 ];
 
 export default function Products() {
+  useSEO({
+    title: 'Software Products & Retail Solutions | Averqon',
+    description: 'Explore Averqon software products including Crackers POS, billing software, and custom business management systems built for performance.',
+    canonical: 'https://averqon.in/products',
+  });
+
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('Crackers POS');
   const [submitting, setSubmitting] = useState(false);

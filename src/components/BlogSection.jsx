@@ -48,10 +48,11 @@ const BlogSection = () => {
             </motion.div>
           </div>
           <a
-            href="#"
+            href="#blog"
+            aria-label="View all blog articles"
             className="inline-flex items-center gap-3 px-8 h-14 rounded-full border-2 border-secondary text-secondary font-bold text-sm tracking-wide hover:bg-secondary hover:text-white hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,123,255,0.25)] transition-all duration-300 flex-shrink-0"
           >
-            View All Articles <ArrowRight size={16} />
+            View All Articles <ArrowRight size={16} aria-hidden="true" />
           </a>
         </div>
 
@@ -69,16 +70,20 @@ const BlogSection = () => {
                 <img 
                   src={post.image} 
                   alt={post.title} 
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="500"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
                 <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-5 py-2 rounded-2xl text-xs font-bold text-primary shadow-sm flex items-center gap-2">
-                  <Tag size={12} className="text-secondary" /> {post.category}
+                  <Tag size={12} className="text-secondary" aria-hidden="true" /> {post.category}
                 </div>
               </div>
               
               <div className="p-10 pt-4 flex flex-col flex-grow">
                 <div className="flex items-center gap-4 text-sm text-grayText font-bold uppercase tracking-wider mb-5">
-                  <span className="flex items-center gap-2"><Calendar size={16} className="text-accent" /> {post.date}</span>
+                  <span className="flex items-center gap-2"><Calendar size={16} className="text-accent" aria-hidden="true" /> {post.date}</span>
                 </div>
                 <h3 className="text-2xl font-bold text-primary mb-5 group-hover:text-secondary transition-colors line-clamp-2 leading-tight">
                   {post.title}
@@ -87,13 +92,13 @@ const BlogSection = () => {
                   {post.desc}
                 </p>
                 <div className="mt-auto">
-                  <button className="flex items-center gap-3 text-primary font-bold group/btn">
+                  <button type="button" aria-label={`Read article: ${post.title}`} className="flex items-center gap-3 text-primary font-bold group/btn">
                     <span className="relative">
                       Read Article
                       <span className="absolute bottom-0 left-0 w-full h-0.5 bg-secondary origin-left scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300"></span>
                     </span>
                     <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center group-hover/btn:bg-primary group-hover/btn:border-primary group-hover/btn:text-white transition-all duration-300">
-                       <ArrowUpRight size={18} />
+                       <ArrowUpRight size={18} aria-hidden="true" />
                     </div>
                   </button>
                 </div>

@@ -44,10 +44,10 @@ const Footer = () => {
   ];
 
   const socials = [
-    { label: 'LinkedIn', Icon: Linkedin },
-    { label: 'Twitter', Icon: Twitter },
-    { label: 'Facebook', Icon: Facebook },
-    { label: 'Instagram', Icon: Instagram },
+    { label: 'LinkedIn', Icon: Linkedin, href: 'https://www.linkedin.com/company/averqon' },
+    { label: 'Twitter', Icon: Twitter, href: 'https://twitter.com/averqon' },
+    { label: 'Facebook', Icon: Facebook, href: 'https://facebook.com/averqon' },
+    { label: 'Instagram', Icon: Instagram, href: 'https://instagram.com/averqon' },
   ];
 
   return (
@@ -59,7 +59,7 @@ const Footer = () => {
           <div className="space-y-8">
             <Link to="/" className="inline-flex items-center gap-3">
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white">
-                <img src="/logo.png" alt="Averqon Logo" className="h-10 w-auto object-contain" />
+                <img src="/logo.png" alt="Averqon Logo" width="40" height="40" loading="lazy" decoding="async" className="h-10 w-auto object-contain" />
               </span>
               <span className="text-3xl font-bold tracking-tight">Averqon</span>
             </Link>
@@ -158,14 +158,16 @@ const Footer = () => {
             &copy; {currentYear} Averqon Technologies. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            {socials.map(({ label, Icon }) => (
+            {socials.map(({ label, Icon, href }) => (
               <a
                 key={label}
-                href="#"
-                aria-label={label}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-400 transition-all duration-300 hover:border-secondary hover:bg-secondary hover:text-white"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Follow Averqon on ${label}`}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-400 transition-all duration-300 hover:border-secondary hover:bg-secondary hover:text-white"
               >
-                <Icon size={17} />
+                <Icon size={18} aria-hidden="true" />
               </a>
             ))}
           </div>

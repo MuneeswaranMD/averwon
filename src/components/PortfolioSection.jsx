@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, ArrowRight, Github } from 'lucide-react';
 import { projects as mockProjects } from '../data/mock';
@@ -58,13 +59,13 @@ const PortfolioSection = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <a
-              href="/projects"
+            <Link
+              to="/projects"
               className="inline-flex items-center gap-3 px-8 h-14 rounded-full border-2 border-secondary text-secondary font-bold text-sm tracking-wide hover:bg-secondary hover:text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,123,255,0.25)]"
             >
               View All Projects
-              <ArrowRight size={16} />
-            </a>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </motion.div>
         </div>
 
@@ -90,6 +91,10 @@ const PortfolioSection = () => {
                     <img
                       src={project.image}
                       alt={project.title}
+                      loading="lazy"
+                      decoding="async"
+                      width="800"
+                      height="500"
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       onError={(e) => {
                         e.target.onerror = null;
@@ -110,10 +115,11 @@ const PortfolioSection = () => {
                           href={project.liveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label={`View live demo of ${project.title}`}
                           onClick={(e) => e.stopPropagation()}
                           className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary hover:bg-secondary hover:text-white transition-all shadow-lg"
                         >
-                          <ExternalLink size={24} />
+                          <ExternalLink size={24} aria-hidden="true" />
                         </a>
                       )}
                       {project.githubUrl && (
@@ -121,10 +127,11 @@ const PortfolioSection = () => {
                           href={project.githubUrl}
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label={`View GitHub repository for ${project.title}`}
                           onClick={(e) => e.stopPropagation()}
                           className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary hover:bg-secondary hover:text-white transition-all shadow-lg"
                         >
-                          <Github size={24} />
+                          <Github size={24} aria-hidden="true" />
                         </a>
                       )}
                     </div>

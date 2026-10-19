@@ -173,6 +173,10 @@ const TestimonialsSection = () => {
                         <img
                           src={t.image}
                           alt={t.name}
+                          width="60"
+                          height="60"
+                          loading="lazy"
+                          decoding="async"
                           style={{ width:60, height:60, borderRadius:'50%', objectFit:'cover', position:'relative', zIndex:1, border:'3px solid #fff' }}
                         />
                       ) : (
@@ -197,7 +201,7 @@ const TestimonialsSection = () => {
                     {/* Nav arrows */}
                     {items.length > 1 && (
                       <div style={{ marginLeft:'auto', display:'flex', gap:10 }}>
-                        <button onClick={prev} style={{
+                        <button type="button" onClick={prev} aria-label="Previous testimonial" style={{
                           width:44, height:44, borderRadius:14,
                           background:'#f8faff', border:'1px solid #00336615',
                           display:'flex', alignItems:'center', justifyContent:'center',
@@ -206,9 +210,9 @@ const TestimonialsSection = () => {
                           onMouseEnter={e => { e.currentTarget.style.background='#003366'; e.currentTarget.style.color='#fff'; }}
                           onMouseLeave={e => { e.currentTarget.style.background='#f8faff'; e.currentTarget.style.color=''; }}
                         >
-                          <ChevronLeft size={18} color="#003366" />
+                          <ChevronLeft size={18} color="#003366" aria-hidden="true" />
                         </button>
-                        <button onClick={next} style={{
+                        <button type="button" onClick={next} aria-label="Next testimonial" style={{
                           width:44, height:44, borderRadius:14,
                           background:'#003366', border:'1px solid #003366',
                           display:'flex', alignItems:'center', justifyContent:'center',
@@ -217,7 +221,7 @@ const TestimonialsSection = () => {
                           onMouseEnter={e => { e.currentTarget.style.background='#4a7fbf'; }}
                           onMouseLeave={e => { e.currentTarget.style.background='#003366'; }}
                         >
-                          <ChevronRight size={18} color="#fff" />
+                          <ChevronRight size={18} color="#fff" aria-hidden="true" />
                         </button>
                       </div>
                     )}
@@ -232,6 +236,8 @@ const TestimonialsSection = () => {
                 {items.map((_,i) => (
                   <button
                     key={i}
+                    type="button"
+                    aria-label={`Go to testimonial ${i + 1}`}
                     onClick={() => { setAuto(false); setCurrent(i); }}
                     style={{
                       height:8, width: i===current ? 36 : 8,
@@ -254,6 +260,8 @@ const TestimonialsSection = () => {
             {items.map((item, i) => i !== current && (
               <motion.button
                 key={i}
+                type="button"
+                aria-label={`View testimonial by ${item.name}`}
                 onClick={() => { setAuto(false); setCurrent(i); }}
                 initial={{ opacity:0, y:16 }}
                 animate={{ opacity:1, y:0 }}
@@ -270,7 +278,7 @@ const TestimonialsSection = () => {
               >
                 <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
                   {item.image ? (
-                    <img src={item.image} alt={item.name} style={{ width:38, height:38, borderRadius:'50%', objectFit:'cover', border:'2px solid #00336615' }} />
+                    <img src={item.image} alt={item.name} width="38" height="38" loading="lazy" decoding="async" style={{ width:38, height:38, borderRadius:'50%', objectFit:'cover', border:'2px solid #00336615' }} />
                   ) : (
                     <div style={{ width:38, height:38, borderRadius:'50%', background:'linear-gradient(135deg,#003366,#4a7fbf)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:14 }}>
                       {item.name ? item.name.charAt(0) : 'A'}

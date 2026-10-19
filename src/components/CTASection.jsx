@@ -33,20 +33,22 @@ const CTASection = () => {
             <div className="flex flex-wrap justify-center gap-6">
               <a
                 href="#contact"
+                aria-label="Start a conversation with Averqon"
                 className="inline-flex items-center gap-3 px-10 h-16 rounded-full bg-secondary text-white font-bold text-base tracking-wide hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,123,255,0.4)] transition-all duration-300"
               >
                 Start a Conversation
                 <span className="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full">
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} aria-hidden="true" />
                 </span>
               </a>
               <a
                 href="https://calendly.com/muneeswaranmd2004/30min"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Book a strategy call on Calendly"
                 className="inline-flex items-center gap-3 px-10 h-16 rounded-full bg-white border-2 border-secondary/20 text-primary font-bold text-base tracking-wide hover:border-secondary hover:text-secondary hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,123,255,0.15)] transition-all duration-300"
               >
-                <Calendar className="w-5 h-5 text-secondary" />
+                <Calendar className="w-5 h-5 text-secondary" aria-hidden="true" />
                 Book a Strategy Call
               </a>
             </div>

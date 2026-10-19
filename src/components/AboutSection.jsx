@@ -54,7 +54,11 @@ const AboutSection = () => {
             <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
               <img
                 src={aboutImages.team}
-                alt="Team Collaboration"
+                alt="Averqon technology team working together on customer software solutions"
+                loading="lazy"
+                decoding="async"
+                width="600"
+                height="400"
                 className="w-full h-auto transform group-hover:scale-105 transition duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
@@ -87,7 +91,11 @@ const AboutSection = () => {
                   <img
                     key={idx}
                     src={img}
-                    alt={`Expert ${idx + 1}`}
+                    alt={idx === 0 ? "Averqon Enterprise Architect" : idx === 1 ? "Averqon Cloud Systems Engineer" : "Averqon AI Specialist"}
+                    loading="lazy"
+                    decoding="async"
+                    width="56"
+                    height="56"
                     className="w-14 h-14 rounded-full border-4 border-white dark:border-dark object-cover shadow-lg"
                   />
                 ))}

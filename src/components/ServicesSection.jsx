@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Globe, 
@@ -6,7 +7,7 @@ import {
   Palette, 
   Brain, 
   Cloud, 
-  Link, 
+  Link as LinkIcon, 
   Database, 
   Lightbulb,
   ArrowRight
@@ -19,7 +20,7 @@ const iconMap = {
   Palette,
   Brain,
   Cloud,
-  Link,
+  Link: LinkIcon,
   Database,
   Lightbulb
 };
@@ -74,10 +75,14 @@ const ServicesSection = () => {
                   {service.description}
                 </p>
 
-                <div className="flex items-center gap-2 text-secondary font-bold group/btn cursor-pointer mt-auto">
+                <Link
+                  to="/services"
+                  aria-label={`Learn more about ${service.title}`}
+                  className="flex items-center gap-2 text-secondary font-bold group/btn mt-auto"
+                >
                   <span className="text-sm uppercase tracking-wider">Learn More</span>
-                  <ArrowRight className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" />
-                </div>
+                  <ArrowRight className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" aria-hidden="true" />
+                </Link>
               </motion.div>
             );
           })}

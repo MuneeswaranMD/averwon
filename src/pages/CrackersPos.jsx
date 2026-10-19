@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import useSEO from '../hooks/useSEO';
 import {
   Flame,
   Zap,
@@ -31,6 +32,25 @@ import crackersScreenshot from '../assets/crackers-pos-screenshot.png';
 import API_BASE_URL from '../api-config';
 
 export default function CrackersPos() {
+  useSEO({
+    title: 'Crackers Billing Software & POS System | Averqon',
+    description: 'Discover Averqon Crackers POS, billing software for crackers retailers and wholesalers. Explore billing, product management and sales features, and book a live demo.',
+    canonical: 'https://averqon.in/products/crackers-pos',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'Averqon Crackers POS',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Windows, Web',
+      description: 'Discover Averqon Crackers POS, billing software for crackers retailers and wholesalers. Explore billing, product management and sales features, and book a live demo.',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'INR'
+      }
+    }
+  });
+
   const [openFaq, setOpenFaq] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
@@ -154,7 +174,7 @@ export default function CrackersPos() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-poppins text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]"
             >
-              The smarter way to run your <span className="bg-gradient-to-r from-primary via-blue-600 to-amber-600 bg-clip-text text-transparent">crackers shop.</span>
+              Crackers Billing Software for <span className="bg-gradient-to-r from-primary via-blue-600 to-amber-600 bg-clip-text text-transparent">Retailers and Wholesalers</span>
             </motion.h1>
 
             {/* Description */}

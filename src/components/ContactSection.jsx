@@ -130,25 +130,29 @@ const ContactSection = () => {
               <form className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-primary uppercase tracking-wider px-2">Your Name</label>
+                    <label htmlFor="contact-name" className="text-sm font-bold text-primary uppercase tracking-wider px-2">Your Name</label>
                     <input 
+                      id="contact-name"
                       type="text" 
                       placeholder="e.g. Alex Morgan" 
+                      autoComplete="name"
                       className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-primary uppercase tracking-wider px-2">Email Address</label>
+                    <label htmlFor="contact-email" className="text-sm font-bold text-primary uppercase tracking-wider px-2">Email Address</label>
                     <input 
+                      id="contact-email"
                       type="email" 
                       placeholder="e.g. alex@company.com" 
+                      autoComplete="email"
                       className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-primary uppercase tracking-wider px-2">I'm Interested In</label>
-                  <select className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm appearance-none cursor-pointer">
+                  <label htmlFor="contact-service" className="text-sm font-bold text-primary uppercase tracking-wider px-2">I'm Interested In</label>
+                  <select id="contact-service" className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm appearance-none cursor-pointer">
                     <option>Web Development</option>
                     <option>Mobile Application</option>
                     <option>AI & Automation</option>
@@ -157,14 +161,15 @@ const ContactSection = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-primary uppercase tracking-wider px-2">Project Details</label>
+                  <label htmlFor="contact-message" className="text-sm font-bold text-primary uppercase tracking-wider px-2">Project Details</label>
                   <textarea 
+                    id="contact-message"
                     rows="4" 
                     placeholder="Tell us about what you're looking to build..." 
                     className="w-full px-8 py-5 bg-white border border-gray-100 rounded-3xl focus:border-secondary focus:ring-4 focus:ring-secondary/5 outline-none transition-all font-medium text-primary shadow-sm resize-none"
                   ></textarea>
                 </div>
-                <Button className="w-full h-18 py-6 rounded-3xl bg-secondary hover:bg-primary text-white text-lg font-bold shadow-2xl shadow-secondary/20 transition-all flex items-center justify-center gap-3 group">
+                <Button type="submit" className="w-full h-18 py-6 rounded-3xl bg-secondary hover:bg-primary text-white text-lg font-bold shadow-2xl shadow-secondary/20 transition-all flex items-center justify-center gap-3 group">
                   Send Your Inquiry
                   <Send size={22} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </Button>

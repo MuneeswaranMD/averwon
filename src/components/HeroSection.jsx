@@ -97,13 +97,17 @@ const HeroSection = () => {
               </div>
 
               <div className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
-                <img
+              <img
                   src={heroDashboard}
                   alt="Averqon analytics dashboard preview"
                   className="h-52 w-full object-cover object-center sm:h-64 lg:h-72"
                   loading="eager"
                   decoding="async"
+                  fetchpriority="high"
+                  width="640"
+                  height="360"
                 />
+
               </div>
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white p-4 text-slate-900">
