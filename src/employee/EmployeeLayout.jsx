@@ -24,6 +24,7 @@ import {
   Shield
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../api-config';
+import useSEO from '../hooks/useSEO';
 
 const Z = {
   sidebarBg: '#0F172A', // Premium sleeker darker slate        
@@ -90,6 +91,12 @@ const MENU_SECTIONS = [
 const flatNavItems = MENU_SECTIONS.flatMap(sec => sec.items);
 
 const EmployeeLayout = () => {
+  useSEO({
+    title: 'Employee Portal | Averqon Internal System',
+    description: 'Averqon employee management and operations workspace.',
+    robots: 'noindex, nofollow',
+  });
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
   const [employee, setEmployee] = useState(null);

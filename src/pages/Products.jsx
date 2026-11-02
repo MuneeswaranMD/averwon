@@ -25,17 +25,21 @@ import {
   Send
 } from 'lucide-react';
 import crackersScreenshot from '../assets/crackers-pos-screenshot.png';
+import neoretailCore from '../assets/neoretail_core.png';
+import sentientAnalytics from '../assets/sentient_analytics.png';
+import averlinkLogistics from '../assets/averlink_logistics.png';
 import API_BASE_URL from '../api-config';
+import Breadcrumbs from '../components/SEO/Breadcrumbs';
 
 const products = [
   {
     id: 'crackers-pos',
     name: 'Crackers POS',
-    category: 'Retail & Distribution POS',
+    category: 'Fireworks & Festival Retail',
     status: 'Ready for Deployment',
     isFeatured: true,
     tagline: 'The smarter way to run your crackers shop.',
-    description: 'Fast billing. Accurate stock. GST invoices. One simple system built specifically for crackers and fireworks retailers during festival rushes.',
+    description: 'Fast counter billing, accurate dual-unit inventory, HSN 3604 GST invoices, and offline mode engineered for extreme Diwali festival rushes.',
     image: crackersScreenshot,
     link: '/products/crackers-pos',
     highlights: [
@@ -45,14 +49,137 @@ const products = [
       'Thermal receipt (2"/3") & formal A4 GST prints',
       'Offline-first engine resilient to festive internet cuts'
     ]
+  },
+  {
+    id: 'restaurant-pos',
+    name: 'Restaurant POS',
+    category: 'Hospitality & Food Service',
+    status: 'Ready for Deployment',
+    isFeatured: false,
+    tagline: 'Table management, KOT, and tableside billing.',
+    description: 'Speed up dining room turnaround, route Kitchen Order Tickets (KOT) directly to kitchen stations, and manage recipe ingredient stocks effortlessly.',
+    image: neoretailCore,
+    link: '/products/restaurant-pos',
+    highlights: [
+      'Interactive visual table floor plan with live statuses',
+      'Instant Kitchen Order Ticket (KOT) routing to stations',
+      'Handheld captain mobile ordering app for waiters',
+      'Raw ingredient recipe costing & stock deduction',
+      '100% offline operational mode over local Wi-Fi'
+    ]
+  },
+  {
+    id: 'averqon-erp',
+    name: 'Averqon ERP',
+    category: 'Enterprise Resource Planning',
+    status: 'Ready for Deployment',
+    isFeatured: false,
+    tagline: 'Unified modular business management software.',
+    description: 'Connect manufacturing, multi-warehouse stock, procurement, automated GST E-Invoicing, and accounting into one streamlined operational platform.',
+    image: sentientAnalytics,
+    link: '/products/averqon-erp',
+    highlights: [
+      'Multi-warehouse & inter-branch stock requisitions',
+      'Automated GST E-Invoicing (IRN) & E-Way bills',
+      'Production scheduling & Bill of Materials (BOM)',
+      'Integrated double-entry financial ledger & balance sheet',
+      'Role-based permissions with complete audit trails'
+    ]
+  },
+  {
+    id: 'billing-software',
+    name: 'GST Billing Software',
+    category: 'Retail & Wholesale Invoicing',
+    status: 'Ready for Deployment',
+    isFeatured: false,
+    tagline: 'Sub-second checkout & accurate accounting.',
+    description: 'Create GST-compliant invoices in under 5 seconds, track customer credit (Khata), print thermal receipts, and export GSTR-1 filing reports.',
+    image: neoretailCore,
+    link: '/products/billing-software',
+    highlights: [
+      '5-second quick invoice creation with barcode scanner',
+      'Thermal 2"/3" slips and formal A4/A5 GST tax prints',
+      'Customer credit (Khata) & outstanding balance ledger',
+      'Automated CGST/SGST/IGST split calculations',
+      'Day-end cashier shift balancing and cash audits'
+    ]
+  },
+  {
+    id: 'business-management-software',
+    name: 'Business Management Suite',
+    category: 'Commercial Business Operations',
+    status: 'Ready for Deployment',
+    isFeatured: false,
+    tagline: 'All-in-one operations, CRM & invoicing suite.',
+    description: 'Manage sales pipelines, track project delivery milestones, assign employee tasks, issue invoices, and monitor profit margins in real time.',
+    image: sentientAnalytics,
+    link: '/products/business-management-software',
+    highlights: [
+      'Kanban sales deal pipeline & lead tracking',
+      'Project milestone deliverables and task assignment',
+      'Quotation generation & integrated payment gateway',
+      'Employee attendance & timesheet tracking',
+      'Executive revenue forecasting & profit margin reports'
+    ]
+  },
+  {
+    id: 'inventory-management',
+    name: 'Inventory Management Software',
+    category: 'Supply Chain & Warehouse',
+    status: 'Ready for Deployment',
+    isFeatured: false,
+    tagline: 'Precision stock optimization across warehouses.',
+    description: 'Eliminate stockouts, identify slow-moving dead inventory, track batch expirations, and streamline multi-warehouse transfers.',
+    image: averlinkLogistics,
+    link: '/products/inventory-management',
+    highlights: [
+      'Multi-warehouse, godown, and rack/bin level tracking',
+      'Barcode-driven receiving, picking, and dispatching',
+      'Batch number & expiry date control (FIFO / FEFO)',
+      'Automated safety stock triggers & low-stock alerts',
+      'Stock adjustment audit logs to stop retail shrinkage'
+    ]
+  },
+  {
+    id: 'pos-software',
+    name: 'Retail POS Software',
+    category: 'Retail Point of Sale',
+    status: 'Ready for Deployment',
+    isFeatured: false,
+    tagline: 'High-speed retail checkout & integrated payments.',
+    description: 'Touchscreen product tiles, rapid barcode scanning, dynamic UPI QR payment displays, and full offline resilience for retail stores.',
+    image: neoretailCore,
+    link: '/products/pos-software',
+    highlights: [
+      'Rapid keyboard and barcode scanning listening engine',
+      'Dynamic UPI QR code generation on customer screen',
+      'Electronic weighing scale RS232/USB auto-weighting',
+      'Offline counter billing with automatic background sync',
+      'Support for multiple cashier lanes in one showroom'
+    ]
   }
 ];
 
 export default function Products() {
   useSEO({
     title: 'Software Products & Retail Solutions | Averqon',
-    description: 'Explore Averqon software products including Crackers POS, billing software, and custom business management systems built for performance.',
-    canonical: 'https://averqon.in/products',
+    description: 'Explore Averqon software products including Crackers POS, Restaurant POS, Averqon ERP, GST Billing Software, and Inventory Management built for speed and reliability.',
+    canonical: 'https://www.averqon.in/products',
+    breadcrumbs: [
+      { name: 'Products', path: '/products' }
+    ],
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Averqon Commercial Software Products',
+      description: 'Suite of purpose-built POS, ERP, Billing, and Inventory management software by Averqon.',
+      itemListElement: products.map((prod, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: prod.name,
+        url: `https://www.averqon.in${prod.link}`
+      }))
+    }
   });
 
   const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -125,9 +252,13 @@ export default function Products() {
 
   return (
     <div className="bg-[#F8FAFC] text-slate-800 selection:bg-primary/20">
-      
+      {/* Breadcrumb Navigation */}
+      <div className="pt-20 bg-slate-50/80 border-b border-slate-100">
+        <Breadcrumbs items={[{ name: 'Products', path: '/products' }]} />
+      </div>
+
       {/* ── 1. Hero Section ── */}
-      <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28 border-b border-slate-200/80 bg-gradient-to-b from-white via-slate-50/50 to-[#F8FAFC]">
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28 border-b border-slate-200/80 bg-gradient-to-b from-white via-slate-50/50 to-[#F8FAFC]">
         {/* Glow ambient effects */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-10 right-10 w-72 h-72 bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />

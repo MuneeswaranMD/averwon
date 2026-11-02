@@ -12,19 +12,19 @@ import ContactSection from '../components/ContactSection';
 
 const Home = () => {
   useSEO({
-    title: 'Averqon | Software Development & AI Solutions in Chennai',
+    title: 'Averqon | Digital Agency & Software Development Company India',
     description:
-      'Averqon builds custom software, web applications, SaaS platforms and AI solutions for growing businesses and startups in India.',
-    canonical: 'https://averqon.in/',
+      'Averqon is a digital agency and software development company building custom software, retail POS systems, enterprise ERP, web apps, and AI solutions in India.',
+    canonical: 'https://www.averqon.in/',
     schema: {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
-      '@id': 'https://averqon.in/#webpage',
-      url: 'https://averqon.in/',
-      name: 'Averqon | Software Development & AI Solutions in Chennai',
+      '@id': 'https://www.averqon.in/#webpage',
+      url: 'https://www.averqon.in/',
+      name: 'Averqon | Digital Agency & Software Development Company India',
       description:
-        'Averqon builds custom software, web applications, SaaS platforms and AI solutions for growing businesses and startups in India.',
-      isPartOf: { '@id': 'https://averqon.in/#organization' },
+        'Averqon is a digital agency and software development company building custom software, retail POS systems, enterprise ERP, web apps, and AI solutions in India.',
+      isPartOf: { '@id': 'https://www.averqon.in/#organization' },
     },
   });
 

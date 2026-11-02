@@ -30,12 +30,27 @@ import {
 } from 'lucide-react';
 import crackersScreenshot from '../assets/crackers-pos-screenshot.png';
 import API_BASE_URL from '../api-config';
+import Breadcrumbs from '../components/SEO/Breadcrumbs';
 
 export default function CrackersPos() {
   useSEO({
     title: 'Crackers Billing Software & POS System | Averqon',
     description: 'Discover Averqon Crackers POS, billing software for crackers retailers and wholesalers. Explore billing, product management and sales features, and book a live demo.',
-    canonical: 'https://averqon.in/products/crackers-pos',
+    keywords: [
+      'crackers POS software Sivakasi',
+      'fireworks shop billing software Tamil Nadu',
+      'offline billing software',
+      'POS billing software',
+      'retail POS software',
+      'GST billing software',
+      'thermal printer billing software',
+      'wholesale crackers billing system'
+    ],
+    canonical: 'https://www.averqon.in/products/crackers-pos',
+    breadcrumbs: [
+      { name: 'Products', path: '/products' },
+      { name: 'Crackers POS', path: '/products/crackers-pos' }
+    ],
     schema: {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
@@ -146,9 +161,18 @@ export default function CrackersPos() {
 
   return (
     <div className="bg-[#F8FAFC] text-slate-800 selection:bg-primary/20">
+      {/* Breadcrumbs Navigation */}
+      <div className="pt-20 bg-slate-50/80 border-b border-slate-100">
+        <Breadcrumbs
+          items={[
+            { name: 'Products', path: '/products' },
+            { name: 'Crackers POS', path: '/products/crackers-pos' }
+          ]}
+        />
+      </div>
 
       {/* ── 1. Hero Section ── */}
-      <section className="relative overflow-hidden pt-32 pb-16 lg:pt-40 lg:pb-24 border-b border-slate-200 bg-gradient-to-b from-white via-slate-50 to-[#F8FAFC]">
+      <section className="relative overflow-hidden pt-12 pb-16 lg:pt-16 lg:pb-24 border-b border-slate-200 bg-gradient-to-b from-white via-slate-50 to-[#F8FAFC]">
         {/* Glow ambient background effects */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[350px] bg-primary/8 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-12 right-12 w-64 h-64 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -591,6 +615,63 @@ export default function CrackersPos() {
             })}
           </div>
 
+        </div>
+      </section>
+
+      {/* ── Related Software Solutions & Services ── */}
+      <section className="py-16 bg-white border-t border-slate-200/80 px-6">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-10 text-center max-w-2xl mx-auto">
+            <p className="text-secondary font-bold text-xs uppercase tracking-widest mb-2">Connected Software Ecosystem</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 font-poppins">Explore Related Business Software</h2>
+            <p className="text-slate-500 text-sm mt-2">Scale your retail and wholesale operations with Averqon's suite of commercial applications.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link
+              to="/products/pos-software"
+              className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-primary hover:shadow-lg transition-all group block"
+            >
+              <div className="font-bold text-base text-slate-900 group-hover:text-primary transition-colors flex items-center justify-between mb-2">
+                <span>Retail POS Software</span>
+                <ArrowRight size={16} className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-transform" />
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">Touchscreen POS for year-round supermarkets, apparel, and hardware stores.</p>
+            </Link>
+
+            <Link
+              to="/products/billing-software"
+              className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-primary hover:shadow-lg transition-all group block"
+            >
+              <div className="font-bold text-base text-slate-900 group-hover:text-primary transition-colors flex items-center justify-between mb-2">
+                <span>GST Billing Software</span>
+                <ArrowRight size={16} className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-transform" />
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">High-speed counter checkout with thermal and formal A4 GST tax invoices.</p>
+            </Link>
+
+            <Link
+              to="/products/inventory-management"
+              className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-primary hover:shadow-lg transition-all group block"
+            >
+              <div className="font-bold text-base text-slate-900 group-hover:text-primary transition-colors flex items-center justify-between mb-2">
+                <span>Inventory Management</span>
+                <ArrowRight size={16} className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-transform" />
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">Multi-warehouse stock control, batch tracking, and low-stock alerts.</p>
+            </Link>
+
+            <Link
+              to="/custom-erp-development"
+              className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-primary hover:shadow-lg transition-all group block"
+            >
+              <div className="font-bold text-base text-slate-900 group-hover:text-primary transition-colors flex items-center justify-between mb-2">
+                <span>Custom Fireworks ERP</span>
+                <ArrowRight size={16} className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-transform" />
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">Manufacturing BOM, Sivakasi magazine licenses, and E-Way bills.</p>
+            </Link>
+          </div>
         </div>
       </section>
 

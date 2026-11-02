@@ -9,12 +9,13 @@ const Projects = () => {
     title: 'Our Work | Software & AI Projects — Averqon',
     description:
       'Explore Averqon\'s portfolio of custom software, web applications, SaaS platforms, and AI solutions built for businesses across India.',
-    canonical: 'https://averqon.in/projects',
+    canonical: 'https://www.averqon.in/projects',
+    breadcrumbs: [{ name: 'Projects', path: '/projects' }],
     schema: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      '@id': 'https://averqon.in/projects#webpage',
-      url: 'https://averqon.in/projects',
+      '@id': 'https://www.averqon.in/projects#webpage',
+      url: 'https://www.averqon.in/projects',
       name: 'Our Work | Software & AI Projects — Averqon',
       description:
         'Portfolio of custom software, web applications, SaaS platforms, and AI solutions built by Averqon.',

@@ -1,12 +1,13 @@
 User-agent: *
 Allow: /
 
-# Disallow admin, employee portal, and API routes
+# Disallow admin, employee portal, feedback tokens, and internal API routes
 Disallow: /admin/
 Disallow: /admin
 Disallow: /employee/
 Disallow: /employee
 Disallow: /api/
+Disallow: /feedback/
 
-# Sitemap location
-Sitemap: https://averqon.in/sitemap.xml
+# Sitemap index
+Sitemap: https://www.averqon.in/sitemap.xml

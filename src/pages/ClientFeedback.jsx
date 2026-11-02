@@ -20,6 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { uploadImageToCloudinary } from '../utils/cloudinary';
+import useSEO from '../hooks/useSEO';
 
 const StarRating = ({ value, onChange, label, required = false }) => {
   const [hover, setHover] = useState(0);
@@ -63,6 +64,12 @@ const StarRating = ({ value, onChange, label, required = false }) => {
 };
 
 export default function ClientFeedback() {
+  useSEO({
+    title: 'Client Project Feedback | Averqon',
+    description: 'Submit confidential project feedback and experience ratings for Averqon.',
+    robots: 'noindex, nofollow',
+  });
+
   const { token } = useParams();
 
   // Verification & Status States

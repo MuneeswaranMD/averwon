@@ -27,6 +27,7 @@ import {
   X
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../api-config';
+import useSEO from '../hooks/useSEO';
 
 // Form & Ticket Field Constants
 const CATEGORIES = [
@@ -39,6 +40,13 @@ const DEPARTMENTS = ['IT', 'HR', 'Finance', 'Management', 'Operations'];
 const TICKET_TYPES = ['Employee Ticket', 'Client Ticket', 'Internal Team Ticket', 'Vendor Ticket'];
 
 export default function SupportPage() {
+  useSEO({
+    title: 'Customer & Client Support Portal | Averqon',
+    description: 'Submit technical support tickets, track resolution status, and access Averqon software assistance.',
+    canonical: 'https://www.averqon.in/support',
+    breadcrumbs: [{ name: 'Support', path: '/support' }]
+  });
+
   // Navigation Tab State
   const [activeTab, setActiveTab] = useState('submit'); // 'submit' | 'track'
 

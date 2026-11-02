@@ -1,4 +1,47 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "averqon.in"
+        }
+      ],
+      "destination": "https://www.averqon.in/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/services/software-development",
+      "destination": "/software-development",
+      "permanent": true
+    },
+    {
+      "source": "/services/saas-development",
+      "destination": "/software-development",
+      "permanent": true
+    },
+    {
+      "source": "/services/web-application-development",
+      "destination": "/web-application-development",
+      "permanent": true
+    },
+    {
+      "source": "/services/ai-development",
+      "destination": "/ai-development",
+      "permanent": true
+    },
+    {
+      "source": "/services/cloud-services",
+      "destination": "/cloud-devops",
+      "permanent": true
+    },
+    {
+      "source": "/services/ui-ux-design",
+      "destination": "/ui-ux-design",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",

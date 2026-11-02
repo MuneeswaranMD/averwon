@@ -1,39 +1,49 @@
 import React from 'react';
 import useSEO from '../hooks/useSEO';
+import Breadcrumbs from '../components/SEO/Breadcrumbs';
 import CareersSection from '../components/CareersSection';
 import CTASection from '../components/CTASection';
+import { companyInfo } from '../data/seoData';
 
-const Careers = () => {
+export default function Careers() {
   useSEO({
-    title: 'Careers at Averqon | Software & AI Jobs in Chennai',
+    title: 'Careers at Averqon | Software Engineering & Tech Jobs Chennai',
     description:
-      'Join Averqon and build innovative software, SaaS, and AI products. Explore open roles for developers, designers, and technology professionals in Chennai.',
-    canonical: 'https://averqon.in/careers',
+      'Join Averqon and build innovative custom software, POS engines, and enterprise ERP solutions. Explore open positions for developers and designers in Chennai, India.',
+    canonical: `${companyInfo.siteUrl}/careers`,
+    breadcrumbs: [{ name: 'Careers', path: '/careers' }],
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'EmployerAggregateRating',
-      '@id': 'https://averqon.in/careers#webpage',
-      url: 'https://averqon.in/careers',
-      name: 'Careers at Averqon | Software & AI Jobs in Chennai',
+      '@type': 'WebPage',
+      '@id': `${companyInfo.siteUrl}/careers#webpage`,
+      url: `${companyInfo.siteUrl}/careers`,
+      name: 'Careers at Averqon | Software Engineering & Tech Jobs Chennai',
       description:
-        'Open technology roles at Averqon — software developers, AI engineers, UI/UX designers in Chennai, India.',
-      isPartOf: { '@id': 'https://averqon.in/#organization' },
+        'Open technology roles at Averqon — Full-Stack Engineers, Frontend Developers, DevOps Specialists, and UI/UX Designers in Chennai, India.',
+      isPartOf: { '@id': `${companyInfo.siteUrl}/#organization` },
     },
   });
 
   return (
-    <div className="overflow-x-hidden pt-20">
+    <div className="overflow-x-hidden pt-20 bg-white">
+      {/* Breadcrumb Navigation */}
+      <div className="bg-slate-50/80 border-b border-slate-100">
+        <Breadcrumbs items={[{ name: 'Careers', path: '/careers' }]} />
+      </div>
+
       {/* Page Hero Banner */}
-      <div className="bg-gradient-to-b from-blue-50 to-white py-20 text-center px-6">
-        <p className="text-secondary font-bold uppercase tracking-widest text-sm mb-4">Join the Team</p>
+      <div className="bg-gradient-to-b from-blue-50/80 via-white to-white py-20 text-center px-6">
+        <span className="text-secondary font-bold uppercase tracking-widest text-xs sm:text-sm block mb-3">
+          Join the Engineering Team
+        </span>
         <h1
           style={{ fontFamily: 'Poppins, sans-serif' }}
-          className="text-5xl md:text-6xl font-black text-primary mb-6"
+          className="text-4xl sm:text-5xl md:text-6xl font-black text-primary mb-6"
         >
-          Work at the Edge of <span className="text-secondary">Innovation</span>
+          Build Software That Moves <span className="text-secondary">Businesses Forward</span>
         </h1>
-        <p className="text-slate-500 text-lg max-w-xl mx-auto leading-relaxed">
-          Join a team of passionate builders, designers, and strategists creating the future of technology.
+        <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+          We are engineering the future of retail billing, supply chain automation, and enterprise software. Join a team focused on craftsmanship, high agency, and tangible business impact.
         </p>
       </div>
 
@@ -41,6 +51,4 @@ const Careers = () => {
       <CTASection />
     </div>
   );
-};
-
-export default Careers;
+}

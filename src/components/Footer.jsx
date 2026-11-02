@@ -16,22 +16,42 @@ const Footer = () => {
 
   const linkGroups = [
     {
-      title: 'Company',
+      title: 'Services',
       links: [
-        { label: 'Home', path: '/' },
-        { label: 'About', path: '/about' },
-        { label: 'Careers', path: '/careers' },
-        { label: 'Contact', path: '/contact' },
+        { label: 'Website Development', path: '/website-development' },
+        { label: 'Software Development', path: '/software-development' },
+        { label: 'Web Applications', path: '/web-application-development' },
+        { label: 'E-commerce Development', path: '/ecommerce-development' },
+        { label: 'Mobile App Development', path: '/mobile-app-development' },
+        { label: 'AI Development & Automation', path: '/ai-development' },
+        { label: 'Cloud & DevOps Engineering', path: '/cloud-devops' },
+        { label: 'Custom ERP Development', path: '/custom-erp-development' },
+        { label: 'SEO Services India', path: '/seo-services' },
       ],
     },
     {
-      title: 'Solutions',
+      title: 'Products',
       links: [
-        { label: 'Software Products', path: '/products' },
-        { label: 'Crackers POS', path: '/products/crackers-pos' },
-        { label: 'Services', path: '/services' },
-        { label: 'Projects', path: '/projects' },
-        { label: 'Support', path: '/support' },
+        { label: 'Software Directory', path: '/products' },
+        { label: 'Crackers POS Software', path: '/products/crackers-pos' },
+        { label: 'Restaurant POS System', path: '/products/restaurant-pos' },
+        { label: 'Averqon Enterprise ERP', path: '/products/averqon-erp' },
+        { label: 'GST Billing Software', path: '/products/billing-software' },
+        { label: 'Business Management Suite', path: '/products/business-management-software' },
+        { label: 'Inventory Management', path: '/products/inventory-management' },
+        { label: 'Retail POS Software', path: '/products/pos-software' },
+      ],
+    },
+    {
+      title: 'Company',
+      links: [
+        { label: 'Home', path: '/' },
+        { label: 'About Us', path: '/about' },
+        { label: 'Technology Blog', path: '/blog' },
+        { label: 'Projects & Case Studies', path: '/projects' },
+        { label: 'Careers', path: '/careers' },
+        { label: 'Client Support Portal', path: '/support' },
+        { label: 'Contact Averqon', path: '/contact' },
       ],
     },
   ];
@@ -101,7 +121,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-14 grid gap-10 border-y border-white/10 py-10 md:grid-cols-2 lg:grid-cols-[1fr_1fr_1.35fr]">
+        <div className="mt-14 grid gap-10 border-y border-white/10 py-10 md:grid-cols-2 lg:grid-cols-4">
           {linkGroups.map((group) => (
             <div key={group.title}>
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">{group.title}</h3>

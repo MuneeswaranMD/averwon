@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../api-config';
+import useSEO from '../hooks/useSEO';
 
 const Z = {
   accent: '#2563EB',
@@ -15,6 +16,12 @@ const Z = {
 };
 
 const Login = () => {
+  useSEO({
+    title: 'Employee Login | Averqon Internal System',
+    description: 'Averqon employee authentication and access portal.',
+    robots: 'noindex, nofollow',
+  });
+
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
   const [showPass, setShowPass]   = useState(false);

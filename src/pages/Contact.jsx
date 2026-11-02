@@ -33,16 +33,17 @@ const ContactPage = () => {
     title: 'Contact Averqon | Get a Free Quote for Software Development',
     description:
       'Get in touch with Averqon for custom software development, SaaS, web apps, and AI solutions. Free project consultation for businesses in Chennai and India.',
-    canonical: 'https://averqon.in/contact',
+    canonical: 'https://www.averqon.in/contact',
+    breadcrumbs: [{ name: 'Contact Us', path: '/contact' }],
     schema: {
       '@context': 'https://schema.org',
       '@type': 'ContactPage',
-      '@id': 'https://averqon.in/contact#webpage',
-      url: 'https://averqon.in/contact',
+      '@id': 'https://www.averqon.in/contact#webpage',
+      url: 'https://www.averqon.in/contact',
       name: 'Contact Averqon | Get a Free Quote for Software Development',
       description:
         'Get in touch with Averqon for custom software development, SaaS, web apps, and AI solutions.',
-      isPartOf: { '@id': 'https://averqon.in/#organization' },
+      isPartOf: { '@id': 'https://www.averqon.in/#organization' },
     },
   });
 

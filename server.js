@@ -31,6 +31,7 @@ import {
   sendProductEnquiryAdminNotification,
   sendProductEnquiryClientConfirmation
 } from './src/utils/productEnquiryEmailService.js';
+import { servicesData, productsData, blogArticlesData } from './src/data/seoData.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'averqon-employee-secret-key';
 
@@ -59,6 +60,37 @@ const __dirname = path.dirname(__filename);
 
 const start = async () => {
   const app = express();
+
+  // ── Canonical Domain & Protocol 301 Redirect Middleware ─────────
+  app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    const proto = req.headers['x-forwarded-proto'];
+
+    // 1. Redirect apex domain averqon.in -> www.averqon.in
+    if (host === 'averqon.in') {
+      return res.redirect(301, `https://www.averqon.in${req.originalUrl}`);
+    }
+
+    // 2. Redirect plain HTTP -> HTTPS on production domain
+    if (proto === 'http' && host.includes('averqon.in')) {
+      return res.redirect(301, `https://${host}${req.originalUrl}`);
+    }
+
+    // 3. 301 redirect legacy sitemap service URLs to canonical routes
+    const legacyRedirects = {
+      '/services/software-development': '/software-development',
+      '/services/saas-development': '/software-development',
+      '/services/web-application-development': '/web-application-development',
+      '/services/ai-development': '/ai-development',
+      '/services/cloud-services': '/cloud-devops',
+      '/services/ui-ux-design': '/ui-ux-design',
+    };
+    if (legacyRedirects[req.path]) {
+      return res.redirect(301, legacyRedirects[req.path]);
+    }
+
+    next();
+  });
 
   // Basic Middleware
   app.use(cors({
@@ -3166,13 +3198,62 @@ const start = async () => {
 
   app.use(express.static(path.join(__dirname, 'dist')));
   
-  // Custom SPA Fallback Middleware
+  // Custom SPA Fallback Middleware with SEO & Bot Meta Pre-Injection
   app.use((req, res, next) => {
     // Don't intercept AdminJS or API routes - let them 404 naturally
     if (req.url.startsWith('/admin') || req.url.startsWith('/api')) {
       return next();
     }
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      return next();
+    }
+
+    try {
+      let html = fs.readFileSync(indexPath, 'utf8');
+      const cleanPath = req.path.replace(/\/$/, '') || '/';
+      
+      let meta = null;
+      const strippedService = cleanPath.replace('/services/', '').replace('/', '');
+      if (servicesData[strippedService]) {
+        meta = servicesData[strippedService];
+      } else if (cleanPath.startsWith('/products/')) {
+        const prodKey = cleanPath.replace('/products/', '');
+        if (productsData[prodKey]) meta = productsData[prodKey];
+      } else if (cleanPath.startsWith('/blog/')) {
+        const blogKey = cleanPath.replace('/blog/', '');
+        if (blogArticlesData[blogKey]) meta = blogArticlesData[blogKey];
+      }
+
+      if (meta) {
+        const pageTitle = meta.title ? (meta.title.includes('Averqon') ? meta.title : `${meta.title} | Averqon`) : 'Averqon';
+        const pageDesc = meta.metaDescription || meta.description || 'Averqon software development and digital solutions.';
+        const canonicalUrl = `https://www.averqon.in${cleanPath}`;
+
+        html = html.replace(/<title>.*?<\/title>/, `<title>${pageTitle}</title>`);
+        html = html.replace(/<meta name="description"[\s\S]*?\/>/, `<meta name="description" content="${pageDesc}" />`);
+        if (meta.keywords && meta.keywords.length > 0) {
+          const kwStr = meta.keywords.join(', ');
+          if (html.includes('<meta name="keywords"')) {
+            html = html.replace(/<meta name="keywords"[\s\S]*?\/>/, `<meta name="keywords" content="${kwStr}" />`);
+          } else {
+            html = html.replace('</head>', `  <meta name="keywords" content="${kwStr}" />\n</head>`);
+          }
+        }
+        html = html.replace(/<link rel="canonical"[\s\S]*?\/>/, `<link rel="canonical" href="${canonicalUrl}" />`);
+        html = html.replace(/<meta property="og:title"[\s\S]*?\/>/, `<meta property="og:title" content="${pageTitle}" />`);
+        html = html.replace(/<meta property="og:description"[\s\S]*?\/>/, `<meta property="og:description" content="${pageDesc}" />`);
+        html = html.replace(/<meta property="og:url"[\s\S]*?\/>/, `<meta property="og:url" content="${canonicalUrl}" />`);
+        html = html.replace(/<meta name="twitter:title"[\s\S]*?\/>/, `<meta name="twitter:title" content="${pageTitle}" />`);
+        html = html.replace(/<meta name="twitter:description"[\s\S]*?\/>/, `<meta name="twitter:description" content="${pageDesc}" />`);
+      }
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(html);
+    } catch (e) {
+      res.sendFile(indexPath);
+    }
   });
 
   // ===================== CHAT APIS =====================
