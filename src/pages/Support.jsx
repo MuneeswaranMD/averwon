@@ -310,31 +310,82 @@ export default function SupportPage() {
                 </div>
 
                 <form onSubmit={handleCreateTicket} className="mt-7 space-y-7">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
                     
-                    {/* Left Column — Ticket Information */}
+                    {/* Left Column — Requester Info & Ticket Classification */}
                     <div className="space-y-4">
-                      <div className="pb-1">
-                        <h3 className="text-sm font-semibold text-[#101A32]">Ticket Information</h3>
+                      <div className="pb-1 border-b border-slate-100">
+                        <h3 className="text-sm font-semibold text-[#101A32]">1. Requester Information</h3>
                       </div>
 
-                      {/* Title — full width */}
+                      {/* Full Name */}
                       <div>
-                        <label htmlFor="ticket-title" className="block text-xs font-medium text-[#101A32] mb-1.5">
-                          Title <span className="text-[#2160FF]">*</span>
+                        <label htmlFor="requester-name" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Full Name <span className="text-[#2160FF]">*</span>
                         </label>
                         <input 
-                          id="ticket-title"
+                          id="requester-name"
                           required 
                           type="text" 
-                          placeholder="Brief summary of the issue" 
-                          value={form.title} 
-                          onChange={e => setForm({ ...form, title: e.target.value })} 
+                          placeholder="e.g. John Doe" 
+                          value={form.userName} 
+                          onChange={e => setForm({ ...form, userName: e.target.value })} 
                           className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
                         />
                       </div>
 
-                      {/* Category and Priority — two equal columns */}
+                      {/* Email Address */}
+                      <div>
+                        <label htmlFor="requester-email" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Email Address <span className="text-[#2160FF]">*</span>
+                        </label>
+                        <input 
+                          id="requester-email"
+                          required 
+                          type="email" 
+                          placeholder="name@company.com" 
+                          value={form.userEmail} 
+                          onChange={e => setForm({ ...form, userEmail: e.target.value })} 
+                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
+                        />
+                      </div>
+
+                      {/* User Role and Contact Phone */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label htmlFor="requester-role" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            User Role
+                          </label>
+                          <input 
+                            id="requester-role"
+                            type="text" 
+                            placeholder="e.g. Client" 
+                            value={form.userRole} 
+                            onChange={e => setForm({ ...form, userRole: e.target.value })} 
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="requester-phone" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                            Contact Phone
+                          </label>
+                          <input 
+                            id="requester-phone"
+                            type="tel" 
+                            placeholder="+91 98765 43210" 
+                            value={form.contactNumber} 
+                            onChange={e => setForm({ ...form, contactNumber: e.target.value })} 
+                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Classification Section Heading */}
+                      <div className="pt-2 pb-1 border-b border-slate-100">
+                        <h3 className="text-sm font-semibold text-[#101A32]">2. Ticket Classification</h3>
+                      </div>
+
+                      {/* Category and Priority */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                           <label htmlFor="ticket-category" className="block text-xs font-medium text-[#101A32] mb-1.5">
@@ -364,7 +415,7 @@ export default function SupportPage() {
                         </div>
                       </div>
 
-                      {/* Department and Ticket Type — two equal columns */}
+                      {/* Department and Ticket Type */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                           <label htmlFor="ticket-department" className="block text-xs font-medium text-[#101A32] mb-1.5">
@@ -393,8 +444,31 @@ export default function SupportPage() {
                           </select>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Description — full width */}
+                    {/* Right Column — Issue Details, Attachment & SLA */}
+                    <div className="space-y-4">
+                      <div className="pb-1 border-b border-slate-100">
+                        <h3 className="text-sm font-semibold text-[#101A32]">3. Issue Details &amp; Attachments</h3>
+                      </div>
+
+                      {/* Title */}
+                      <div>
+                        <label htmlFor="ticket-title" className="block text-xs font-medium text-[#101A32] mb-1.5">
+                          Title <span className="text-[#2160FF]">*</span>
+                        </label>
+                        <input 
+                          id="ticket-title"
+                          required 
+                          type="text" 
+                          placeholder="Brief summary of the issue" 
+                          value={form.title} 
+                          onChange={e => setForm({ ...form, title: e.target.value })} 
+                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
+                        />
+                      </div>
+
+                      {/* Description */}
                       <div>
                         <label htmlFor="ticket-description" className="block text-xs font-medium text-[#101A32] mb-1.5">
                           Description <span className="text-[#2160FF]">*</span>
@@ -410,7 +484,7 @@ export default function SupportPage() {
                         />
                       </div>
 
-                      {/* Attachment — full width with clean file upload component */}
+                      {/* Attachment */}
                       <div>
                         <label className="block text-xs font-medium text-[#101A32] mb-1.5">
                           Attachment <span className="text-[#64748B] font-normal">(Optional)</span>
@@ -458,91 +532,21 @@ export default function SupportPage() {
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Right Column — Requester Information */}
-                    <div className="space-y-4">
-                      <div className="pb-1">
-                        <h3 className="text-sm font-semibold text-[#101A32]">Requester Information</h3>
-                      </div>
-
-                      {/* Full Name — full width */}
-                      <div>
-                        <label htmlFor="requester-name" className="block text-xs font-medium text-[#101A32] mb-1.5">
-                          Full Name <span className="text-[#2160FF]">*</span>
-                        </label>
-                        <input 
-                          id="requester-name"
-                          required 
-                          type="text" 
-                          placeholder="e.g. John Doe" 
-                          value={form.userName} 
-                          onChange={e => setForm({ ...form, userName: e.target.value })} 
-                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
-                        />
-                      </div>
-
-                      {/* Email Address — full width */}
-                      <div>
-                        <label htmlFor="requester-email" className="block text-xs font-medium text-[#101A32] mb-1.5">
-                          Email Address <span className="text-[#2160FF]">*</span>
-                        </label>
-                        <input 
-                          id="requester-email"
-                          required 
-                          type="email" 
-                          placeholder="name@company.com" 
-                          value={form.userEmail} 
-                          onChange={e => setForm({ ...form, userEmail: e.target.value })} 
-                          className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
-                        />
-                      </div>
-
-                      {/* User Role and Contact Phone — two equal columns */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        <div>
-                          <label htmlFor="requester-role" className="block text-xs font-medium text-[#101A32] mb-1.5">
-                            User Role
-                          </label>
-                          <input 
-                            id="requester-role"
-                            type="text" 
-                            placeholder="e.g. Client" 
-                            value={form.userRole} 
-                            onChange={e => setForm({ ...form, userRole: e.target.value })} 
-                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="requester-phone" className="block text-xs font-medium text-[#101A32] mb-1.5">
-                            Contact Phone
-                          </label>
-                          <input 
-                            id="requester-phone"
-                            type="tel" 
-                            placeholder="+91 98765 43210" 
-                            value={form.contactNumber} 
-                            onChange={e => setForm({ ...form, contactNumber: e.target.value })} 
-                            className="w-full h-11 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 text-sm text-[#101A32] placeholder-slate-400 outline-none hover:border-slate-300 focus:bg-white focus:border-[#2160FF] focus:ring-2 focus:ring-[#2160FF]/15 transition-all" 
-                          />
-                        </div>
-                      </div>
-
-                      {/* Automated Tracking Notice */}
-                      <div className="pt-2">
-                        <div className="p-4 bg-[#F0F5FF]/70 border border-[#E0E7FF] rounded-xl flex items-start gap-3">
-                          <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                      {/* Automated Tracking & SLA Notice */}
+                      <div className="pt-1">
+                        <div className="p-3.5 bg-blue-50/60 border border-blue-100 rounded-xl flex items-start gap-3">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                           <div className="space-y-0.5">
                             <h4 className="text-xs font-semibold text-[#101A32]">
-                              Automated Tracking & Notifications
+                              Automated Tracking &amp; Priority SLA
                             </h4>
-                            <p className="text-xs text-[#64748B] leading-relaxed">
-                              A unique ticket ID will be generated after submission. You'll receive updates as your request progresses.
+                            <p className="text-[11px] text-[#64748B] leading-relaxed">
+                              A unique ticket ID is generated instantly. Our engineering support desk reviews and responds to client requests within 2–4 business hours.
                             </p>
                           </div>
                         </div>
                       </div>
-
                     </div>
 
                   </div>
